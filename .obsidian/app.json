@@ -1,3 +1,4 @@
 {
-  "newLinkFormat": "absolute"
+  "newLinkFormat": "absolute",
+  "alwaysUpdateLinks": true
 }
