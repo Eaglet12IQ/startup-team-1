@@ -18,3 +18,4 @@
 | 2      | [Перейти](READMEs/week2/README.md) | ⏳      |
 | 3      | [Перейти](READMEs/week3/README.md) | ⏳      |
 | 4      | [Перейти](READMEs/week4/README.md) | ⏳      |
+| 5      | [Перейти](READMEs/week5/README.md) | ⏳      |
