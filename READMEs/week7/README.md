@@ -12,3 +12,6 @@
 ---
 ## Практическая неделя 7
 ## Создание MVP
+
+### Диаграмма принципов функционирования системы
+![Diagrams PiConstruct](../week7/attachments/Diagrams%20PiConstruct.jpg)
