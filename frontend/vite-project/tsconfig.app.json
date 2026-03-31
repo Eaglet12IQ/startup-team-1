@@ -23,6 +23,6 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true
   },
-  "include": ["src"],
-  "exclude": ["../../shared/**/*"]
+  "include": ["src", "../../shared/**/*"],
+  "exclude": []
 }

@@ -1,6 +1,6 @@
 interface ModuleProps {
     id: string;
-    x: string;
+    x: number;
     y: number;
     width: number;
     height: number;

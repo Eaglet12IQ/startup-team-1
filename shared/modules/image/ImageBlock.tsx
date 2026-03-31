@@ -8,22 +8,19 @@ interface ImageBlockProps extends ModuleProps {
 export const ImageBlock = ({
   src,
   objectFit = 'cover',
-  x = 0,
-  y = 0,
-  width = 200,
-  height = 200,
 }: ImageBlockProps) => {
   return (
     <img
       src={src}
       alt=""
+      draggable={false}
       style={{
-        position: 'absolute',
-        left: x,
-        top: y,
-        width,
-        height,
+        width: '100%',
+        height: '100%',
         objectFit,
+        display: 'block',
+        pointerEvents: 'none',
+        userSelect: 'none',
       }}
     />
   );
