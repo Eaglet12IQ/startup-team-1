@@ -1,13 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Canvas } from './components/Editor/Canvas';
 import { BlocksPalette } from './components/Editor/BlocksPalette';
 import { PropertiesPanel } from './components/Editor/PropertiesPanel';
 import type { BlockData } from './types';
 
 const STORAGE_KEY = 'slide-editor-state';
+const MAX_HISTORY = 50;
 
 const defaultBlocks: BlockData[] = [
-  { type: 'text', id: '1', content: 'Заголовок', x: 50, y: 10, width: 50, height: 50, fontSize: 24, fontWeight: 'bold', color: '#000000', textAlign: 'center', verticalAlign: 'center' },
+  { type: 'text', id: '1', content: 'Заголовок', x: 50, y: 10, width: 50, height: 50, fontSize: 50, fontWeight: 'bold', color: '#000000', textAlign: 'center', verticalAlign: 'center', fitText: false },
   { type: 'image', id: '2', src: 'https://i0.wp.com/kifabrik.mirmi.tum.de/wp-content/uploads/2022/05/placeholder-139.png?fit=1200%2C800&ssl=1&w=640', x: 50, y: 50, width: 20, height: 20, objectFit: 'cover' },
 ];
 
@@ -36,13 +37,81 @@ function App() {
     }
     return defaultBlocks;
   });
+  const blocksRef = useRef(blocks);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  blocksRef.current = blocks;
+  
+  const historyRef = useRef<BlockData[][]>([[]]);
+  const historyIndexRef = useRef(0);
+
+  const saveToHistory = useCallback((newBlocks: BlockData[]) => {
+    const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
+    newHistory.push([...newBlocks]);
+    if (newHistory.length > MAX_HISTORY) {
+      newHistory.shift();
+    }
+    historyRef.current = newHistory;
+    historyIndexRef.current = newHistory.length - 1;
+  }, []);
+
+  const undo = useCallback(() => {
+    if (historyIndexRef.current > 0) {
+      historyIndexRef.current--;
+      setBlocks([...historyRef.current[historyIndexRef.current]]);
+    }
+  }, []);
+
+  const redo = useCallback(() => {
+    if (historyIndexRef.current < historyRef.current.length - 1) {
+      historyIndexRef.current++;
+      setBlocks([...historyRef.current[historyIndexRef.current]]);
+    }
+  }, []);
+
+  useEffect(() => {
+    historyRef.current = [[...blocks]];
+    historyIndexRef.current = 0;
+  }, []);
 
   useEffect(() => {
     const state: SavedState = { schema_name: schemaName, blocks };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [blocks, schemaName]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+      
+      if ((e.ctrlKey || e.metaKey) && !isInputFocused) {
+        if (e.shiftKey && e.key === 'z') {
+          e.preventDefault();
+          redo();
+          return;
+        }
+        if (!e.shiftKey && e.key === 'z') {
+          e.preventDefault();
+          undo();
+          return;
+        }
+        if (e.key === 'y') {
+          e.preventDefault();
+          redo();
+          return;
+        }
+      }
+      
+      if (e.key === 'Backspace' && selectedBlockId && !isInputFocused) {
+        e.preventDefault();
+        handleDeleteBlock(selectedBlockId);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedBlockId, undo, redo]);
 
   const selectedBlock = blocks.find(b => b.id === selectedBlockId) || null;
 
@@ -52,6 +121,8 @@ function App() {
       setBlocks(defaultBlocks);
       setSelectedBlockId(null);
       localStorage.removeItem(STORAGE_KEY);
+      historyRef.current = [[...defaultBlocks]];
+      historyIndexRef.current = 0;
     }
   };
 
@@ -67,6 +138,8 @@ function App() {
           setBlocks(data.payload.blocks);
           setSchemaName(data.schema_name || defaultSchemaName);
           setSelectedBlockId(null);
+          historyRef.current = [[...data.payload.blocks]];
+          historyIndexRef.current = 0;
         } else {
           alert('Неверный формат файла');
         }
@@ -88,11 +161,12 @@ function App() {
           y: 50,
           width: 15,
           height: 5,
-          fontSize: 16,
+          fontSize: 50,
           fontWeight: 'normal',
           color: '#000000',
           textAlign: 'left',
           verticalAlign: 'center',
+          fitText: false,
         }
       : {
           type: 'image',
@@ -104,18 +178,24 @@ function App() {
           height: 15,
           objectFit: 'cover',
         };
-    setBlocks([...blocks, newBlock]);
+    const newBlocks = [...blocks, newBlock];
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
     setSelectedBlockId(newBlock.id);
   };
 
   const handleUpdateBlock = (id: string, updates: Partial<BlockData>) => {
-    setBlocks(blocks.map(block =>
+    const newBlocks = blocks.map(block =>
       block.id === id ? { ...block, ...updates } as BlockData : block
-    ));
+    );
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
   };
 
   const handleDeleteBlock = (id: string) => {
-    setBlocks(blocks.filter(block => block.id !== id));
+    const newBlocks = blocks.filter(block => block.id !== id);
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
     setSelectedBlockId(null);
   };
 
@@ -146,6 +226,7 @@ function App() {
     }
 
     setBlocks(newBlocks);
+    saveToHistory(newBlocks);
   };
 
   const handleExport = () => {
@@ -222,6 +303,7 @@ function App() {
               onSelectBlock={setSelectedBlockId}
               onUpdateBlock={handleUpdateBlock}
               onMoveBlock={handleMoveBlock}
+              onBlockChangeEnd={() => saveToHistory(blocksRef.current)}
             />
           </div>
         </div>
