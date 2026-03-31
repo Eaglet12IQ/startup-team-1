@@ -16,12 +16,16 @@ interface CanvasProps {
   onSelectBlock: (id: string | null) => void;
   onUpdateBlock: (id: string, updates: Partial<BlockData>) => void;
   onMoveBlock: (id: string, direction: 'up' | 'down' | 'top' | 'bottom') => void;
+  onBlockChangeEnd?: () => void;
 }
 
-export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onMoveBlock }: CanvasProps) => {
-  const dragStartRef = useRef({ x: 0, y: 0, blockX: 0, blockY: 0 });
+export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onMoveBlock, onBlockChangeEnd }: CanvasProps) => {
+  const dragStartRef = useRef({ x: 0, y: 0, blockX: 0, blockY: 0, startWidth: 0, startHeight: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
+  const blocksRef = useRef(blocks);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+
+  blocksRef.current = blocks;
 
   const handleMouseDown = (e: React.MouseEvent, blockId: string) => {
     if (e.button !== 0) return;
@@ -55,6 +59,15 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
     const handleMouseUp = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      
+      const currentBlock = blocksRef.current.find(b => b.id === blockId);
+      if (currentBlock) {
+        const posChanged = Math.abs(currentBlock.x - dragStartRef.current.blockX) > 0.01 || 
+                          Math.abs(currentBlock.y - dragStartRef.current.blockY) > 0.01;
+        if (posChanged) {
+          onBlockChangeEnd?.();
+        }
+      }
     };
     
     window.addEventListener('mousemove', handleMouseMove);
@@ -64,23 +77,23 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
   const handleResize = (e: React.MouseEvent, blockId: string) => {
     e.stopPropagation();
     e.preventDefault();
-    const block = blocks.find(b => b.id === blockId);
+    const block = blocksRef.current.find(b => b.id === blockId);
     if (!block) return;
     
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     const rect = canvas.getBoundingClientRect();
-    
-    // Центр блока в пикселях (x, y - это центр)
-    const centerX = (block.x / 100) * rect.width;
-    const centerY = (block.y / 100) * rect.height;
+    dragStartRef.current.startWidth = block.width;
+    dragStartRef.current.startHeight = block.height;
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const cursorX = moveEvent.clientX - rect.left;
       const cursorY = moveEvent.clientY - rect.top;
       
-      // Новая ширина = 2 * расстояние от центра до курсора по X
+      const centerX = (block.x / 100) * rect.width;
+      const centerY = (block.y / 100) * rect.height;
+      
       const newWidthPercent = Math.max(5, 2 * (cursorX - centerX) / rect.width * 100);
       const newHeightPercent = Math.max(5, 2 * (cursorY - centerY) / rect.height * 100);
       
@@ -93,6 +106,15 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
     const handleMouseUp = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      
+      const currentBlock = blocksRef.current.find(b => b.id === blockId);
+      if (currentBlock) {
+        const sizeChanged = Math.abs(currentBlock.width - dragStartRef.current.startWidth) > 0.01 || 
+                           Math.abs(currentBlock.height - dragStartRef.current.startHeight) > 0.01;
+        if (sizeChanged) {
+          onBlockChangeEnd?.();
+        }
+      }
     };
     
     window.addEventListener('mousemove', handleMouseMove);
@@ -136,11 +158,12 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
                 height: `${block.height}%`,
                 transform: 'translate(-50%, -50%)',
                 zIndex: isSelected ? zIndex + 1000 : zIndex,
-              }}
+                '--block-height': block.height,
+              } as React.CSSProperties}
               onMouseDown={(e) => handleMouseDown(e, block.id)}
               onContextMenu={(e) => handleContextMenu(e, block.id)}
             >
-              <TextBlock {...block} />
+              <TextBlock {...block} blockHeight={block.height} />
               {isSelected && (
                 <div
                   className="absolute w-4 h-4 bg-white border-2 border-[#0071e3] rounded-full cursor-se-resize -right-2 -bottom-2 shadow-[0_2px_8px_rgb(0,113,227,0.3)] hover:bg-[#0071e3] transition-colors duration-150"

@@ -11,6 +11,7 @@ export interface TextBlockData {
   color: string;
   textAlign: 'left' | 'center' | 'right';
   verticalAlign: 'top' | 'center' | 'bottom';
+  fitText: boolean;
 }
 
 export interface ImageBlockData {

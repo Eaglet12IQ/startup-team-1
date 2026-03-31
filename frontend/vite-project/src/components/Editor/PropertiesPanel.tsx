@@ -78,14 +78,28 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock }:
           </div>
           
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Размер шрифта</label>
-            <input
-              type="number"
-              value={selectedBlock.fontSize}
-              onChange={(e) => onUpdateBlock(selectedBlock.id, { fontSize: parseFloat(e.target.value) })}
-              className="w-full px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
-            />
+            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Размер шрифта (%)</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={selectedBlock.fontSize}
+                onChange={(e) => onUpdateBlock(selectedBlock.id, { fontSize: parseFloat(e.target.value) })}
+                disabled={selectedBlock.fitText}
+                className="w-full px-3 py-2.5 pr-8 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200 disabled:opacity-50"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868b] text-sm">%</span>
+            </div>
           </div>
+          
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={selectedBlock.fitText}
+              onChange={(e) => onUpdateBlock(selectedBlock.id, { fitText: e.target.checked })}
+              className="w-4 h-4 rounded border-[#d2d2d7] text-[#0071e3] focus:ring-[#0071e3]"
+            />
+            <span className="text-xs text-[#1d1d1f]">Уместить текст в блок</span>
+          </label>
           
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Толщина шрифта</label>
