@@ -27,5 +27,9 @@ export interface ImageBlockData {
 export type BlockData = TextBlockData | ImageBlockData;
 
 export interface SlideData {
-  blocks: BlockData[];
+  schema_name: string;
+  schema_id: string;
+  payload: {
+    blocks: BlockData[];
+  };
 }

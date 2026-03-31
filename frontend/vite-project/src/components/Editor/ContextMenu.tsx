@@ -77,13 +77,13 @@ export const MenuItem = ({ onClick, children, danger }: MenuItemProps) => {
   return (
     <button
       onClick={onClick}
-      className={`w-full px-3 py-1.5 text-left text-xs transition-colors duration-100 ${
+      className={`block w-full px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors duration-100 ${
         danger
           ? 'text-[#ff3b30] hover:bg-[#ff3b30]/10'
           : 'text-[#1d1d1f] hover:bg-[#f5f5f7]'
       }`}
     >
-      {children}
+      <span className="inline-block w-full">{children}</span>
     </button>
   );
 };
@@ -94,7 +94,7 @@ export const MenuDivider = () => {
 
 export const MenuLabel = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="px-3 py-1 text-[9px] font-semibold text-[#86868b] uppercase tracking-[0.05em]">
+    <div className="px-3 py-1 text-[9px] font-semibold text-[#86868b] uppercase tracking-[0.05em] whitespace-nowrap">
       {children}
     </div>
   );

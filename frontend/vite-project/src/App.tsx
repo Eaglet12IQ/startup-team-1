@@ -8,25 +8,47 @@ const STORAGE_KEY = 'slide-editor-state';
 
 const defaultBlocks: BlockData[] = [
   { type: 'text', id: '1', content: 'Заголовок', x: 50, y: 10, width: 50, height: 50, fontSize: 24, fontWeight: 'bold', color: '#000000', textAlign: 'center', verticalAlign: 'center' },
-  { type: 'image', id: '2', src: 'https://via.placeholder.com/200', x: 50, y: 50, width: 20, height: 20, objectFit: 'cover' },
+  { type: 'image', id: '2', src: 'https://i0.wp.com/kifabrik.mirmi.tum.de/wp-content/uploads/2022/05/placeholder-139.png?fit=1200%2C800&ssl=1&w=640', x: 50, y: 50, width: 20, height: 20, objectFit: 'cover' },
 ];
 
+const defaultSchemaName = 'Новый проект';
+
+interface SavedState {
+  schema_name: string;
+  blocks: BlockData[];
+}
+
 function App() {
+  const [schemaName, setSchemaName] = useState<string>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data: SavedState = JSON.parse(saved);
+      return data.schema_name || defaultSchemaName;
+    }
+    return defaultSchemaName;
+  });
+
   const [blocks, setBlocks] = useState<BlockData[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : defaultBlocks;
+    if (saved) {
+      const data: SavedState = JSON.parse(saved);
+      return data.blocks || defaultBlocks;
+    }
+    return defaultBlocks;
   });
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
-  }, [blocks]);
+    const state: SavedState = { schema_name: schemaName, blocks };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [blocks, schemaName]);
 
   const selectedBlock = blocks.find(b => b.id === selectedBlockId) || null;
 
   const handleNewProject = () => {
     if (confirm('Создать новый проект? Текущие изменения будут потеряны.')) {
+      setSchemaName(defaultSchemaName);
       setBlocks(defaultBlocks);
       setSelectedBlockId(null);
       localStorage.removeItem(STORAGE_KEY);
@@ -41,8 +63,9 @@ function App() {
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
-        if (data.blocks && Array.isArray(data.blocks)) {
-          setBlocks(data.blocks);
+        if (data.payload?.blocks && Array.isArray(data.payload.blocks)) {
+          setBlocks(data.payload.blocks);
+          setSchemaName(data.schema_name || defaultSchemaName);
           setSelectedBlockId(null);
         } else {
           alert('Неверный формат файла');
@@ -126,12 +149,16 @@ function App() {
   };
 
   const handleExport = () => {
-    const data = { blocks };
+    const data = {
+      schema_name: schemaName,
+      schema_id: crypto.randomUUID(),
+      payload: { blocks },
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'slide.json';
+    a.download = `${schemaName}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -147,6 +174,15 @@ function App() {
       />
       <div className="w-72 flex flex-col">
         <div className="m-4 p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+          <div className="mb-4">
+            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Название проекта</label>
+            <input
+              type="text"
+              value={schemaName}
+              onChange={(e) => setSchemaName(e.target.value)}
+              className="w-full mt-1.5 px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+            />
+          </div>
           <BlocksPalette onAddBlock={handleAddBlock} />
         </div>
         <div className="mx-4 mb-4 p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex-1 overflow-auto">
