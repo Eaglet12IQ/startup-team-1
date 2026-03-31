@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend/constructor-service
+      dockerfile: Dockerfile
+    container_name: constructor-service
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./backend/constructor-service/schemas:/app/schemas
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
