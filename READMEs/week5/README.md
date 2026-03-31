@@ -12,3 +12,15 @@
 ---
 ## Практическая неделя 5
 ## Формирование гипотезы ценностного предложения. Анализ конкурентных решений.
+![PiDisplay_Практическое_9_Страница_01](attachments/PiDisplay_Практическое_9_Страница_01.png)
+![PiDisplay_Практическое_9_Страница_02](attachments/PiDisplay_Практическое_9_Страница_02.png)
+![PiDisplay_Практическое_9_Страница_03](attachments/PiDisplay_Практическое_9_Страница_03.png)
+![PiDisplay_Практическое_9_Страница_04](attachments/PiDisplay_Практическое_9_Страница_04.png)
+![PiDisplay_Практическое_9_Страница_05](attachments/PiDisplay_Практическое_9_Страница_05.png)
+![PiDisplay_Практическое_9_Страница_06](attachments/PiDisplay_Практическое_9_Страница_06.png)
+![PiDisplay_Практическое_9_Страница_07](attachments/PiDisplay_Практическое_9_Страница_07.png)
+![PiDisplay_Практическое_9_Страница_08](attachments/PiDisplay_Практическое_9_Страница_08.png)
+![PiDisplay_Практическое_9_Страница_09](attachments/PiDisplay_Практическое_9_Страница_09.png)
+![PiDisplay_Практическое_9_Страница_10](attachments/PiDisplay_Практическое_9_Страница_10.png)
+![PiDisplay_Практическое_9_Страница_11](attachments/PiDisplay_Практическое_9_Страница_11.png)
+![Ссылка на презентацию](attachments/PiDisplay_Практическое_9.pdf)
