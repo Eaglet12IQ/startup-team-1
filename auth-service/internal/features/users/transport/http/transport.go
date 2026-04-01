@@ -1,7 +1,9 @@
 package users_transport_http
 
 import (
+	"auth-service/internal/core/domain"
 	core_http_server "auth-service/internal/core/server"
+	"context"
 	"net/http"
 )
 
@@ -10,6 +12,7 @@ type UsersHTTPHandler struct {
 }
 
 type UsersService interface {
+	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 }
 
 func NewUsersHTTPHandler(usersService UsersService) *UsersHTTPHandler {
