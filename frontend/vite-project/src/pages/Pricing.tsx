@@ -1,35 +1,30 @@
 import { Link } from 'react-router';
+import { PageTransition } from '../components/PageTransition';
 
 const plans = [
   {
     name: 'Бесплатный',
     price: '0',
     period: 'навсегда',
-    features: ['Один проект', 'До 10 элементов на проект', 'Экспорт в JSON'],
+    features: ['Одно табло', 'До 10 элементов на экран', 'Экспорт в JSON'],
     current: true,
   },
   {
-    name: 'Про',
-    price: '299',
-    period: 'в месяц',
-    features: ['Безлимитные проекты', 'Экспорт PNG', 'Приоритетная поддержка'],
-    current: false,
-  },
-  {
-    name: 'Про',
+    name: 'Бизнес',
     price: '899',
     period: 'в месяц',
-    features: ['Прмер текста'],
+    features: ['Безлимитные табло', 'Экспорт готового образа', 'Шаблоны меню и рекламы', 'Быстрое обновление через веб-интерфейс','Кастомные шаблоны', 'API интеграции'],
     current: false,
   }
 ];
 
 export function Pricing() {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
       <header className="bg-white border-b border-[#d2d2d7]">
         <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-[#1d1d1f]">Slide Constructor</h1>
+          <h1 className="text-xl font-semibold text-[#1d1d1f]">Rusberry PI</h1>
           <nav className="flex gap-4 items-center">
             <Link to="/" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Главная</Link>
             <Link to="/projects" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Проекты</Link>
@@ -43,7 +38,7 @@ export function Pricing() {
           <p className="text-xl text-[#6e6e73]">Начните бесплатно, переходите на платные тарифы по мере роста</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -81,5 +76,6 @@ export function Pricing() {
         </div>
       </main>
     </div>
+    </PageTransition>
   );
 }

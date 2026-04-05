@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
+import { PageTransition } from '../components/PageTransition';
 
 export function Login() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export function Login() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-8">
         <h1 className="text-2xl font-semibold text-[#1d1d1f] mb-2 text-center">Вход</h1>
@@ -53,5 +55,6 @@ export function Login() {
         </p>
       </div>
     </div>
+    </PageTransition>
   );
 }

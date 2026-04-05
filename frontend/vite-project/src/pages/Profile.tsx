@@ -1,11 +1,13 @@
 import { Link } from 'react-router';
+import { PageTransition } from '../components/PageTransition';
 
 export function Profile() {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
       <header className="bg-white border-b border-[#d2d2d7]">
         <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
-          <Link to="/projects" className="text-xl font-semibold text-[#1d1d1f]">Slide Constructor</Link>
+          <Link to="/projects" className="text-xl font-semibold text-[#1d1d1f]">Rusberry PI</Link>
           <nav className="flex gap-4 items-center">
             <Link to="/projects" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Проекты</Link>
             <Link to="/pricing" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Тарифы</Link>
@@ -68,5 +70,6 @@ export function Profile() {
         </div>
       </main>
     </div>
+    </PageTransition>
   );
 }

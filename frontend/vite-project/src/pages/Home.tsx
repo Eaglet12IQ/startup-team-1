@@ -1,11 +1,13 @@
 import { Link } from 'react-router';
+import { PageTransition } from '../components/PageTransition';
 
 export function Home() {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
       <header className="bg-white border-b border-[#d2d2d7]">
         <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-[#1d1d1f]">Slide Constructor</h1>
+          <h1 className="text-xl font-semibold text-[#1d1d1f]">Rusberry PI</h1>
           <nav className="flex gap-4 items-center">
             <Link to="/projects" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Проекты</Link>
             <Link to="/profile" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Профиль</Link>
@@ -19,10 +21,10 @@ export function Home() {
       <main className="max-w-6xl mx-auto px-8 py-20">
         <div className="text-center">
           <h2 className="text-5xl font-semibold text-[#1d1d1f] mb-6">
-            Создавайте презентации<br />быстро и просто
+            Цифровые табло для бизнеса<br />за 5 минут
           </h2>
           <p className="text-xl text-[#6e6e73] mb-10 max-w-2xl mx-auto">
-            Интуитивный конструктор слайдов с удобным редактором и экспортом в различные форматы
+            Создайте меню, рекламный экран или информационную панель для вашего кафе или магазина. Скачайте готовый образ для Raspberry Pi — и табло готово к работе
           </p>
           <div className="flex gap-4 justify-center">
             <Link
@@ -41,5 +43,6 @@ export function Home() {
         </div>
       </main>
     </div>
+    </PageTransition>
   );
 }
