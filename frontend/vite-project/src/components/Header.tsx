@@ -12,10 +12,10 @@ export function Header() {
     <header className="bg-white border-b border-[#d2d2d7]">
       <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
         <Link to="/" className="flex flex-row items-center gap-2">
-          <div className="flex justify-center bg-blue-200 rounded-full aspect-square w-12.5 mx-auto border-2 border-blue-400">
-            <div className="font-bold text-2xl content-center text-blue-400">PC</div>
+          <div className="flex justify-center bg-blue-500 rounded-full mx-auto py-1 px-3 shadow-md shadow-blue-100 font-['Varela_Round'] transition hover:scale-105 active:scale-95">
+            <div className="font-bold text-2xl content-center text-white">PiConstruct</div>
           </div>
-          <h1 className="text-xl font-semibold text-[#1d1d1f]">PiConstruct</h1>
+          {/*<h1 className="text-xl font-semibold text-[#1d1d1f]">PiConstruct</h1>*/}
         </Link>
         <nav className="flex gap-4 items-center">
           <Link 
