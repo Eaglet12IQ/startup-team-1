@@ -13,6 +13,8 @@ type UsersHTTPHandler struct {
 
 type UsersService interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
+	LoginUser(ctx context.Context, user domain.User) (string, string, error)
+	RefreshAccessToken(ctx context.Context, refreshToken string) (string, string, error)
 }
 
 func NewUsersHTTPHandler(usersService UsersService) *UsersHTTPHandler {
@@ -23,8 +25,18 @@ func (h *UsersHTTPHandler) Routes() []core_http_server.Route {
 	return []core_http_server.Route{
 		{
 			Method:  http.MethodPost,
-			Path:    "/users",
+			Path:    "/register",
 			Handler: h.CreateUser,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/auth",
+			Handler: h.LoginUser,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/refresh",
+			Handler: h.RefreshAccessToken,
 		},
 	}
 }

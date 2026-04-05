@@ -15,6 +15,36 @@ const (
 	requestIDHeader = "X-Request-ID"
 )
 
+// func Auth(jwt core_token.JWT) Middleware {
+// 	return func(next http.Handler) http.Handler {
+// 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+// 			if (r.URL.Path == "/api/v1/auth" && r.Method == http.MethodPost) || (r.URL.Path == "/api/v1/users" && r.Method == http.MethodPost) {
+// 				next.ServeHTTP(rw, r)
+
+// 				return
+// 			}
+
+// 			token, err := core_token.ExtractTokenFromRequest(r)
+// 			if err != nil {
+// 				http.Error(rw, core_errors.ErrUnauthorized.Error(), http.StatusUnauthorized)
+
+// 				return
+// 			}
+
+// 			claims, err := jwt.ValidateAccessToken(token)
+// 			if err != nil {
+// 				http.Error(rw, core_errors.ErrUnauthorized.Error(), http.StatusUnauthorized)
+
+// 				return
+// 			}
+
+// 			ctx := context.WithValue(r.Context(), "user_id", claims.UserID)
+
+// 			next.ServeHTTP(rw, r.WithContext(ctx))
+// 		})
+// 	}
+// }
+
 func RequestID() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

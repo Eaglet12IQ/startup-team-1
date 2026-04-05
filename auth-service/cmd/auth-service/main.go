@@ -4,6 +4,7 @@ import (
 	core_logger "auth-service/internal/core/logger"
 	core_postgres_pool "auth-service/internal/core/repository/postgres/pool"
 	core_http_server "auth-service/internal/core/server"
+	core_token "auth-service/internal/core/token"
 	core_http_middleware "auth-service/internal/core/transport/http/middleware"
 	users_postgres_repository "auth-service/internal/features/users/repository/postgres"
 	users_service "auth-service/internal/features/users/service"
@@ -40,8 +41,10 @@ func main() {
 
 	logger.Debug("initializing feature", zap.String("feature", "users"))
 
+	jwtExample := core_token.NewJWTService(core_token.NewConfigMust(), nil)
+
 	usersRepository := users_postgres_repository.NewUsersRepository(pool)
-	usersService := users_service.NewUsersService(usersRepository)
+	usersService := users_service.NewUsersService(usersRepository, jwtExample)
 	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(usersService)
 
 	logger.Debug("initializing HTTP server")

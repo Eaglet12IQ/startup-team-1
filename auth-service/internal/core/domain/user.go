@@ -37,8 +37,16 @@ func (u *User) Validate() error {
 		return fmt.Errorf("invalid fullname length: %d: %w", fullnameLength, core_errors.ErrInvalidArgument)
 	}
 
+	if err := u.ValidatePasswordAndEmail(); err != nil {
+		return fmt.Errorf("validate login user:")
+	}
+
+	return nil
+}
+
+func (u *User) ValidatePasswordAndEmail() error {
 	passwordLength := len([]rune(u.Password))
-	if passwordLength < 5 {
+	if passwordLength > 100 {
 		return fmt.Errorf("invalid password length: %d, %w", passwordLength, core_errors.ErrInvalidArgument)
 	}
 

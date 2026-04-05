@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  # backend:
+  #   build:
+  #     context: ./backend/constructor-service
+  #     dockerfile: Dockerfile
+  #   container_name: constructor-service
+  #   ports:
+  #     - "8082:8082"
+  #   volumes:
+  #     - ./backend/constructor-service/schemas:/app/schemas
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #   restart: unless-stopped
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      auth-service-postgres:
+        condition: service_healthy
+    environment:
+      - DB_HOST=${AUTH_SERVICE_POSTGRES_HOST}
+      - DB_PORT=${AUTH_SERVICE_POSTGRES_PORT}
+      - DB_USER=${AUTH_SERVICE_POSTGRES_USER}
+      - DB_PASSWORD=${AUTH_SERVICE_POSTGRES_PASSWORD}
+      - DB_NAME=${AUTH_SERVICE_POSTGRES_DB}
+      - JWT_SECRET=${JWT_SECRET}
+      - ACCESS_TTL=${ACCESS_TTL}
+      - REFRESH_TTL=${REFRESH_TTL}
+    restart: unless-stopped
+
+  auth-service-postgres:
+    image: postgres:16-alpine
+    container_name: auth-service-db
+    environment:
+      POSTGRES_USER: ${AUTH_SERVICE_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AUTH_SERVICE_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${AUTH_SERVICE_POSTGRES_DB}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./auth-service/migrations:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_SERVICE_POSTGRES_USER}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  postgres_data:
