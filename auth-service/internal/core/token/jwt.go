@@ -109,8 +109,8 @@ func (t *JWT) RefreshAccessToken(
 	return access, refresh, nil
 }
 
-func (t *JWT) ValidateAccessToken(token string) (*Claims, error) {
-	claims, err := t.parseToken(token)
+func (t *JWT) ValidateAccessToken(access string) (*Claims, error) {
+	claims, err := t.parseToken(access)
 	if err != nil {
 		return nil, err
 	}

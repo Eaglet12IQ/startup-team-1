@@ -36,23 +36,7 @@ func (h *UsersHTTPHandler) LoginUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Сомнительно
-	http.SetCookie(rw, &http.Cookie{
-		Name:     "refresh",
-		Value:    refresh,
-		HttpOnly: true,
-		Secure:   false,
-		Path:     "/",
-		MaxAge:   86400,
-		SameSite: http.SameSiteStrictMode,
-	})
-
-	// Тоже сомнительно как-будто
-	response := map[string]string{
-		"access": access,
-	}
-
-	responseHandler.JSONResponse(response, http.StatusOK)
+	responseHandler.TokensResponse(rw, access, refresh, http.StatusOK)
 }
 
 func domainFromLoginUserDTO(dto LoginUserRequest) domain.User {

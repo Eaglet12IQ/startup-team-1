@@ -47,6 +47,9 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 	case errors.Is(err, core_errors.ErrConflict):
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn
+	case errors.Is(err, core_errors.ErrUnauthorized):
+		statusCode = http.StatusUnauthorized
+		logFunc = h.log.Warn
 	default:
 		statusCode = http.StatusInternalServerError
 		logFunc = h.log.Error
@@ -64,6 +67,24 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	h.log.Error(msg, zap.Error(err))
 
 	h.errorResponse(statusCode, err, msg)
+}
+
+func (h *HTTPResponseHandler) TokensResponse(rw http.ResponseWriter, access, refresh string, statusCode int) {
+	http.SetCookie(rw, &http.Cookie{
+		Name:     "refresh",
+		Value:    refresh,
+		HttpOnly: true,
+		Secure:   false,
+		Path:     "/",
+		MaxAge:   86400,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	response := map[string]string{
+		"access": access,
+	}
+
+	h.JSONResponse(response, statusCode)
 }
 
 func (h *HTTPResponseHandler) errorResponse(statusCode int, err error, msg string) {

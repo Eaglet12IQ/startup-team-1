@@ -1,9 +1,12 @@
 package core_http_middleware
 
 import (
+	core_errors "auth-service/internal/core/errors"
 	core_logger "auth-service/internal/core/logger"
+	core_token "auth-service/internal/core/token"
 	core_http_response "auth-service/internal/core/transport/http/response"
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,37 +16,8 @@ import (
 
 const (
 	requestIDHeader = "X-Request-ID"
+	prefix          = "/api/v1/"
 )
-
-// func Auth(jwt core_token.JWT) Middleware {
-// 	return func(next http.Handler) http.Handler {
-// 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-// 			if (r.URL.Path == "/api/v1/auth" && r.Method == http.MethodPost) || (r.URL.Path == "/api/v1/users" && r.Method == http.MethodPost) {
-// 				next.ServeHTTP(rw, r)
-
-// 				return
-// 			}
-
-// 			token, err := core_token.ExtractTokenFromRequest(r)
-// 			if err != nil {
-// 				http.Error(rw, core_errors.ErrUnauthorized.Error(), http.StatusUnauthorized)
-
-// 				return
-// 			}
-
-// 			claims, err := jwt.ValidateAccessToken(token)
-// 			if err != nil {
-// 				http.Error(rw, core_errors.ErrUnauthorized.Error(), http.StatusUnauthorized)
-
-// 				return
-// 			}
-
-// 			ctx := context.WithValue(r.Context(), "user_id", claims.UserID)
-
-// 			next.ServeHTTP(rw, r.WithContext(ctx))
-// 		})
-// 	}
-// }
 
 func RequestID() Middleware {
 	return func(next http.Handler) http.Handler {
@@ -74,6 +48,40 @@ func Logger(log *core_logger.Logger) Middleware {
 			ctx := context.WithValue(r.Context(), "log", l)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func Auth(jwt core_token.JWT) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			log := core_logger.FromContext(ctx)
+			responseHandler := core_http_response.NewHTTPResponseHandler(log, rw)
+
+			if isPublicRoute(r) {
+				next.ServeHTTP(rw, r)
+
+				return
+			}
+
+			token, err := core_token.ExtractTokenFromRequest(r)
+			if err != nil {
+				responseHandler.ErrorResponse(core_errors.ErrUnauthorized, "no access token in request")
+
+				return
+			}
+
+			claims, err := jwt.ValidateAccessToken(token)
+			if err != nil {
+				responseHandler.ErrorResponse(core_errors.ErrUnauthorized, "invalid access token")
+
+				return
+			}
+
+			ctx = context.WithValue(r.Context(), "user_id", claims.UserID)
+
+			next.ServeHTTP(rw, r.WithContext(ctx))
 		})
 	}
 }
@@ -118,4 +126,16 @@ func Trace() Middleware {
 			)
 		})
 	}
+}
+
+func isPublicRoute(r *http.Request) bool {
+	if r.Method == http.MethodPost && (r.URL.Path == concatenatePath(prefix, "register") || r.URL.Path == concatenatePath(prefix, "auth") || r.URL.Path == concatenatePath(prefix, "refresh")) {
+		return true
+	}
+
+	return false
+}
+
+func concatenatePath(prefix, path string) string {
+	return fmt.Sprintf("%s%s", prefix, path)
 }
