@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
+import { Header } from '../components/Header';
 
 interface Project {
   id: string;
@@ -78,12 +79,7 @@ export function ProjectsList() {
   return (
     <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
-      <header className="bg-white border-b border-[#d2d2d7]">
-        <div className="max-w-6xl mx-auto px-8 py-6">
-          <h1 className="text-3xl font-semibold text-[#1d1d1f]">Мои табло</h1>
-          <p className="mt-1 text-[#6e6e73]">Управляйте своими цифровыми экранами</p>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-6xl mx-auto px-8 py-8">
         <div className="flex justify-between items-center mb-8">

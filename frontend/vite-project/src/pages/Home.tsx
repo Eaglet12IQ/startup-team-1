@@ -1,29 +1,12 @@
 import { Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
+import { Header } from '../components/Header';
 
 export function Home() {
   return (
     <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
-      <header className="bg-white border-b border-[#d2d2d7]">
-        <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
-          <div className="flex flex-row items-center gap-2">
-            <Link to="/">
-              <div className="flex justify-center bg-blue-200 rounded-full aspect-square w-12.5 mx-auto border-2 border-blue-400">
-                <div className="font-bold text-2xl content-center text-blue-400">PC</div>
-              </div>
-            </Link>
-            <h1 className="text-xl font-semibold text-[#1d1d1f]">PiConstruct</h1>
-          </div>
-          <nav className="flex gap-4 items-center">
-            <Link to="/projects" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Проекты</Link>
-            <Link to="/profile" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Профиль</Link>
-            <Link to="/login" className="px-4 py-2 text-sm text-[#0071e3] hover:bg-[#f5f5f7] rounded-lg transition-colors">
-              Войти
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-6xl mx-auto px-8 py-20">
         <div className="text-center">
