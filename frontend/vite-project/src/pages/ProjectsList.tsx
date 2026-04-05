@@ -6,7 +6,7 @@ interface Project {
   id: string;
   name: string;
   lastModified: Date;
-  slidesCount: number;
+  elementsCount: number;
   thumbnail?: string;
   type: 'menu' | 'advertising' | 'info' | 'custom';
 }
@@ -16,21 +16,21 @@ const mockProjects: Project[] = [
     id: '1',
     name: 'Меню кофейни',
     lastModified: new Date('2024-03-15'),
-    slidesCount: 3,
+    elementsCount: 3,
     type: 'menu',
   },
   {
     id: '2',
     name: 'Рекламный экран — Акции',
     lastModified: new Date('2024-03-14'),
-    slidesCount: 5,
+    elementsCount: 5,
     type: 'advertising',
   },
   {
     id: '3',
     name: 'Расписание занятий',
     lastModified: new Date('2024-03-10'),
-    slidesCount: 2,
+    elementsCount: 2,
     type: 'info',
   },
 ];
@@ -49,7 +49,7 @@ export function ProjectsList() {
       id: crypto.randomUUID(),
       name: newProjectName.trim(),
       lastModified: new Date(),
-      slidesCount: 1,
+      elementsCount: 1,
     };
 
     setProjects([newProject, ...projects]);
@@ -172,7 +172,7 @@ export function ProjectsList() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                       </svg>
-                      {project.slidesCount} слайд{project.slidesCount !== 1 ? 'ов' : ''}
+                      {project.elementsCount} блок{project.elementsCount !== 1 ? 'ов' : ''}
                     </span>
                   </div>
                   <div className="flex gap-2">
