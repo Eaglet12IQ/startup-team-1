@@ -10,17 +10,7 @@ function JwtCheckHandler:access(conf)
         return kong.response.exit(401, { message = "JWT authentication required" })
     end
 
-    if not jwt_claims.subscription_active then
-        return kong.response.exit(403, {
-            message = "Active subscription required",
-            code = "SUBSCRIPTION_INACTIVE"
-        })
-    end
-
-    kong.service.request.set_header("x-user-id", jwt_claims.user_id or jwt_claims.sub or "")
-    kong.service.request.set_header("x-user-email", jwt_claims.email or "")
-    kong.service.request.set_header("x-subscription-active", "true")
-    kong.service.request.clear_header("authorization")
+    kong.service.request.set_header("X-User-ID", jwt_claims.user_id or jwt_claims.sub or "")
 end
 
 return JwtCheckHandler
