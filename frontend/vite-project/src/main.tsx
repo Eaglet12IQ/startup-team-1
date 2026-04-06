@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { AuthProvider } from './context/AuthContext'
 import './index.css'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -32,7 +33,9 @@ function AnimatedRoutes() {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AnimatedRoutes />
+      <AuthProvider>
+        <AnimatedRoutes />
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )

@@ -1,14 +1,36 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
+import { useAuth } from '../context/AuthContext';
 
 export function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Register:', formData);
+    setError('');
+
+    if (formData.password.length < 6) {
+      setError('Пароль должен быть минимум 6 символов');
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('registered-users') || '[]');
+    if (users.find((u: { email: string }) => u.email === formData.email)) {
+      setError('Пользователь с таким email уже существует');
+      return;
+    }
+
+    const newId = users.length > 0 ? Math.max(...users.map((u: { id: number }) => u.id)) + 1 : 1;
+    const newUser = { id: newId, name: formData.name, email: formData.email, password: formData.password };
+    users.push(newUser);
+    localStorage.setItem('registered-users', JSON.stringify(users));
+
+    login(newId, formData.name, formData.email);
+    navigate('/projects');
   };
 
   return (
@@ -51,9 +73,10 @@ export function Register() {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full px-4 py-3 bg-[#f5f5f7] rounded-xl text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
-              placeholder="Минимум 8 символов"
+              placeholder="Минимум 6 символов"
             />
           </div>
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           <button
             type="submit"
             className="w-full px-6 py-3.5 bg-[#0071e3] text-white rounded-xl font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)]"

@@ -1,80 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
 import { Header } from '../components/Header';
+import { useAuth } from '../context/AuthContext';
+import { getMySchemas, saveSchema, type BackendSchema } from '../services/api';
 
 interface Project {
-  id: string;
+  id: number;
   name: string;
-  lastModified: Date;
+  lastModified: string;
   elementsCount: number;
-  thumbnail?: string;
   type: 'menu' | 'advertising' | 'info' | 'custom';
 }
 
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'Меню кофейни',
-    lastModified: new Date('2024-03-15'),
-    elementsCount: 3,
-    type: 'menu',
-  },
-  {
-    id: '2',
-    name: 'Рекламный экран — Акции',
-    lastModified: new Date('2024-03-14'),
-    elementsCount: 5,
-    type: 'advertising',
-  },
-  {
-    id: '3',
-    name: 'Расписание занятий',
-    lastModified: new Date('2024-03-10'),
-    elementsCount: 2,
-    type: 'info',
-  },
-];
-
 export function ProjectsList() {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const { isAuthenticated } = useAuth();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
-  const handleCreateProject = () => {
+  const loadProjects = useCallback(async () => {
+    try {
+      setLoading(true);
+      const schemas = await getMySchemas();
+      const mapped: Project[] = schemas.map((s: BackendSchema) => {
+        const payload = s.payload as { blocks?: unknown[] } | unknown[];
+        const blocks = Array.isArray(payload) ? payload : (payload?.blocks ?? []);
+        return {
+          id: s.schema_id,
+          name: s.schema_name,
+          lastModified: new Date().toISOString(),
+          elementsCount: blocks.length,
+          type: 'custom' as const,
+        };
+      });
+      setProjects(mapped);
+    } catch {
+      setProjects([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      void loadProjects();
+    }
+  }, [isAuthenticated, loadProjects]);
+
+  const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
 
-    const newProject: Project = {
-      id: crypto.randomUUID(),
-      name: newProjectName.trim(),
-      lastModified: new Date(),
-      elementsCount: 1,
-    };
-
-    setProjects([newProject, ...projects]);
-    setNewProjectName('');
-    setIsCreating(false);
-    navigate(`/editor/${newProject.id}`);
+    try {
+      await saveSchema([], newProjectName.trim());
+      await loadProjects();
+      setNewProjectName('');
+      setIsCreating(false);
+    } catch {
+      alert('Не удалось создать проект');
+    }
   };
 
-  const handleDeleteProject = (id: string) => {
-    setProjects(projects.filter(p => p.id !== id));
-    setDeleteConfirmId(null);
-  };
-
-  const handleOpenProject = (id: string) => {
+  const handleOpenProject = (id: number) => {
     navigate(`/editor/${id}`);
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
     return date.toLocaleDateString('ru-RU', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     });
   };
+
+  if (!isAuthenticated) {
+    navigate('/login');
+    return null;
+  }
 
   return (
     <PageTransition>
@@ -129,7 +135,12 @@ export function ProjectsList() {
           </div>
         )}
 
-        {projects.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#0071e3] border-t-transparent"></div>
+            <p className="text-[#6e6e73] mt-4">Загрузка проектов...</p>
+          </div>
+        ) : projects.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
             <svg className="w-16 h-16 mx-auto text-[#d2d2d7] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -209,7 +220,7 @@ export function ProjectsList() {
                 Отмена
               </button>
               <button
-                onClick={() => handleDeleteProject(deleteConfirmId)}
+                onClick={() => setDeleteConfirmId(null)}
                 className="px-5 py-2.5 bg-[#ff3b30] text-white rounded-full font-medium hover:bg-[#ff453a] transition-all duration-200"
               >
                 Удалить

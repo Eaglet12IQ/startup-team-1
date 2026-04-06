@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router';
 import { Canvas } from '../components/Editor/Canvas';
 import { BlocksPalette } from '../components/Editor/BlocksPalette';
 import { PropertiesPanel } from '../components/Editor/PropertiesPanel';
+import { useAuth } from '../context/AuthContext';
+import { getSchema, saveSchema, getSchemaHistory, getSchemaVersion, type SchemaHistoryEntry } from '../services/api';
 import type { BlockData } from '../types';
 
 const STORAGE_KEY = 'slide-editor-state';
@@ -22,33 +24,114 @@ interface SavedState {
 
 export function Editor() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
-  const [schemaName, setSchemaName] = useState<string>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}-${projectId}`);
-    if (saved) {
-      const data: SavedState = JSON.parse(saved);
-      return data.schema_name || defaultSchemaName;
-    }
-    return defaultSchemaName;
-  });
-
-  const [blocks, setBlocks] = useState<BlockData[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}-${projectId}`);
-    if (saved) {
-      const data: SavedState = JSON.parse(saved);
-      return data.blocks || defaultBlocks;
-    }
-    return defaultBlocks;
-  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(true);
+  const [schemaName, setSchemaName] = useState<string>(defaultSchemaName);
+  const [blocks, setBlocks] = useState<BlockData[]>(defaultBlocks);
   const blocksRef = useRef(blocks);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<SchemaHistoryEntry[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [viewingVersion, setViewingVersion] = useState<SchemaHistoryEntry | null>(null);
   
   blocksRef.current = blocks;
   
   const historyRef = useRef<BlockData[][]>([[]]);
   const historyIndexRef = useRef(0);
   const [historyVersion, setHistoryVersion] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    const numericId = parseInt(projectId || '', 10);
+    if (!isNaN(numericId)) {
+      getSchema(numericId).then(backendSchema => {
+        const payload = backendSchema.payload as { blocks?: BlockData[] } | BlockData[];
+        const loadedBlocks = Array.isArray(payload) ? payload : (payload?.blocks ?? []);
+        if (loadedBlocks.length > 0) {
+          setBlocks(loadedBlocks);
+          setSchemaName(backendSchema.schema_name);
+          historyRef.current = [[...loadedBlocks]];
+          historyIndexRef.current = 0;
+        }
+        setLoading(false);
+      }).catch(() => {
+        const localKey = `${STORAGE_KEY}-${projectId}`;
+        const localData = localStorage.getItem(localKey);
+        if (localData) {
+          const parsed: SavedState = JSON.parse(localData);
+          setBlocks(parsed.blocks || defaultBlocks);
+          setSchemaName(parsed.schema_name || defaultSchemaName);
+          historyRef.current = [[...(parsed.blocks || defaultBlocks)]];
+          historyIndexRef.current = 0;
+        }
+        setLoading(false);
+      });
+    } else {
+      const localKey = `${STORAGE_KEY}-${projectId}`;
+      const localData = localStorage.getItem(localKey);
+      if (localData) {
+        const parsed: SavedState = JSON.parse(localData);
+        setBlocks(parsed.blocks || defaultBlocks);
+        setSchemaName(parsed.schema_name || defaultSchemaName);
+        historyRef.current = [[...(parsed.blocks || defaultBlocks)]];
+        historyIndexRef.current = 0;
+      }
+      setLoading(false);
+    }
+  }, [projectId, isAuthenticated, navigate]);
+
+  const loadHistory = useCallback(async () => {
+    const numericId = parseInt(projectId || '', 10);
+    if (isNaN(numericId)) return;
+    
+    setLoadingHistory(true);
+    try {
+      const historyData = await getSchemaHistory(numericId);
+      setHistory(historyData);
+      setShowHistory(true);
+    } catch {
+      alert('Не удалось загрузить историю');
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [projectId]);
+
+  const handleViewVersion = async (entry: SchemaHistoryEntry) => {
+    const numericId = parseInt(projectId || '', 10);
+    if (isNaN(numericId)) return;
+    
+    try {
+      const versionData = await getSchemaVersion(numericId, entry.commit_sha);
+      const payload = versionData.payload as { blocks?: BlockData[] } | BlockData[];
+      const loadedBlocks = Array.isArray(payload) ? payload : (payload?.blocks ?? []);
+      setBlocks(loadedBlocks);
+      setSchemaName(versionData.schema_name);
+      setViewingVersion(entry);
+      setShowHistory(false);
+    } catch {
+      alert('Не удалось загрузить версию');
+    }
+  };
+
+  const handleRestoreCurrent = () => {
+    const localKey = `${STORAGE_KEY}-${projectId}`;
+    const localData = localStorage.getItem(localKey);
+    if (localData) {
+      const parsed: SavedState = JSON.parse(localData);
+      setBlocks(parsed.blocks || defaultBlocks);
+      setSchemaName(parsed.schema_name || defaultSchemaName);
+    }
+    setViewingVersion(null);
+  };
 
   const saveToHistory = useCallback((newBlocks: BlockData[]) => {
     const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
@@ -65,6 +148,7 @@ export function Editor() {
       historyIndexRef.current--;
       setBlocks([...historyRef.current[historyIndexRef.current]]);
       setHistoryVersion(v => v + 1);
+      setSaved(false);
     }
   }, []);
 
@@ -73,17 +157,14 @@ export function Editor() {
       historyIndexRef.current++;
       setBlocks([...historyRef.current[historyIndexRef.current]]);
       setHistoryVersion(v => v + 1);
+      setSaved(false);
     }
-  }, []);
-
-  useEffect(() => {
-    historyRef.current = [[...blocks]];
-    historyIndexRef.current = 0;
   }, []);
 
   useEffect(() => {
     const state: SavedState = { schema_name: schemaName, blocks };
     localStorage.setItem(`${STORAGE_KEY}-${projectId}`, JSON.stringify(state));
+    setSaved(false);
   }, [blocks, schemaName, projectId]);
 
   useEffect(() => {
@@ -107,6 +188,11 @@ export function Editor() {
           redo();
           return;
         }
+        if (e.key === 's') {
+          e.preventDefault();
+          handleSaveToBackend();
+          return;
+        }
       }
       
       if (e.key === 'Backspace' && selectedBlockId && !isInputFocused) {
@@ -117,7 +203,25 @@ export function Editor() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedBlockId, undo, redo]);
+  }, [selectedBlockId, undo, redo, blocks, schemaName, projectId]);
+
+  const handleSaveToBackend = async () => {
+    if (!isAuthenticated) return;
+    setSaving(true);
+    try {
+      const numericId = parseInt(projectId || '', 10);
+      await saveSchema(
+        blocks as unknown as unknown[],
+        schemaName,
+        isNaN(numericId) ? undefined : numericId
+      );
+      setSaved(true);
+    } catch {
+      alert('Не удалось сохранить проект');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleDeleteBlock = (id: string) => {
     const newBlocks = blocks.filter(block => block.id !== id);
@@ -255,6 +359,17 @@ export function Editor() {
 
   void historyVersion;
 
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-[#f5f5f7] items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#0071e3] border-t-transparent"></div>
+          <p className="text-[#6e6e73] mt-4">Загрузка проекта...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-[#f5f5f7]">
       <input
@@ -296,7 +411,7 @@ export function Editor() {
             </svg>
             Все проекты
           </button>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <div className="flex items-center bg-white rounded-full border border-[#d2d2d7]">
               <button
                 onClick={undo}
@@ -328,13 +443,49 @@ export function Editor() {
             </button>
             <button
               onClick={handleExport}
-              className="px-5 py-2.5 bg-[#0071e3] text-white rounded-full text-sm font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)]"
+              className="px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]"
             >
               Скачать JSON
+            </button>
+            <button
+              onClick={handleSaveToBackend}
+              disabled={saving || saved}
+              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                saved
+                  ? 'bg-[#34c759] text-white cursor-default'
+                  : 'bg-[#0071e3] text-white hover:bg-[#0077ED] shadow-[0_4px_12px_rgb(0,113,227,0.3)]'
+              } disabled:opacity-50`}
+            >
+              {saving ? 'Сохранение...' : saved ? 'Сохранено' : 'Сохранить'}
+            </button>
+            <button
+              onClick={loadHistory}
+              disabled={loadingHistory}
+              className="px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] disabled:opacity-50"
+            >
+              История
             </button>
           </div>
         </div>
         <div className="flex-1 bg-[#e8e8ed] p-8 rounded-2xl">
+          {viewingVersion && (
+            <div className="mb-4 p-4 bg-[#0071e3]/10 border border-[#0071e3]/30 rounded-xl flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-[#0071e3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-[#0071e3] font-medium">
+                  Просмотр версии от {new Date(viewingVersion.date).toLocaleString('ru-RU')}
+                </span>
+              </div>
+              <button
+                onClick={handleRestoreCurrent}
+                className="px-4 py-2 bg-[#0071e3] text-white rounded-lg text-sm font-medium hover:bg-[#0077ED] transition-all duration-200"
+              >
+                Вернуться к текущей
+              </button>
+            </div>
+          )}
           <div className="w-full h-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
             <Canvas
               blocks={blocks}
@@ -347,6 +498,62 @@ export function Editor() {
           </div>
         </div>
       </div>
+
+      {showHistory && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-[0_20px_60px_rgb(0,0,0,0.3)]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-[#1d1d1f]">История версий</h3>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-2 hover:bg-[#f5f5f7] rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {loadingHistory ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-4 border-[#0071e3] border-t-transparent"></div>
+                <p className="text-[#6e6e73] mt-2">Загрузка истории...</p>
+              </div>
+            ) : history.length === 0 ? (
+              <p className="text-[#6e6e73] text-center py-8">Нет сохранённых версий</p>
+            ) : (
+              <div className="max-h-96 overflow-y-auto space-y-2">
+                {history.map((entry, idx) => (
+                  <div
+                    key={entry.commit_sha}
+                    className="flex justify-between items-center p-3 bg-[#f5f5f7] rounded-lg hover:bg-[#e8e8ed] transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-[#1d1d1f]">
+                        {idx === 0 ? 'Текущая версия' : `Версия #${history.length - idx}`}
+                      </p>
+                      <p className="text-xs text-[#6e6e73]">
+                        {new Date(entry.date).toLocaleString('ru-RU', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleViewVersion(entry)}
+                      className="px-3 py-1.5 bg-[#0071e3] text-white rounded-lg text-sm font-medium hover:bg-[#0077ED] transition-all duration-200"
+                    >
+                      Просмотреть
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,14 +1,31 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
+import { useAuth } from '../context/AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login:', formData);
+    setError('');
+
+    const users = JSON.parse(localStorage.getItem('registered-users') || '[]');
+    const user = users.find((u: { email: string }) => u.email === formData.email);
+    if (!user) {
+      setError('Пользователь не найден');
+      return;
+    }
+    if (user.password !== formData.password) {
+      setError('Неверный пароль');
+      return;
+    }
+
+    login(user.id, user.name, user.email);
+    navigate('/projects');
   };
 
   return (
@@ -44,6 +61,7 @@ export function Login() {
               placeholder="Введите пароль"
             />
           </div>
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           <button
             type="submit"
             className="w-full px-6 py-3.5 bg-[#0071e3] text-white rounded-xl font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12pxrgb(0,113,227,0.3)]"
