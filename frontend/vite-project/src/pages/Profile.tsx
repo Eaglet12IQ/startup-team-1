@@ -1,28 +1,22 @@
 import { Link } from 'react-router';
+import { PageTransition } from '../components/PageTransition';
+import { Header } from '../components/Header';
 
 export function Profile() {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
-      <header className="bg-white border-b border-[#d2d2d7]">
-        <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
-          <Link to="/projects" className="text-xl font-semibold text-[#1d1d1f]">Slide Constructor</Link>
-          <nav className="flex gap-4 items-center">
-            <Link to="/projects" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Проекты</Link>
-            <Link to="/pricing" className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Тарифы</Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-4xl mx-auto px-8 py-12">
         <div className="bg-white rounded-2xl shadow-[0_8px_30pxrgb(0,0,0,0.08)] p-8">
           <h1 className="text-2xl font-semibold text-[#1d1d1f] mb-8">Профиль пользователя</h1>
           
-          <div className="flex items-center gap-6 mb-8 pb-8 border-b border-[#d2d2d7]">
+          <div className="flex items-center gap-6 mb-8">
             <div className="w-20 h-20 bg-[#f5f5f7] rounded-full flex items-center justify-center text-3xl font-semibold text-[#6e6e73]">
               А
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-[#1d1d1f]">Александр</h2>
               <p className="text-[#6e6e73]">alex@mail.ru</p>
               <span className="inline-block mt-2 px-3 py-1 bg-[#34c759]/10 text-[#34c759] text-sm rounded-full">
                 Бесплатный план
@@ -31,29 +25,7 @@ export function Profile() {
           </div>
 
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-[#1d1d1f] mb-4">Настройки профиля</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#6e6e73] mb-1.5">Имя</label>
-                  <input
-                    type="text"
-                    defaultValue="Александр"
-                    className="w-full px-4 py-3 bg-[#f5f5f7] rounded-xl text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#6e6e73] mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    defaultValue="alex@mail.ru"
-                    className="w-full px-4 py-3 bg-[#f5f5f7] rounded-xl text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-[#d2d2d7] flex justify-between items-center">
+                        <div className="flex justify-between items-center">
               <Link
                 to="/pricing"
                 className="px-6 py-3 bg-[#0071e3] text-white rounded-xl font-medium hover:bg-[#0077ED] transition-all duration-200"
@@ -68,5 +40,6 @@ export function Profile() {
         </div>
       </main>
     </div>
+    </PageTransition>
   );
 }

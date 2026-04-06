@@ -1,32 +1,38 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { PageTransition } from '../components/PageTransition';
+import { Header } from '../components/Header';
 
 interface Project {
   id: string;
   name: string;
   lastModified: Date;
-  slidesCount: number;
+  elementsCount: number;
   thumbnail?: string;
+  type: 'menu' | 'advertising' | 'info' | 'custom';
 }
 
 const mockProjects: Project[] = [
   {
     id: '1',
-    name: 'Презентация продукта',
+    name: 'Меню кофейни',
     lastModified: new Date('2024-03-15'),
-    slidesCount: 5,
+    elementsCount: 3,
+    type: 'menu',
   },
   {
     id: '2',
-    name: 'Маркетинговый план',
+    name: 'Рекламный экран — Акции',
     lastModified: new Date('2024-03-14'),
-    slidesCount: 12,
+    elementsCount: 5,
+    type: 'advertising',
   },
   {
     id: '3',
-    name: 'Квартальный отчет',
+    name: 'Расписание занятий',
     lastModified: new Date('2024-03-10'),
-    slidesCount: 8,
+    elementsCount: 2,
+    type: 'info',
   },
 ];
 
@@ -44,7 +50,7 @@ export function ProjectsList() {
       id: crypto.randomUUID(),
       name: newProjectName.trim(),
       lastModified: new Date(),
-      slidesCount: 1,
+      elementsCount: 1,
     };
 
     setProjects([newProject, ...projects]);
@@ -71,13 +77,9 @@ export function ProjectsList() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
-      <header className="bg-white border-b border-[#d2d2d7]">
-        <div className="max-w-6xl mx-auto px-8 py-6">
-          <h1 className="text-3xl font-semibold text-[#1d1d1f]">Мои проекты</h1>
-          <p className="mt-1 text-[#6e6e73]">Управляйте своими презентациями</p>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-6xl mx-auto px-8 py-8">
         <div className="flex justify-between items-center mb-8">
@@ -89,21 +91,21 @@ export function ProjectsList() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Создать проект
+              Создать табло
             </button>
           </div>
         </div>
 
         {isCreating && (
           <div className="mb-8 p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-            <h2 className="text-lg font-medium text-[#1d1d1f] mb-4">Новый проект</h2>
+            <h2 className="text-lg font-medium text-[#1d1d1f] mb-4">Новое табло</h2>
             <div className="flex gap-3">
               <input
                 type="text"
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-                placeholder="Введите название проекта"
+                placeholder="Введите название табло"
                 className="flex-1 px-4 py-3 bg-[#f5f5f7] rounded-xl text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
                 autoFocus
               />
@@ -132,13 +134,13 @@ export function ProjectsList() {
             <svg className="w-16 h-16 mx-auto text-[#d2d2d7] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <h3 className="text-xl font-medium text-[#1d1d1f] mb-2">Нет проектов</h3>
-            <p className="text-[#6e6e73] mb-6">Создайте свой первый проект, чтобы начать работу</p>
+            <h3 className="text-xl font-medium text-[#1d1d1f] mb-2">Нет табло</h3>
+            <p className="text-[#6e6e73] mb-6">Создайте своё первое табло, чтобы начать работу</p>
             <button
               onClick={() => setIsCreating(true)}
               className="px-6 py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)]"
             >
-              Создать проект
+              Создать табло
             </button>
           </div>
         ) : (
@@ -166,7 +168,7 @@ export function ProjectsList() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                       </svg>
-                      {project.slidesCount} слайд{project.slidesCount !== 1 ? 'ов' : ''}
+                      {project.elementsCount} блок{project.elementsCount !== 1 ? 'ов' : ''}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -217,5 +219,6 @@ export function ProjectsList() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

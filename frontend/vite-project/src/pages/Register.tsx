@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
+import { PageTransition } from '../components/PageTransition';
 
 export function Register() {
   const navigate = useNavigate();
@@ -11,8 +12,14 @@ export function Register() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-8">
+        <Link to="/">
+          <div className="flex justify-center bg-blue-500 rounded-full mx-auto mb-4 py-1 px-3 aspect-square shadow-md shadow-blue-100 font-['Varela_Round'] transition hover:scale-105 active:scale-95 w-fit">
+            <div className="font-bold text-2xl content-center text-white">PC</div>
+          </div>
+        </Link>
         <h1 className="text-2xl font-semibold text-[#1d1d1f] mb-2 text-center">Регистрация</h1>
         <p className="text-[#6e6e73] text-center mb-8">Создайте аккаунт для начала работы</p>
         
@@ -63,5 +70,6 @@ export function Register() {
         </p>
       </div>
     </div>
+    </PageTransition>
   );
 }
