@@ -1,16 +1,31 @@
 local JwtCheckHandler = {
-    PRIORITY = 1000,
+    PRIORITY = 1100,
     VERSION = "1.0.0",
 }
 
-function JwtCheckHandler:access(conf)
-    local jwt_claims = ngx.ctx.authenticated_jwt_claims
+local jwt = require "resty.jwt"
 
-    if not jwt_claims then
-        return kong.response.exit(401, { message = "JWT authentication required" })
+function JwtCheckHandler:access(conf)
+    local auth_header = ngx.req.get_headers()["authorization"]
+    if not auth_header then
+        kong.response.exit(401, { message = "Authorization header missing" })
     end
 
-    kong.service.request.set_header("X-User-ID", jwt_claims.user_id or jwt_claims.sub or "")
+    local token = string.gsub(auth_header, "^Bearer%s+", "")
+    kong.log.inspect("Raw access token:", token)
+
+    local jwt_obj = jwt:verify("secret", token) 
+    if not jwt_obj["verified"] then
+        kong.response.exit(401, { message = "Invalid JWT token" })
+    end
+
+    local claims = jwt_obj["payload"]
+    kong.log.inspect("Parsed claims:", claims)
+
+    local user_id = claims.user_id or claims.sub or ""
+    
+    kong.service.request.set_header("X-User-ID", user_id)
+    kong.response.set_header("X-Debug-User-ID", user_id)
 end
 
 return JwtCheckHandler

@@ -1,29 +1,21 @@
 #!/bin/sh
-echo "Waiting for Kong Admin API to be ready..."
+set -e
 
-until curl -s -f http://kong:8001/status > /dev/null 2>&1; do
-  echo "Kong Admin API not ready yet... (waiting 2s)"
-  sleep 2
-done
+echo 'Waiting for Kong Admin API...'
+sleep 30
 
-echo "Kong Admin API is responding. Checking database status..."
-until curl -s http://kong:8001/status | grep -q '"database": "ok"'; do
-  echo "Database not yet ready in Kong status... (waiting 2s)"
-  sleep 2
-done
-
-echo "Kong is fully ready! Creating services and routes..."
+echo 'Kong is ready, creating services and routes...'
 
 curl -i -X POST http://kong:8001/services \
-  --data "name=auth-service" \
-  --data "url=http://auth-service:8080"
+  -d name=auth-service \
+  -d url=http://auth-service:8080
 
 curl -i -X POST http://kong:8001/services/auth-service/routes \
-  --data "name=auth-routes" \
-  --data "paths[]=/api/v1/refresh" \
-  --data "paths[]=/api/v1/register" \
-  --data "paths[]=/api/v1/auth" \
-  --data "strip_path=false"
+  -d name=auth-routes \
+  -d 'paths[]=/api/v1/register' \
+  -d 'paths[]=/api/v1/auth' \
+  -d 'paths[]=/api/v1/refresh' \
+  -d strip_path=false
 
 # # Регистрируем constructor-service
 # curl -X POST http://localhost:8001/services \

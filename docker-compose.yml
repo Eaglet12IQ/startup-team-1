@@ -97,12 +97,12 @@ services:
       KONG_PLUGINS: "bundled,jwt-check"
       KONG_PROXY_LISTEN: 0.0.0.0:8000
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      JWT_SECRET: secret
     ports:
       - "8000:8000"   
       - "8001:8001"   
       - "8443:8443"   
     volumes:
-      - ./lua-scripts:/etc/kong/lua-scripts
       - ./check-plugin:/usr/local/share/lua/5.1/kong/plugins/jwt-check
     healthcheck:
       test: ["CMD", "kong", "health"]
@@ -133,16 +133,39 @@ services:
         sleep 30
         echo 'Kong is ready, creating services and routes...'
 
+        # Создаём сервис
         curl -i -X POST http://kong:8001/services \
           -d name=auth-service \
-          -d url=http://auth-service:8080 &&
+          -d url=http://auth-service:8080
 
+        # Создаём публичные маршруты
         curl -i -X POST http://kong:8001/services/auth-service/routes \
-          -d name=auth-routes \
+          -d name=auth-public-routes \
           -d 'paths[]=/api/v1/register' \
           -d 'paths[]=/api/v1/auth' \
+          -d strip_path=false
+
+        # Создаём защищённые маршруты
+        curl -i -X POST http://kong:8001/services/auth-service/routes \
+          -d name=auth-protected-routes \
           -d 'paths[]=/api/v1/refresh' \
-          -d strip_path=false &&
+          -d strip_path=false
+
+        # Добавляем JWT плагин к публичным маршрутам (если нужно)
+        curl -i -X POST http://kong:8001/routes/auth-public-routes/plugins \
+          -d name=jwt \
+          -d "config.secret=${JWT_SECRET}" \
+          -d 'config.algorithms[]=HS256'
+
+        # Добавляем JWT плагин к защищённым маршрутам
+        curl -i -X POST http://kong:8001/routes/auth-protected-routes/plugins \
+          -d name=jwt \
+          -d "config.secret=${JWT_SECRET}" \
+          -d 'config.algorithms[]=HS256'
+
+        # Добавляем свой Lua handler (jwt-check)
+        curl -i -X POST http://kong:8001/routes/auth-protected-routes/plugins \
+          -d name=jwt-check
 
         echo '✅ Kong setup complete'
 
