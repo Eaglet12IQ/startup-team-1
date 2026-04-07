@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BlockData } from '../../types';
 
 interface PropertiesPanelProps {
@@ -5,6 +6,44 @@ interface PropertiesPanelProps {
   onUpdateBlock: (id: string, updates: Partial<BlockData>) => void;
   onDeleteBlock: (id: string) => void;
 }
+
+interface NumberInputProps {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}
+
+const NumberInput = ({ label, value, onChange }: NumberInputProps) => {
+  const [localValue, setLocalValue] = useState(String(value));
+
+  useEffect(() => {
+    setLocalValue(String(value));
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    setLocalValue(inputValue);
+    
+    const num = parseFloat(inputValue);
+    if (!isNaN(num) && inputValue !== '') {
+      onChange(num);
+    }
+  };
+
+  const handleBlur = () => {
+    setLocalValue(String(value));
+  };
+
+  return (
+    <input
+      type="text"
+      value={localValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      className="w-full px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+    />
+  );
+};
 
 export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock }: PropertiesPanelProps) => {
   if (!selectedBlock) {
@@ -26,41 +65,37 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock }:
       <div className="space-y-4">
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Позиция X (%)</label>
-          <input
-            type="number"
+          <NumberInput
+            label="X"
             value={selectedBlock.x}
-            onChange={(e) => onUpdateBlock(selectedBlock.id, { x: parseFloat(e.target.value) })}
-            className="w-full px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+            onChange={(val) => onUpdateBlock(selectedBlock.id, { x: val })}
           />
         </div>
         
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Позиция Y (%)</label>
-          <input
-            type="number"
+          <NumberInput
+            label="Y"
             value={selectedBlock.y}
-            onChange={(e) => onUpdateBlock(selectedBlock.id, { y: parseFloat(e.target.value) })}
-            className="w-full px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+            onChange={(val) => onUpdateBlock(selectedBlock.id, { y: val })}
           />
         </div>
         
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Ширина (%)</label>
-          <input
-            type="number"
+          <NumberInput
+            label="Ширина"
             value={selectedBlock.width}
-            onChange={(e) => onUpdateBlock(selectedBlock.id, { width: parseFloat(e.target.value) })}
-            className="w-full px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+            onChange={(val) => onUpdateBlock(selectedBlock.id, { width: val })}
           />
         </div>
         
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Высота (%)</label>
-          <input
-            type="number"
+          <NumberInput
+            label="Высота"
             value={selectedBlock.height}
-            onChange={(e) => onUpdateBlock(selectedBlock.id, { height: parseFloat(e.target.value) })}
-            className="w-full px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+            onChange={(val) => onUpdateBlock(selectedBlock.id, { height: val })}
           />
         </div>
       </div>
@@ -80,12 +115,10 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock }:
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Размер шрифта (%)</label>
             <div className="relative">
-              <input
-                type="number"
-                value={selectedBlock.fontSize}
-                onChange={(e) => onUpdateBlock(selectedBlock.id, { fontSize: parseFloat(e.target.value) })}
-                disabled={selectedBlock.fitText}
-                className="w-full px-3 py-2.5 pr-8 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200 disabled:opacity-50"
+              <NumberInput
+                label="fontSize"
+                value={selectedBlock.fitText ? 0 : selectedBlock.fontSize}
+                onChange={(val) => !selectedBlock.fitText && onUpdateBlock(selectedBlock.id, { fontSize: val })}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868b] text-sm">%</span>
             </div>

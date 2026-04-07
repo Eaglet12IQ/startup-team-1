@@ -47,46 +47,54 @@ export function Editor() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate('/login', { replace: true });
       return;
     }
 
-    const numericId = parseInt(projectId || '', 10);
-    if (!isNaN(numericId)) {
-      getSchema(numericId).then(backendSchema => {
-        const payload = backendSchema.payload as { blocks?: BlockData[] } | BlockData[];
-        const loadedBlocks = Array.isArray(payload) ? payload : (payload?.blocks ?? []);
-        if (loadedBlocks.length > 0) {
-          setBlocks(loadedBlocks);
-          setSchemaName(backendSchema.schema_name);
-          historyRef.current = [[...loadedBlocks]];
-          historyIndexRef.current = 0;
+    const loadProject = async () => {
+      try {
+        const numericId = parseInt(projectId || '', 10);
+        if (!isNaN(numericId)) {
+          try {
+            const backendSchema = await getSchema(numericId);
+            const payload = backendSchema.payload as { blocks?: BlockData[] } | BlockData[];
+            const loadedBlocks = Array.isArray(payload) ? payload : (payload?.blocks ?? []);
+            if (loadedBlocks.length > 0) {
+              setBlocks(loadedBlocks);
+              setSchemaName(backendSchema.schema_name);
+              historyRef.current = [[...loadedBlocks]];
+              historyIndexRef.current = 0;
+            }
+          } catch {
+            const localKey = `${STORAGE_KEY}-${projectId}`;
+            const localData = localStorage.getItem(localKey);
+            if (localData) {
+              const parsed: SavedState = JSON.parse(localData);
+              setBlocks(parsed.blocks || defaultBlocks);
+              setSchemaName(parsed.schema_name || defaultSchemaName);
+              historyRef.current = [[...(parsed.blocks || defaultBlocks)]];
+              historyIndexRef.current = 0;
+            }
+          }
+        } else {
+          const localKey = `${STORAGE_KEY}-${projectId}`;
+          const localData = localStorage.getItem(localKey);
+          if (localData) {
+            const parsed: SavedState = JSON.parse(localData);
+            setBlocks(parsed.blocks || defaultBlocks);
+            setSchemaName(parsed.schema_name || defaultSchemaName);
+            historyRef.current = [[...(parsed.blocks || defaultBlocks)]];
+            historyIndexRef.current = 0;
+          }
         }
+      } catch (err) {
+        console.error('Error loading project:', err);
+      } finally {
         setLoading(false);
-      }).catch(() => {
-        const localKey = `${STORAGE_KEY}-${projectId}`;
-        const localData = localStorage.getItem(localKey);
-        if (localData) {
-          const parsed: SavedState = JSON.parse(localData);
-          setBlocks(parsed.blocks || defaultBlocks);
-          setSchemaName(parsed.schema_name || defaultSchemaName);
-          historyRef.current = [[...(parsed.blocks || defaultBlocks)]];
-          historyIndexRef.current = 0;
-        }
-        setLoading(false);
-      });
-    } else {
-      const localKey = `${STORAGE_KEY}-${projectId}`;
-      const localData = localStorage.getItem(localKey);
-      if (localData) {
-        const parsed: SavedState = JSON.parse(localData);
-        setBlocks(parsed.blocks || defaultBlocks);
-        setSchemaName(parsed.schema_name || defaultSchemaName);
-        historyRef.current = [[...(parsed.blocks || defaultBlocks)]];
-        historyIndexRef.current = 0;
       }
-      setLoading(false);
-    }
+    };
+
+    loadProject();
   }, [projectId, isAuthenticated, navigate]);
 
   const loadHistory = useCallback(async () => {
@@ -161,6 +169,37 @@ export function Editor() {
     }
   }, []);
 
+  const handleSaveToBackendRef = useRef<() => void>(() => {});
+  const handleDeleteBlockRef = useRef<(id: string) => void>(() => {});
+
+  const handleSaveToBackend = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setSaving(true);
+    try {
+      const numericId = parseInt(projectId || '', 10);
+      await saveSchema(
+        blocks as unknown as unknown[],
+        schemaName,
+        isNaN(numericId) ? undefined : numericId
+      );
+      setSaved(true);
+    } catch {
+      alert('Не удалось сохранить проект');
+    } finally {
+      setSaving(false);
+    }
+  }, [isAuthenticated, projectId, blocks, schemaName]);
+
+  const handleDeleteBlock = useCallback((id: string) => {
+    const newBlocks = blocks.filter(block => block.id !== id);
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
+    setSelectedBlockId(null);
+  }, [blocks, saveToHistory]);
+
+  handleSaveToBackendRef.current = handleSaveToBackend;
+  handleDeleteBlockRef.current = handleDeleteBlock;
+
   useEffect(() => {
     const state: SavedState = { schema_name: schemaName, blocks };
     localStorage.setItem(`${STORAGE_KEY}-${projectId}`, JSON.stringify(state));
@@ -190,45 +229,24 @@ export function Editor() {
         }
         if (e.key === 's') {
           e.preventDefault();
-          handleSaveToBackend();
+          handleSaveToBackendRef.current();
           return;
         }
       }
       
       if (e.key === 'Backspace' && selectedBlockId && !isInputFocused) {
         e.preventDefault();
-        handleDeleteBlock(selectedBlockId);
+        handleDeleteBlockRef.current(selectedBlockId);
+      }
+
+      if (e.key === 'Escape' && selectedBlockId) {
+        setSelectedBlockId(null);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedBlockId, undo, redo, blocks, schemaName, projectId]);
-
-  const handleSaveToBackend = async () => {
-    if (!isAuthenticated) return;
-    setSaving(true);
-    try {
-      const numericId = parseInt(projectId || '', 10);
-      await saveSchema(
-        blocks as unknown as unknown[],
-        schemaName,
-        isNaN(numericId) ? undefined : numericId
-      );
-      setSaved(true);
-    } catch {
-      alert('Не удалось сохранить проект');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteBlock = (id: string) => {
-    const newBlocks = blocks.filter(block => block.id !== id);
-    setBlocks(newBlocks);
-    saveToHistory(newBlocks);
-    setSelectedBlockId(null);
-  };
+  }, [selectedBlockId, undo, redo]);
 
   const selectedBlock = blocks.find(b => b.id === selectedBlockId) || null;
 
