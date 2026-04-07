@@ -1,19 +1,13 @@
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 
 export function Header() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isAuthenticated, userName, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
   };
 
   return (
@@ -57,19 +51,6 @@ export function Header() {
               >
                 Профиль
               </Link>
-              <div className="w-px h-6 bg-[#d2d2d7]" />
-              <Link
-                to="/profile"
-                className="text-sm text-[#1d1d1f] hover:text-[#0071e3] transition-colors"
-              >
-                {userName}
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm text-[#ff3b30] hover:bg-[#ffe5e5] rounded-lg transition-colors"
-              >
-                Выйти
-              </button>
             </>
           ) : (
             <>
