@@ -12,3 +12,10 @@
 ---
 ## Практическая неделя 9
 ## Тестирование и доработка MVP. Просчёт и анализ метрик продукта и собственного проекта
+![[Rusberry PI.png]]
+![[Rusberry PI1.png]]
+![[Rusberry PI2.png]]
+![[Rusberry PI3.png]]
+![[Rusberry PI4.png]]
+![[Rusberry PI5.png]]
+![[Rusberry PI6.png]]
