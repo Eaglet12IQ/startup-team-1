@@ -38,6 +38,8 @@ export function Editor() {
   const [history, setHistory] = useState<SchemaHistoryEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [viewingVersion, setViewingVersion] = useState<SchemaHistoryEntry | null>(null);
+  const [currentBlocksRef, setCurrentBlocksRef] = useState<BlockData[]>(defaultBlocks);
+  const [currentSchemaNameRef, setCurrentSchemaNameRef] = useState(defaultSchemaName);
   
   blocksRef.current = blocks;
   
@@ -101,6 +103,7 @@ export function Editor() {
     const numericId = parseInt(projectId || '', 10);
     if (isNaN(numericId)) return;
     
+    setSelectedBlockId(null);
     setLoadingHistory(true);
     try {
       const historyData = await getSchemaHistory(numericId);
@@ -117,6 +120,9 @@ export function Editor() {
     const numericId = parseInt(projectId || '', 10);
     if (isNaN(numericId)) return;
     
+    setCurrentBlocksRef(blocks);
+    setCurrentSchemaNameRef(schemaName);
+    
     try {
       const versionData = await getSchemaVersion(numericId, entry.commit_sha);
       const payload = versionData.payload as { blocks?: BlockData[] } | BlockData[];
@@ -131,13 +137,8 @@ export function Editor() {
   };
 
   const handleRestoreCurrent = () => {
-    const localKey = `${STORAGE_KEY}-${projectId}`;
-    const localData = localStorage.getItem(localKey);
-    if (localData) {
-      const parsed: SavedState = JSON.parse(localData);
-      setBlocks(parsed.blocks || defaultBlocks);
-      setSchemaName(parsed.schema_name || defaultSchemaName);
-    }
+    setBlocks(currentBlocksRef);
+    setSchemaName(currentSchemaNameRef);
     setViewingVersion(null);
   };
 
