@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Chat Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #messages {
+      border: 1px solid #ccc;
+      height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #f9f9f9;
+    }
+    .message { margin: 8px 0; padding: 8px; border-radius: 6px; }
+    .user { background: #d1e7ff; text-align: right; }
+    .assistant { background: #e6e6e6; }
+    .system { background: #fff3cd; color: #856404; font-style: italic; }
+    input { width: 80%; padding: 10px; }
+    button { 
+      padding: 10px 15px; 
+      margin: 5px 2px;
+    }
+    .danger { background: #f44336; color: white; }
+    .danger:hover { background: #d32f2f; }
+  </style>
+</head>
+<body>
+  <h2>Тест WebSocket чата</h2>
+  <p><strong>Пользователь ID:</strong> 
+    <input type="number" id="userId" value="1" style="width: 100px;">
+  </p>
+
+  <div id="messages"></div>
+
+  <input type="text" id="inputMessage" placeholder="Напишите сообщение..." autocomplete="off">
+  <button onclick="sendMessage()">Отправить</button>
+  <button onclick="connect()">Подключиться</button>
+  <button onclick="disconnect()">Отключиться</button>
+  <button onclick="clearHistory()" class="danger">Очистить историю чата</button>
+
+  <script>
+    let ws = null;
+    let userId = 1;
+
+    function addMessage(role, content) {
+      const messagesDiv = document.getElementById('messages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${role}`;
+      msgDiv.innerHTML = `<strong>${role === 'user' ? 'Вы' : role === 'assistant' ? 'Ассистент' : 'Система'}:</strong> ${content}`;
+      messagesDiv.appendChild(msgDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function connect() {
+      userId = parseInt(document.getElementById('userId').value) || 1;
+      
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        alert("Уже подключено!");
+        return;
+      }
+
+      const wsUrl = `ws://localhost:8083/ws/chat/${userId}?X-User-ID=${userId}`;
+      
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log(`✅ WebSocket подключён для пользователя ${userId}`);
+        addMessage('system', `Подключено к чату (user_id = ${userId})`);
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Получено от сервера:", data);
+
+        if (data.type === "chat_history") {
+          addMessage('system', `Загружена история (${data.messages.length} сообщений)`);
+          data.messages.forEach(msg => {
+            addMessage(msg.role, msg.content);
+          });
+        }
+        else if (data.type === "history_cleared") {
+          // Очищаем окно сообщений на клиенте
+          document.getElementById('messages').innerHTML = '';
+          addMessage('system', `✅ История чата успешно очищена`);
+        }
+        else if (data.type === "error") {
+          addMessage('system', `Ошибка: ${data.detail}`);
+        }
+        else if (data.type === "pong") {
+          console.log("Получен pong от сервера");
+        }
+      };
+
+      ws.onclose = () => {
+        console.log("❌ WebSocket отключён");
+        addMessage('system', "Соединение закрыто");
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket ошибка:", error);
+        addMessage('system', "Ошибка соединения");
+      };
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('inputMessage');
+      const content = input.value.trim();
+      if (!content) return;
+
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert("Сначала подключитесь к WebSocket!");
+        return;
+      }
+
+      const messageObj = {
+        type: "user_message",
+        content: content
+      };
+
+      ws.send(JSON.stringify(messageObj));
+      
+      // Отображаем сообщение сразу на клиенте
+      addMessage('user', content);
+      input.value = '';
+    }
+
+    function clearHistory() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert("Сначала подключитесь к WebSocket!");
+        return;
+      }
+
+      if (!confirm("Вы уверены, что хотите полностью очистить историю чата? Это действие нельзя отменить!")) {
+        return;
+      }
+
+      const clearObj = {
+        type: "clear_history"
+      };
+
+      ws.send(JSON.stringify(clearObj));
+      console.log("Отправлен запрос на очистку истории");
+    }
+
+    function disconnect() {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+    }
+
+    // Отправка сообщения по Enter
+    document.getElementById('inputMessage').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>

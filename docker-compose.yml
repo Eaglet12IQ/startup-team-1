@@ -1,15 +1,52 @@
 version: "3.8"
 
 services:
-  backend:
+  constructor-service:
     build:
-      context: ./backend/constructor-service
+      context: ./constructor-service
       dockerfile: Dockerfile
     container_name: constructor-service
     ports:
       - "8082:8082"
     volumes:
-      - ./backend/constructor-service/schemas:/app/schemas
+      - ./constructor-service/schemas:/app/schemas
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
+
+  chat-postgres:
+    image: postgres:15
+    container_name: chat-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${CHAT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${CHAT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${CHAT_POSTGRES_DB} 
+    volumes:
+      - chat_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CHAT_POSTGRES_USER} -d ${CHAT_POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chat-service:
+    build: ./chat-service
+    container_name: chat-service
+    restart: always
+    depends_on:
+      chat-postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: ${CHAT_POSTGRES_HOST}
+      POSTGRES_PORT: ${CHAT_POSTGRES_PORT}
+      POSTGRES_USER: ${CHAT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${CHAT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${CHAT_POSTGRES_DB}
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./chat-service/alembic:/app/alembic
+
+volumes:
+  chat_postgres_data:
