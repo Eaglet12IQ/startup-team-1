@@ -6,13 +6,12 @@ services:
       context: ./constructor-service
       dockerfile: Dockerfile
     container_name: constructor-service
-    ports:
-      - "8082:8082"
+    # ports:
+    #   - "${CONSTRUCTOR_SERVICE_PORT}:${CONSTRUCTOR_SERVICE_PORT}"
     volumes:
       - ./constructor-service/schemas:/app/schemas
     environment:
-      - PYTHONUNBUFFERED=1
-    restart: unless-stopped
+      SERVICE_PORT: ${CONSTRUCTOR_SERVICE_PORT}
 
   chat-postgres:
     image: postgres:15
@@ -37,16 +36,47 @@ services:
     depends_on:
       chat-postgres:
         condition: service_healthy
+      chat-redis:
+        condition: service_started
+      ai-agent:
+        condition: service_started
     environment:
       POSTGRES_HOST: ${CHAT_POSTGRES_HOST}
       POSTGRES_PORT: ${CHAT_POSTGRES_PORT}
       POSTGRES_USER: ${CHAT_POSTGRES_USER}
       POSTGRES_PASSWORD: ${CHAT_POSTGRES_PASSWORD}
       POSTGRES_DB: ${CHAT_POSTGRES_DB}
+      REDIS_HOST: chat-redis
+      REDIS_PORT: ${CHAT_REDIS_PORT}
+      SERVICE_PORT: ${CHAT_SERVICE_PORT}
     ports:
-      - "8083:8083"
+      - "${CHAT_SERVICE_PORT}:${CHAT_SERVICE_PORT}"
     volumes:
       - ./chat-service/alembic:/app/alembic
 
+  chat-redis:
+    image: redis:7-alpine
+    container_name: chat-redis
+    command: redis-server --port ${CHAT_REDIS_PORT} --appendonly yes --save 60 1 --protected-mode no
+    # ports:
+    #   - "${CHAT_REDIS_PORT}:${CHAT_REDIS_PORT}"
+    volumes:
+      - chat_redis_data:/data
+
+  ai-agent:
+    build: ./ai-agent
+    container_name: ai-agent
+    environment:
+      REDIS_HOST: chat-redis
+      REDIS_PORT: ${CHAT_REDIS_PORT}
+      LLM_URL: ${LLM_URL}
+      LLM_API_KEY: ${LLM_API_KEY}
+      MODEL_NAME: ${MODEL_NAME}
+      MAIN_SYSTEM_PROMPT: ${MAIN_SYSTEM_PROMPT}
+    depends_on:
+      - chat-redis
+    restart: unless-stopped
+
 volumes:
   chat_postgres_data:
+  chat_redis_data:
