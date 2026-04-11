@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  pi-builder:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      # Путь к твоему скачанному образу
+      - ./images:/app/images:ro
+    # ОБЯЗАТЕЛЬНО - без этого mount внутри контейнера не работает
+    privileged: true
+    restart: unless-stopped
