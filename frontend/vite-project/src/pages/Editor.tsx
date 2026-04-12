@@ -173,6 +173,68 @@ export function Editor() {
   const handleSaveToBackendRef = useRef<() => void>(() => {});
   const handleDeleteBlockRef = useRef<(id: string) => void>(() => {});
 
+  const [sendingToDisplay, setSendingToDisplay] = useState(false);
+  const [buildingImage, setBuildingImage] = useState(false);
+
+  const handleSendToDisplay = useCallback(async () => {
+    setSendingToDisplay(true);
+    try {
+      const res = await fetch('/api/display/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocks }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      alert('Не удалось отправить на экран');
+    } finally {
+      setSendingToDisplay(false);
+    }
+  }, [blocks]);
+
+  const handleBuildPiImage = useCallback(async () => {
+    setBuildingImage(true);
+    try {
+      // Конвертируем внешние URL картинок в base64 для офлайн работы на Pi
+      const blocksWithBase64 = await Promise.all(blocks.map(async (block) => {
+        if (block.type !== 'image' || !block.src) return block;
+        // Уже base64 или относительный путь — не трогаем
+        if (block.src.startsWith('data:') || block.src.startsWith('/')) return block;
+        try {
+          const response = await fetch(block.src);
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          return { ...block, src: base64 };
+        } catch {
+          // Если не удалось скачать — оставляем как есть
+          return block;
+        }
+      }));
+
+      const res = await fetch('http://localhost:3000/build-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocks: blocksWithBase64 }),
+      });
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pidisplay.img';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Не удалось собрать образ');
+    } finally {
+      setBuildingImage(false);
+    }
+  }, [blocks]);
+
   const handleSaveToBackend = useCallback(async () => {
     if (!isAuthenticated) return;
     setSaving(true);
@@ -190,6 +252,7 @@ export function Editor() {
       setSaving(false);
     }
   }, [isAuthenticated, projectId, blocks, schemaName]);
+
 
   const handleDeleteBlock = useCallback((id: string) => {
     const newBlocks = blocks.filter(block => block.id !== id);
@@ -465,6 +528,21 @@ export function Editor() {
               className="px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]"
             >
               Скачать JSON
+            </button>
+            <button
+              onClick={handleSendToDisplay}
+              disabled={sendingToDisplay}
+              className="px-5 py-2.5 bg-[#1d1d1f] text-white rounded-full text-sm font-medium hover:bg-[#3a3a3c] transition-all duration-200 disabled:opacity-50"
+            >
+              {sendingToDisplay ? 'Отправка...' : '📺 На экран'}
+            </button>
+            <button
+              onClick={handleBuildPiImage}
+              disabled={buildingImage}
+              className="px-5 py-2.5 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50"
+              title="Собрать образ для Raspberry Pi с текущим дизайном"
+            >
+              {buildingImage ? 'Сборка...' : '🍓 Образ для Pi'}
             </button>
             <button
               onClick={handleSaveToBackend}

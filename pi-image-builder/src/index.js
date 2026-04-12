@@ -1,36 +1,32 @@
 import express from 'express'
-import multer from 'multer'
 import { buildImage } from './imageBuilder.js'
-import { existsSync } from 'fs'
+import { rmSync } from 'fs'
+import { dirname } from 'path'
 
 const app = express()
-const upload = multer()
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  if (req.method === 'OPTIONS') return res.sendStatus(204)
+  next()
+})
+app.use(express.json({ limit: '50mb' }))
 
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
-
-// POST /build-image
-// Body: { html: "<html>...</html>" }
-// или form-data с полем html
-app.post('/build-image', upload.none(), async (req, res) => {
-  const html = req.body.html
-
-  if (!html || !html.trim()) {
-    return res.status(400).json({ error: 'html field is required' })
-  }
-
-  console.log('Build requested, html length:', html.length)
+// POST /build-image — собирает образ с вшитым дизайном и отдаёт на скачивание
+// Body: { blocks: [...] }
+app.post('/build-image', async (req, res) => {
+  const blocks = req.body?.blocks || []
+  console.log(`Build requested, blocks: ${blocks.length}`)
 
   let imgPath = null
   try {
-    imgPath = await buildImage(html)
+    imgPath = await buildImage(blocks)
 
-    // Отдаём файл на скачивание
-    res.download(imgPath, 'fullpageos-custom.img', (err) => {
+    res.download(imgPath, 'pidisplay.img', (err) => {
       if (err) console.error('Download error:', err)
-      // Удаляем временный файл после отдачи
       if (imgPath) {
-        try { require('fs').rmSync(require('path').dirname(imgPath), { recursive: true }) } catch {}
+        try { rmSync(dirname(imgPath), { recursive: true }) } catch {}
       }
     })
 

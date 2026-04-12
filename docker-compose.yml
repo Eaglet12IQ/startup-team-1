@@ -5,11 +5,29 @@ services:
     build:
       context: ./backend/constructor-service
       dockerfile: Dockerfile
-    container_name: constructor-service
+    container_name: pidisplay-backend
     ports:
       - "8082:8082"
     volumes:
       - ./backend/constructor-service/schemas:/app/schemas
     environment:
       - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  pi-image-builder:
+    build:
+      context: ./pi-image-builder
+      dockerfile: Dockerfile
+    container_name: pi-image-builder
+    ports:
+      - "3000:3000"
+    volumes:
+      # Исходники проекта для сборки ARM64-образов
+      - .:/app/source:ro
+      # Базовый образ FullPageOS кладётся сюда вручную
+      - ./pi-image-builder/images:/app/images
+      # Docker socket для buildx
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Нужен для mount loop-устройств
+    privileged: true
     restart: unless-stopped
