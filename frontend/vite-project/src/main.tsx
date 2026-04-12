@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, PiAuthProvider } from './context/AuthContext'
 import './index.css'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -12,8 +12,22 @@ import { Profile } from './pages/Profile'
 import { ProjectsList } from './pages/ProjectsList'
 import { Editor } from './pages/Editor'
 
+const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
+
 function AnimatedRoutes() {
   const location = useLocation()
+
+  if (PI_MODE) {
+    return (
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<ProjectsList />} />
+          <Route path="/editor/:projectId" element={<Editor />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+    )
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -29,13 +43,19 @@ function AnimatedRoutes() {
     </AnimatePresence>
   )
 }
-    
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <AnimatedRoutes />
-      </AuthProvider>
+      {PI_MODE ? (
+        <PiAuthProvider>
+          <AnimatedRoutes />
+        </PiAuthProvider>
+      ) : (
+        <AuthProvider>
+          <AnimatedRoutes />
+        </AuthProvider>
+      )}
     </BrowserRouter>
   </StrictMode>,
 )

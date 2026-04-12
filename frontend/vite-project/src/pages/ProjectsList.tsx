@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
 import { Header } from '../components/Header';
-import { useAuth } from '../context/AuthContext';
 import { getMySchemas, saveSchema, type BackendSchema } from '../services/api';
+
+const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
 
 interface Project {
   id: number;
@@ -15,7 +16,6 @@ interface Project {
 
 export function ProjectsList() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -46,10 +46,8 @@ export function ProjectsList() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      void loadProjects();
-    }
-  }, [isAuthenticated, loadProjects]);
+    void loadProjects();
+  }, [loadProjects]);
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
@@ -77,15 +75,10 @@ export function ProjectsList() {
     });
   };
 
-  if (!isAuthenticated) {
-    navigate('/login');
-    return null;
-  }
-
   return (
     <PageTransition>
     <div className="min-h-screen bg-[#f5f5f7]">
-      <Header />
+      {!PI_MODE && <Header />}
 
       <main className="max-w-6xl mx-auto px-8 py-8">
         <div className="flex justify-between items-center mb-8">

@@ -24,6 +24,7 @@ interface SavedState {
 
 export function Editor() {
   const navigate = useNavigate();
+  const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
   const { isAuthenticated } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
   const [loading, setLoading] = useState(true);
@@ -48,7 +49,7 @@ export function Editor() {
   const [historyVersion, setHistoryVersion] = useState(0);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!PI_MODE && !isAuthenticated) {
       navigate('/login', { replace: true });
       return;
     }
@@ -236,7 +237,7 @@ export function Editor() {
   }, [blocks]);
 
   const handleSaveToBackend = useCallback(async () => {
-    if (!isAuthenticated) return;
+    if (!PI_MODE && !isAuthenticated) return;
     setSaving(true);
     try {
       const numericId = parseInt(projectId || '', 10);
@@ -529,21 +530,25 @@ export function Editor() {
             >
               Скачать JSON
             </button>
-            <button
-              onClick={handleSendToDisplay}
-              disabled={sendingToDisplay}
-              className="px-5 py-2.5 bg-[#1d1d1f] text-white rounded-full text-sm font-medium hover:bg-[#3a3a3c] transition-all duration-200 disabled:opacity-50"
-            >
-              {sendingToDisplay ? 'Отправка...' : '📺 На экран'}
-            </button>
-            <button
-              onClick={handleBuildPiImage}
-              disabled={buildingImage}
-              className="px-5 py-2.5 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50"
-              title="Собрать образ для Raspberry Pi с текущим дизайном"
-            >
-              {buildingImage ? 'Сборка...' : '🍓 Образ для Pi'}
-            </button>
+            {import.meta.env.VITE_PI_MODE === 'true' && (
+              <button
+                onClick={handleSendToDisplay}
+                disabled={sendingToDisplay}
+                className="px-5 py-2.5 bg-[#1d1d1f] text-white rounded-full text-sm font-medium hover:bg-[#3a3a3c] transition-all duration-200 disabled:opacity-50"
+              >
+                {sendingToDisplay ? 'Отправка...' : '📺 На экран'}
+              </button>
+            )}
+            {import.meta.env.VITE_PI_MODE !== 'true' && (
+              <button
+                onClick={handleBuildPiImage}
+                disabled={buildingImage}
+                className="px-5 py-2.5 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50"
+                title="Собрать образ для Raspberry Pi с текущим дизайном"
+              >
+                {buildingImage ? 'Сборка...' : '🍓 Образ для Pi'}
+              </button>
+            )}
             <button
               onClick={handleSaveToBackend}
               disabled={saving || saved}

@@ -53,3 +53,18 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
+
+export function PiAuthProvider({ children }: { children: ReactNode }) {
+  return (
+    <AuthContext.Provider value={{
+      userId: 1,
+      userName: 'pi',
+      userEmail: null,
+      login: () => {},
+      logout: () => {},
+      isAuthenticated: true,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}

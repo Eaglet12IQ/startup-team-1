@@ -1,0 +1,39 @@
+version: "3.8"
+
+# Локальный тест Pi-режима.
+# Эмулирует что будет на Pi: бэкенд + фронтенд с VITE_PI_MODE=true
+# Без хотспота — просто открываешь браузер.
+#
+# Запуск:
+#   docker compose -f docker-compose.pi-test.yml up --build
+#
+# Редактор (Pi-режим, кнопка "На экран"):  http://localhost:8080
+# Дисплей (что видит Chromium на Pi):      http://localhost:8082/api/display/
+
+services:
+  pidisplay-backend:
+    build:
+      context: ./backend/constructor-service
+      dockerfile: Dockerfile
+    container_name: pidisplay-backend
+    ports:
+      - "8082:8082"
+    volumes:
+      - pidisplay-test-data:/opt/pidisplay
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  pidisplay-frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        - VITE_PI_MODE=true
+    container_name: pidisplay-frontend-test
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  pidisplay-test-data:

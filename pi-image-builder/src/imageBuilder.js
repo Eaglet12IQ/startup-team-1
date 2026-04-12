@@ -60,7 +60,6 @@ function renderBlocksToHtml(blocks) {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; }
 </style>
-<script>setInterval(() => location.reload(), 5000);</script>
 </head>
 <body>
 ${elements}
@@ -95,6 +94,7 @@ export async function buildImage(blocks = []) {
     exec(
       `docker buildx build --platform linux/arm64 ` +
       `--load -t ${FRONTEND_IMAGE} ` +
+      `--build-arg VITE_PI_MODE=true ` +
       `-f /app/source/frontend/Dockerfile ` +
       `/app/source`
     )
@@ -186,7 +186,7 @@ writeFileSync(join(bootMount, 'fullpageos.txt'), 'http://192.168.4.1:8082/api/di
     mkdirSync(displayDir, { recursive: true })
     const initialHtml = blocks.length > 0
       ? renderBlocksToHtml(blocks)
-      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;}<\/style><script>setInterval(()=>location.reload(),5000);<\/script></head><body><p style="color:#444;font-family:sans-serif;font-size:24px">Ожидание контента...</p></body></html>`
+      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;}<\/style></head><body><p style="color:#444;font-family:sans-serif;font-size:24px">Ожидание контента...</p></body></html>`
     writeFileSync(join(displayDir, 'display.html'), initialHtml, 'utf8')
 
     // 5d. Docker-образы

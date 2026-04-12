@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM --platform=linux/amd64 node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -21,6 +21,9 @@ RUN ln -s /app/frontend/vite-project/node_modules /app/shared/node_modules
 
 # Копируем исходники
 COPY frontend/vite-project/ ./frontend/vite-project/
+
+ARG VITE_PI_MODE=false
+ENV VITE_PI_MODE=$VITE_PI_MODE
 
 RUN cd frontend/vite-project && npx vite build
 
