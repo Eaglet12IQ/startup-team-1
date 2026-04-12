@@ -177,8 +177,20 @@ export async function buildImage(blocks = []) {
       '[keyfile]\nunmanaged-devices=interface-name:wlan0\n'
     )
 
-    // Включаем сервисы, отключаем wpa_supplicant на wlan0
-    exec(`chroot ${rootMount} systemctl enable hostapd dnsmasq`)
+    // Отключаем P2P в brcmfmac — фикс kernel panic на Pi 5 при подключении телефона
+    const modprobeDir = join(etcDir, 'modprobe.d')
+    mkdirSync(modprobeDir, { recursive: true })
+    writeFileSync(join(modprobeDir, 'brcmfmac.conf'), 'options brcmfmac p2pon=0\n')
+
+    // Назначаем статический IP на wlan0 через systemd-networkd (работает на Raspbian bookworm)
+    const networkdDir = join(etcDir, 'systemd', 'network')
+    mkdirSync(networkdDir, { recursive: true })
+    writeFileSync(join(networkdDir, '10-wlan0.network'),
+      '[Match]\nName=wlan0\n\n[Network]\nAddress=192.168.4.1/24\nIPForward=no\n'
+    )
+
+    // Включаем сервисы, отключаем лишнее
+    exec(`chroot ${rootMount} systemctl enable hostapd dnsmasq systemd-networkd`)
     exec(`chroot ${rootMount} systemctl disable wpa_supplicant || true`)
 
     // 5c. Начальный дизайн дисплея
