@@ -50,7 +50,7 @@ function renderBlocksToHtml(blocks) {
     }
 
     return ''
-  }).join('\n')
+  }).join('')
 
   return `<!DOCTYPE html>
 <html>
@@ -231,6 +231,19 @@ fi
 
 cd /opt/pidisplay
 $COMPOSE up -d --pull never
+
+# Ждём пока бэкенд не поднимется и перезагружаем Chromium
+(
+  until curl -sf http://localhost:8082/api/display/ > /dev/null 2>&1; do
+    sleep 2
+  done
+  DISPLAY=:0 xdotool key F5 2>/dev/null || true
+  DISPLAY=:0 wmctrl -r Chromium -e 0,-1,-1,-1,-1 2>/dev/null || true
+  # Если xdotool не сработал — перезапускаем через chromium
+  pkill -f "chromium.*192.168.4.1" 2>/dev/null || true
+  sleep 1
+  DISPLAY=:0 chromium-browser --noerrdialogs --disable-infobars --kiosk http://192.168.4.1:8082/api/display/ &
+) &
 `
     writeFileSync(join(rootMount, 'opt', 'pidisplay', 'start.sh'), firstRunScript)
     exec(`chmod +x ${join(rootMount, 'opt', 'pidisplay', 'start.sh')}`)

@@ -180,10 +180,28 @@ export function Editor() {
   const handleSendToDisplay = useCallback(async () => {
     setSendingToDisplay(true);
     try {
+      // Конвертируем внешние URL картинок в base64 — Pi офлайн, URL не доступны
+      const blocksWithBase64 = await Promise.all(blocks.map(async (block) => {
+        if (block.type !== 'image' || !block.src) return block;
+        if (block.src.startsWith('data:') || block.src.startsWith('/')) return block;
+        try {
+          const response = await fetch(block.src);
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          return { ...block, src: base64 };
+        } catch {
+          return block;
+        }
+      }));
+
       const res = await fetch('/api/display/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blocks }),
+        body: JSON.stringify({ blocks: blocksWithBase64 }),
       });
       if (!res.ok) throw new Error();
     } catch {
