@@ -116,7 +116,8 @@ export async function buildImage(blocks = []) {
     exec(`mount -o loop,offset=${BOOT_OFFSET} ${imgPath} ${bootMount}`)
     // FullPageOS читает URL из fullpageos.txt — Pi открывает наш фронтенд
     // Pi открывает дисплей (результат), редактор доступен с телефона на http://192.168.4.1/
-writeFileSync(join(bootMount, 'fullpageos.txt'), 'http://192.168.4.1:8082/api/display/\n', 'utf8')
+    writeFileSync(join(bootMount, 'fullpageos.txt'), 'http://192.168.4.1:8082/api/display/\n', 'utf8')
+    writeFileSync(join(bootMount, 'check_for_httpd'), 'disabled\n', 'utf8')
     exec(`umount ${bootMount}`)
 
     // ── 5. Root раздел — вшиваем всё ──────────────────────────────────────
@@ -204,14 +205,20 @@ writeFileSync(join(bootMount, 'fullpageos.txt'), 'http://192.168.4.1:8082/api/di
 
     // 5d. Скрипт первого запуска — загружает образы и поднимает стек
     const firstRunScript = `#!/bin/bash
+set -e
+
+DOCKER=/usr/bin/docker
+COMPOSE=/usr/local/bin/docker-compose
+
 # Загружаем Docker образы из tar (один раз при первом старте)
 if [ ! -f /opt/pidisplay/.images-loaded ]; then
-  docker load -i /opt/pidisplay/images/backend.tar
-  docker load -i /opt/pidisplay/images/frontend.tar
+  $DOCKER load -i /opt/pidisplay/images/backend.tar
+  $DOCKER load -i /opt/pidisplay/images/frontend.tar
   touch /opt/pidisplay/.images-loaded
 fi
+
 cd /opt/pidisplay
-docker-compose up -d
+$COMPOSE up -d --pull never
 `
     writeFileSync(join(rootMount, 'opt', 'pidisplay', 'start.sh'), firstRunScript)
     exec(`chmod +x ${join(rootMount, 'opt', 'pidisplay', 'start.sh')}`)
