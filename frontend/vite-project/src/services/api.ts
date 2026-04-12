@@ -1,10 +1,11 @@
 const API_BASE = import.meta.env.VITE_API_URL || '';
+const PI_MODE = import.meta.env.VITE_PI_MODE === 'true';
 
 function getHeaders(): HeadersInit {
-  const userId = localStorage.getItem('user-id');
+  const userId = PI_MODE ? '1' : (localStorage.getItem('user-id') || '');
   return {
     'Content-Type': 'application/json',
-    'X-User-ID': userId || '',
+    'X-User-ID': userId,
   };
 }
 
