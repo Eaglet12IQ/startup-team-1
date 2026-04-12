@@ -1,15 +1,16 @@
 [Unit]
 Description=PiDisplay Stack (backend + frontend)
-After=network.target docker.service
-Requires=docker.service
+After=network.target docker.service docker.socket
+Requires=docker.service docker.socket
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/opt/pidisplay
-ExecStart=/usr/local/bin/docker-compose up -d --pull never
+ExecStartPre=/bin/bash -c 'until /usr/bin/docker info >/dev/null 2>&1; do sleep 1; done'
+ExecStart=/bin/bash /opt/pidisplay/start.sh
 ExecStop=/usr/local/bin/docker-compose down
-TimeoutStartSec=120
+TimeoutStartSec=300
 
 [Install]
 WantedBy=multi-user.target

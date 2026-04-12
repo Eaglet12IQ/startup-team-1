@@ -14,7 +14,7 @@ const CONFIGS_DIR = join(__dirname, 'configs')
 const BOOT_OFFSET = 8192 * 512        // раздел boot (FAT32)
 const ROOT_OFFSET = 1056768 * 512     // раздел root (ext4)
 
-// Docker-образы собираются для ARM64 (Pi 5)
+// Docker-образы собираются для ARM/v7 (Raspbian 32-bit userspace)
 const BACKEND_IMAGE = 'pidisplay-backend:latest'
 const FRONTEND_IMAGE = 'pidisplay-frontend:latest'
 
@@ -85,14 +85,14 @@ export async function buildImage(blocks = []) {
     console.log(`[${buildId}] Building ARM64 Docker images...`)
 
     exec(
-      `docker buildx build --platform linux/arm64 ` +
+      `docker buildx build --platform linux/arm/v7 ` +
       `--load -t ${BACKEND_IMAGE} ` +
       `-f /app/source/backend/constructor-service/Dockerfile ` +
       `/app/source/backend/constructor-service`
     )
 
     exec(
-      `docker buildx build --platform linux/arm64 ` +
+      `docker buildx build --platform linux/arm/v7 ` +
       `--load -t ${FRONTEND_IMAGE} ` +
       `--build-arg VITE_PI_MODE=true ` +
       `-f /app/source/frontend/Dockerfile ` +
