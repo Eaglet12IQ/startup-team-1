@@ -22,4 +22,4 @@
 | 6      | [Перейти](READMEs/week6/README.md) | ✅      |
 | 7      | [Перейти](READMEs/week7/README.md) | ✅      |
 | 8      | [Перейти](READMEs/week8/README.md) | ⏳      |
-| 9      | [Перейти](READMEs/week9/README.md) | ⏳      |
+| 9      | [Перейти](READMEs/week9/README.md) | ✅      |
