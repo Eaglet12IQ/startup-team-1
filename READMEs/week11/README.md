@@ -28,4 +28,4 @@
 ![PiConstruct_week_11-11](attachments/PiConstruct_week_11-11.png)
 ![Ссылка на файл](attachments/PiConstruct_week_11.pdf)
 ### Таблица
-![[Финансовая модель.png]]
+![Финансовая модель](attachments/Финансовая%20модель.png)
