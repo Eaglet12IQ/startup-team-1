@@ -14,4 +14,18 @@
 ## Конструирование и проверка модели монетизации. Тест продажами. Формирование финансовой модели.
 Сформировать у обучающихся навыки проектирования и первичной проверки модели монетизации стартап-проекта, включая разработку ценовой логики и упаковки предложения, планирование и проведение «теста продажами» (sales test) для получения рыночных сигналов, а также построение упрощённой финансовой модели, отражающей взаимосвязь выручки, затрат, воронки продаж и ключевых допущений.
 ## Материалы недели
-[Выполненный отчёт по заданию](attachments/week11.md)
+### Презентация
+![PiConstruct_week_11-01](attachments/PiConstruct_week_11-01.png)
+![PiConstruct_week_11-02](attachments/PiConstruct_week_11-02.png)
+![PiConstruct_week_11-03](attachments/PiConstruct_week_11-03.png)
+![PiConstruct_week_11-04](attachments/PiConstruct_week_11-04.png)
+![PiConstruct_week_11-05](attachments/PiConstruct_week_11-05.png)
+![PiConstruct_week_11-06](attachments/PiConstruct_week_11-06.png)
+![PiConstruct_week_11-07](attachments/PiConstruct_week_11-07.png)
+![PiConstruct_week_11-08](attachments/PiConstruct_week_11-08.png)
+![PiConstruct_week_11-09](attachments/PiConstruct_week_11-09.png)
+![PiConstruct_week_11-10](attachments/PiConstruct_week_11-10.png)
+![PiConstruct_week_11-11](attachments/PiConstruct_week_11-11.png)
+![Ссылка на файл](attachments/PiConstruct_week_11.pdf)
+### Таблица
+![[Финансовая модель.png]]
