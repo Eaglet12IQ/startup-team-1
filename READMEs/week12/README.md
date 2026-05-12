@@ -12,4 +12,16 @@
 ---
 ## Практическая неделя 12
 ## Формирование стратегии роста и финансового плана. Оценка собственной компании.
-
+й
+![PiConstruct_week12.001](attachments/PiConstruct_week12.001.png)
+![PiConstruct_week12.002](attachments/PiConstruct_week12.002.png)
+![PiConstruct_week12.003](attachments/PiConstruct_week12.003.png)
+![PiConstruct_week12.004](attachments/PiConstruct_week12.004.png)
+![PiConstruct_week12.005](attachments/PiConstruct_week12.005.png)
+![PiConstruct_week12.006](attachments/PiConstruct_week12.006.png)
+![PiConstruct_week12.007](attachments/PiConstruct_week12.007.png)
+![PiConstruct_week12.008](attachments/PiConstruct_week12.008.png)
+![PiConstruct_week12.009](attachments/PiConstruct_week12.009.png)
+![PiConstruct_week12](attachments/PiConstruct_week12.pdf)
+### Таблица
+![Снимок экрана — 2026-05-12 в 12.37.25](../../Снимок%20экрана%20—%202026-05-12%20в%2012.37.25.png)
