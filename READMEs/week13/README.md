@@ -33,4 +33,4 @@
 ![PiConstruct_InvestorPersona.004](attachments/PiConstruct_InvestorPersona.004.png)
 ![PiConstruct_InvestorPersona.005](attachments/PiConstruct_InvestorPersona.005.png)
 ![PiConstruct_InvestorPersona.006](attachments/PiConstruct_InvestorPersona.006.png)
-[![Ссылка на файл|100](attachments/PDF.png)](attachments/PiConstruct_InvestorPersona.pdf)
+![Ссылка на файл](attachments/PiConstruct_InvestorPersona.pdf)
