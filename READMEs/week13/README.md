@@ -27,4 +27,10 @@
 ![PiConstruct_PitchDeck_week13.012](attachments/PiConstruct_PitchDeck_week13.012.png)
 ![Ссылка на файл](attachments/PiConstruct_PitchDeck_week13.pdf)
 ### Сокращённая презентация
-⏳
+![PiConstruct_InvestorPersona.001](attachments/PiConstruct_InvestorPersona.001.png)
+![PiConstruct_InvestorPersona.002](attachments/PiConstruct_InvestorPersona.002.png)
+![PiConstruct_InvestorPersona.003](attachments/PiConstruct_InvestorPersona.003.png)
+![PiConstruct_InvestorPersona.004](attachments/PiConstruct_InvestorPersona.004.png)
+![PiConstruct_InvestorPersona.005](attachments/PiConstruct_InvestorPersona.005.png)
+![PiConstruct_InvestorPersona.006](attachments/PiConstruct_InvestorPersona.006.png)
+![Ссылка на файл](attachments/PiConstruct_InvestorPersona.pdf)
