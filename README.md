@@ -26,5 +26,5 @@
 | 10     | [Перейти](READMEs/week10/README.md) | ✅      |
 | 11     | [Перейти](READMEs/week11/README.md) | ✅      |
 | 12     | [Перейти](READMEs/week12/README.md) | ✅      |
-| 13     | [Перейти](READMEs/week13/README.md) | ⏳      |
-| 14     | [Перейти](READMEs/week14/README.md) | ⏳      |
+| 13     | [Перейти](READMEs/week13/README.md) | ✅      |
+| 14     | [Перейти](READMEs/week14/README.md) | ✅      |
