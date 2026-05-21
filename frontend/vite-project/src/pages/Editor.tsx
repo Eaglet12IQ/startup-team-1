@@ -295,22 +295,22 @@ export function Editor() {
       const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
       
       if ((e.ctrlKey || e.metaKey) && !isInputFocused) {
-        if (e.shiftKey && e.key === 'z') {
+        if (e.shiftKey && e.code === 'KeyZ') {
           e.preventDefault();
           redo();
           return;
         }
-        if (!e.shiftKey && e.key === 'z') {
+        if (!e.shiftKey && e.code === 'KeyZ') {
           e.preventDefault();
           undo();
           return;
         }
-        if (e.key === 'y') {
+        if (e.code === 'KeyY') {
           e.preventDefault();
           redo();
           return;
         }
-        if (e.key === 's') {
+        if (e.code === 'KeyS') {
           e.preventDefault();
           handleSaveToBackendRef.current();
           return;
@@ -439,6 +439,26 @@ export function Editor() {
     setBlocks(newBlocks);
     saveToHistory(newBlocks);
   };
+
+  const handleDuplicateBlock = useCallback((id: string) => {
+    const index = blocks.findIndex(b => b.id === id);
+    if (index === -1) return;
+
+    const original = blocks[index];
+    const duplicate: BlockData = {
+      ...original,
+      id: crypto.randomUUID(),
+      x: Math.min(95, original.x + 3),
+      y: Math.min(95, original.y + 3),
+    };
+
+    const newBlocks = [...blocks];
+    newBlocks.splice(index + 1, 0, duplicate);
+
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
+    setSelectedBlockId(duplicate.id);
+  }, [blocks, saveToHistory]);
 
   const handleExport = () => {
     const data = {
@@ -621,6 +641,7 @@ export function Editor() {
                 onUpdateBlock={handleUpdateBlock}
                 onMoveBlock={handleMoveBlock}
                 onBlockChangeEnd={() => saveToHistory(blocksRef.current)}
+                onDuplicateBlock={handleDuplicateBlock}
               />
             </div>
           </div>

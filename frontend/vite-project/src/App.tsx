@@ -86,17 +86,17 @@ function App() {
       const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
       
       if ((e.ctrlKey || e.metaKey) && !isInputFocused) {
-        if (e.shiftKey && e.key === 'z') {
+        if (e.shiftKey && e.code === 'KeyZ') {
           e.preventDefault();
           redo();
           return;
         }
-        if (!e.shiftKey && e.key === 'z') {
+        if (!e.shiftKey && e.code === 'KeyZ') {
           e.preventDefault();
           undo();
           return;
         }
-        if (e.key === 'y') {
+        if (e.code === 'KeyY') {
           e.preventDefault();
           redo();
           return;

@@ -17,9 +17,10 @@ interface CanvasProps {
   onUpdateBlock: (id: string, updates: Partial<BlockData>) => void;
   onMoveBlock: (id: string, direction: 'up' | 'down' | 'top' | 'bottom') => void;
   onBlockChangeEnd?: () => void;
+  onDuplicateBlock: (id: string) => void;
 }
 
-export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onMoveBlock, onBlockChangeEnd }: CanvasProps) => {
+export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onMoveBlock, onBlockChangeEnd, onDuplicateBlock }: CanvasProps) => {
   const dragStartRef = useRef({ x: 0, y: 0, blockX: 0, blockY: 0, startWidth: 0, startHeight: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
   const blocksRef = useRef(blocks);
@@ -230,7 +231,13 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
           <MenuItem onClick={() => { onUpdateBlock(contextMenu.blockId, { y: 100 - (selectedBlock?.height || 0) / 2 }); setContextMenu(null); }}>
             По нижнему краю
           </MenuItem>
-          
+
+          <MenuDivider />
+          <MenuLabel>Действия</MenuLabel>
+          <MenuItem onClick={() => { onDuplicateBlock(contextMenu.blockId); setContextMenu(null); }}>
+            Дублировать
+          </MenuItem>
+
           <MenuDivider />
           <MenuLabel>Слои</MenuLabel>
           <MenuItem onClick={() => { onMoveBlock(contextMenu.blockId, 'up'); setContextMenu(null); }}>
