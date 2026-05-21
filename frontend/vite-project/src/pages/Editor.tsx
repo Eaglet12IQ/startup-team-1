@@ -606,15 +606,23 @@ export function Editor() {
               </button>
             </div>
           )}
-          <div className="w-full h-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-            <Canvas
-              blocks={blocks}
-              selectedBlockId={selectedBlockId}
-              onSelectBlock={setSelectedBlockId}
-              onUpdateBlock={handleUpdateBlock}
-              onMoveBlock={handleMoveBlock}
-              onBlockChangeEnd={() => saveToHistory(blocksRef.current)}
-            />
+          <div className="w-full h-full flex items-center justify-center" style={{ containerType: 'size' }}>
+            <div
+              className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden"
+              style={{
+                aspectRatio: '16/9',
+                width: 'min(100cqw, calc(100cqh * 16 / 9))',
+              }}
+            >
+              <Canvas
+                blocks={blocks}
+                selectedBlockId={selectedBlockId}
+                onSelectBlock={setSelectedBlockId}
+                onUpdateBlock={handleUpdateBlock}
+                onMoveBlock={handleMoveBlock}
+                onBlockChangeEnd={() => saveToHistory(blocksRef.current)}
+              />
+            </div>
           </div>
         </div>
       </div>

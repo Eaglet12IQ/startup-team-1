@@ -141,6 +141,7 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
       ref={canvasRef}
       className="w-full h-full bg-white relative overflow-hidden"
       onClick={handleCanvasClick}
+      style={{ containerType: 'size' }}
     >
       {blocks.map((block, index) => {
         const isSelected = block.id === selectedBlockId;

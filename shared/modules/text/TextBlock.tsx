@@ -90,7 +90,7 @@ export const TextBlock = ({
     
     const fontSizeStyle = fitText && fittedSize !== null
         ? `${fittedSize}px`
-        : `calc(${blockHeight}vh * ${fontSize} / 100)`;
+        : `calc(${blockHeight}cqh * ${fontSize} / 100)`;
     
     return (
         <div
