@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
-import { Header } from '../components/Header';
 import { getMySchemas, saveSchema, type BackendSchema } from '../services/api';
-
-const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
 
 interface Project {
   id: number;
@@ -77,9 +74,7 @@ export function ProjectsList() {
 
   return (
     <PageTransition>
-    <div className="min-h-screen bg-[#f5f5f7]">
-      {!PI_MODE && <Header />}
-
+    <div className="h-full bg-[#f5f5f7] overflow-auto">
       <main className="max-w-6xl mx-auto px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex gap-3">

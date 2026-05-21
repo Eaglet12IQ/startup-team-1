@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
-import { Header } from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 
 export function Profile() {
@@ -19,9 +18,7 @@ export function Profile() {
 
   return (
     <PageTransition>
-    <div className="min-h-screen bg-[#f5f5f7]">
-      <Header />
-
+    <div className="h-full bg-[#f5f5f7] overflow-auto">
       <main className="max-w-4xl mx-auto px-8 py-12">
         <div className="bg-white rounded-2xl shadow-[0_8px_30pxrgb(0,0,0,0.08)] p-8">
           <h1 className="text-2xl font-semibold text-[#1d1d1f] mb-8">Профиль пользователя</h1>

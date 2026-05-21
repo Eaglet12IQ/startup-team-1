@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { AuthProvider, PiAuthProvider } from './context/AuthContext'
+import { Header } from './components/Header'
 import './index.css'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -44,18 +45,33 @@ function AnimatedRoutes() {
   )
 }
 
+function AppLayout() {
+  const location = useLocation()
+
+  if (PI_MODE) {
+    return (
+      <PiAuthProvider>
+        <AnimatedRoutes />
+      </PiAuthProvider>
+    )
+  }
+
+  return (
+    <AuthProvider>
+      <div className="h-screen flex flex-col">
+        {!location.pathname.startsWith('/editor') && <Header />}
+        <div className="flex-1 min-h-0">
+          <AnimatedRoutes />
+        </div>
+      </div>
+    </AuthProvider>
+  )
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      {PI_MODE ? (
-        <PiAuthProvider>
-          <AnimatedRoutes />
-        </PiAuthProvider>
-      ) : (
-        <AuthProvider>
-          <AnimatedRoutes />
-        </AuthProvider>
-      )}
+      <AppLayout />
     </BrowserRouter>
   </StrictMode>,
 )

@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
-import { Header } from '../components/Header';
 
 const plans = [
   {
@@ -30,9 +29,7 @@ const plans = [
 export function Pricing() {
   return (
       <PageTransition>
-        <div className="min-h-screen bg-[#f5f5f7]">
-          <Header />
-
+        <div className="h-full bg-[#f5f5f7] overflow-auto">
           <main className="max-w-6xl mx-auto px-8 py-16">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-semibold text-[#1d1d1f] mb-4">

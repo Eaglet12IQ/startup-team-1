@@ -1,18 +1,14 @@
 import { Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
-import { Header } from '../components/Header';
+import { HeaderTransition } from "../components/HeaderTransition.tsx";
 
 export function Home() {
   return (
       <PageTransition>
-        <div className="min-h-screen bg-[#f5f5f7] flex flex-col">
-          <Header />
-
+        <div className="h-full bg-[#f5f5f7] flex flex-col">
           <main className="flex-1 flex items-center justify-center px-8">
             <div className="text-center max-w-2xl">
-              <h2 className="text-5xl font-semibold text-[#1d1d1f] mb-6">
-                Быстрые цифровые табло<br />для бизнеса
-              </h2>
+              <HeaderTransition text={'Быстрые цифровые табло\nдля бизнеса'} />
 
               <p className="text-xl text-[#6e6e73] mb-10">
                 Создайте меню, рекламный экран или информационную панель для вашего кафе или магазина. Скачайте готовый образ<br />
