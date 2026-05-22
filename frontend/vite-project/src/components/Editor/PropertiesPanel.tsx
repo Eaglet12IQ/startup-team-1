@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BlockData } from '../../types';
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
+import { GoDotFill } from "react-icons/go";
 
 interface PropertiesPanelProps {
   selectedBlock: BlockData | null;
@@ -166,45 +168,51 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock }:
               />
             </div>
           </div>
-          
+
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Горизонтальное выравнивание</label>
+            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">
+              Горизонтальное выравнивание
+            </label>
+
             <div className="flex gap-2">
               {(['left', 'center', 'right'] as const).map((align) => (
-                <button
-                  key={align}
-                  onClick={() => onUpdateBlock(selectedBlock.id, { textAlign: align })}
-                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    selectedBlock.textAlign === align 
-                      ? 'bg-[#0071e3] text-white shadow-[0_4px_12px rgb(0,113,227,0.3)]' 
-                      : 'bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]'
-                  }`}
-                >
-                  {align === 'left' && '◀'}
-                  {align === 'center' && '●'}
-                  {align === 'right' && '▶'}
-                </button>
+                  <button
+                      key={align}
+                      onClick={() => onUpdateBlock(selectedBlock.id, { textAlign: align })}
+                      className={`flex items-center justify-center flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          selectedBlock.textAlign === align
+                              ? 'bg-[#0071e3] text-white shadow-[0_4px_12px_rgb(0,113,227,0.3)]'
+                              : 'bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]'
+                      }`}
+                  >
+                    {align === 'left' && <FaChevronLeft size={14} />}
+                    {align === 'center' && <GoDotFill  size={22} />}
+                    {align === 'right' && <FaChevronRight size={14} />}
+                  </button>
               ))}
             </div>
           </div>
-          
+
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Вертикальное выравнивание</label>
+            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">
+              Вертикальное выравнивание
+            </label>
+
             <div className="flex gap-2">
               {(['top', 'center', 'bottom'] as const).map((align) => (
-                <button
-                  key={align}
-                  onClick={() => onUpdateBlock(selectedBlock.id, { verticalAlign: align })}
-                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    selectedBlock.verticalAlign === align 
-                      ? 'bg-[#0071e3] text-white shadow-[0_4px_12px rgb(0,113,227,0.3)]' 
-                      : 'bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]'
-                  }`}
-                >
-                  {align === 'top' && '▲'}
-                  {align === 'center' && '●'}
-                  {align === 'bottom' && '▼'}
-                </button>
+                  <button
+                      key={align}
+                      onClick={() => onUpdateBlock(selectedBlock.id, { verticalAlign: align })}
+                      className={`flex items-center justify-center flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          selectedBlock.verticalAlign === align
+                              ? 'bg-[#0071e3] text-white shadow-[0_4px_12px_rgb(0,113,227,0.3)]'
+                              : 'bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]'
+                      }`}
+                  >
+                    {align === 'top' && <FaChevronLeft className="rotate-90" size={14} />}
+                    {align === 'center' && <GoDotFill  size={22} />}
+                    {align === 'bottom' && <FaChevronRight className="rotate-90" size={14} />}
+                  </button>
               ))}
             </div>
           </div>
