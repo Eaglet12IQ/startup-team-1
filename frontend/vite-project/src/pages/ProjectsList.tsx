@@ -75,14 +75,14 @@ export function ProjectsList() {
   return (
     <PageTransition>
     <div className="h-full bg-[#f5f5f7] overflow-auto">
-      <main className="max-w-6xl mx-auto px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
           <div className="flex gap-3">
             <button
               onClick={() => setIsCreating(true)}
-              className="px-6 py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)] flex items-center gap-2"
+              className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)] flex items-center gap-2 text-sm sm:text-base"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               Создать табло
@@ -91,9 +91,9 @@ export function ProjectsList() {
         </div>
 
         {isCreating && (
-          <div className="mb-8 p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-            <h2 className="text-lg font-medium text-[#1d1d1f] mb-4">Новое табло</h2>
-            <div className="flex gap-3">
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+            <h2 className="text-base sm:text-lg font-medium text-[#1d1d1f] mb-3 sm:mb-4">Новое табло</h2>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <input
                 type="text"
                 value={newProjectName}
@@ -103,38 +103,40 @@ export function ProjectsList() {
                 className="flex-1 px-4 py-3 bg-[#f5f5f7] rounded-xl text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
                 autoFocus
               />
-              <button
-                onClick={handleCreateProject}
-                disabled={!newProjectName.trim()}
-                className="px-6 py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Создать
-              </button>
-              <button
-                onClick={() => {
-                  setIsCreating(false);
-                  setNewProjectName('');
-                }}
-                className="px-6 py-3 bg-[#f5f5f7] text-[#1d1d1f] rounded-full font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]"
-              >
-                Отмена
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCreateProject}
+                  disabled={!newProjectName.trim()}
+                  className="flex-1 sm:flex-none px-5 sm:px-6 py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  Создать
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCreating(false);
+                    setNewProjectName('');
+                  }}
+                  className="flex-1 sm:flex-none px-5 sm:px-6 py-3 bg-[#f5f5f7] text-[#1d1d1f] rounded-full font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] text-sm"
+                >
+                  Отмена
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-20">
+          <div className="text-center py-16 sm:py-20">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#0071e3] border-t-transparent"></div>
             <p className="text-[#6e6e73] mt-4">Загрузка проектов...</p>
           </div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-            <svg className="w-16 h-16 mx-auto text-[#d2d2d7] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-16 sm:py-20 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] px-4">
+            <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-[#d2d2d7] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <h3 className="text-xl font-medium text-[#1d1d1f] mb-2">Нет табло</h3>
-            <p className="text-[#6e6e73] mb-6">Создайте своё первое табло, чтобы начать работу</p>
+            <h3 className="text-lg sm:text-xl font-medium text-[#1d1d1f] mb-2">Нет табло</h3>
+            <p className="text-sm sm:text-base text-[#6e6e73] mb-6">Создайте своё первое табло, чтобы начать работу</p>
             <button
               onClick={() => setIsCreating(true)}
               className="px-6 py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)]"
@@ -143,28 +145,28 @@ export function ProjectsList() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {projects.map((project) => (
               <div
                 key={project.id}
                 className="group bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-hidden hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)] transition-all duration-300"
               >
                 <div className="aspect-video bg-gradient-to-br from-[#f5f5f7] to-[#e8e8ed] flex items-center justify-center">
-                  <svg className="w-16 h-16 text-[#d2d2d7]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-12 h-12 sm:w-16 sm:h-16 text-[#d2d2d7]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-medium text-[#1d1d1f] mb-2 truncate">{project.name}</h3>
-                  <div className="flex items-center gap-4 text-sm text-[#6e6e73] mb-4">
+                <div className="p-4 sm:p-5">
+                  <h3 className="text-base sm:text-lg font-medium text-[#1d1d1f] mb-2 truncate">{project.name}</h3>
+                  <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-[#6e6e73] mb-4">
                     <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       {formatDate(project.lastModified)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                       </svg>
                       {project.elementsCount} блок{project.elementsCount !== 1 ? 'ов' : ''}
@@ -195,21 +197,21 @@ export function ProjectsList() {
 
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-[0_20px_60px_rgb(0,0,0,0.3)]">
-            <h3 className="text-xl font-semibold text-[#1d1d1f] mb-2">Удалить проект?</h3>
-            <p className="text-[#6e6e73] mb-6">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-md w-full mx-4 shadow-[0_20px_60px_rgb(0,0,0,0.3)]">
+            <h3 className="text-lg sm:text-xl font-semibold text-[#1d1d1f] mb-2">Удалить проект?</h3>
+            <p className="text-sm sm:text-base text-[#6e6e73] mb-6">
               Проект "{projects.find(p => p.id === deleteConfirmId)?.name}" будет удален навсегда. Это действие нельзя отменить.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]"
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] text-sm"
               >
                 Отмена
               </button>
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-5 py-2.5 bg-[#ff3b30] text-white rounded-full font-medium hover:bg-[#ff453a] transition-all duration-200"
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#ff3b30] text-white rounded-full font-medium hover:bg-[#ff453a] transition-all duration-200 text-sm"
               >
                 Удалить
               </button>

@@ -33,7 +33,7 @@ export const HeaderTransition = ({ text, className = '' }: HeaderTransitionProps
             ref={ref}
             exit="exit"
             variants={pullupVariant}
-            className={`text-5xl font-semibold text-[#1d1d1f] mb-6 ${className}`}
+            className={`text-3xl sm:text-5xl font-semibold text-[#1d1d1f] mb-6 ${className}`}
         >
             {lines.map((line, lineIdx) => (
                 <span key={lineIdx} className="flex justify-center">

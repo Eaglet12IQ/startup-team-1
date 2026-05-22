@@ -30,21 +30,21 @@ export function Pricing() {
   return (
       <PageTransition>
         <div className="h-full bg-[#f5f5f7] overflow-auto">
-          <main className="max-w-6xl mx-auto px-8 py-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-semibold text-[#1d1d1f] mb-4">
+          <main className="max-w-6xl mx-auto px-4 sm:px-8 py-8 sm:py-16">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-4xl font-semibold text-[#1d1d1f] mb-3 sm:mb-4">
                 Выберите тариф
               </h2>
-              <p className="text-xl text-[#6e6e73]">
+              <p className="text-base sm:text-xl text-[#6e6e73]">
                 Начните бесплатно, переходите на платные тарифы по мере роста
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {plans.map((plan) => (
                   <div
                       key={plan.name}
-                      className={`bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col ${
+                      className={`bg-white rounded-2xl p-5 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col ${
                           plan.current ? 'ring-2 ring-[#0071e3]' : ''
                       }`}
                   >

@@ -174,6 +174,7 @@ export function Editor() {
 
   const [sendingToDisplay, setSendingToDisplay] = useState(false);
   const [buildingImage, setBuildingImage] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState<'project' | 'blocks' | 'properties' | null>(null);
 
   const resolveImageToBase64 = async (src: string): Promise<string> => {
     if (src.startsWith('data:')) return src;
@@ -487,8 +488,13 @@ export function Editor() {
     );
   }
 
+  const mobileTabClass = (panel: typeof mobilePanel) =>
+    `flex-1 py-3 text-xs font-medium text-center transition-colors duration-200 ${
+      mobilePanel === panel ? 'text-[#0071e3] border-t-2 border-[#0071e3]' : 'text-[#86868b]'
+    }`;
+
   return (
-    <div className="flex h-screen bg-[#f5f5f7]">
+    <div className="flex flex-col lg:flex-row h-screen bg-[#f5f5f7]">
       <input
         ref={fileInputRef}
         type="file"
@@ -496,7 +502,9 @@ export function Editor() {
         onChange={handleImport}
         className="hidden"
       />
-      <div className="w-72 flex flex-col">
+
+      {/* === DESKTOP SIDEBAR === */}
+      <div className="hidden lg:flex w-72 flex-col">
         <div className="m-4 p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
           <div className="mb-4">
             <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Название проекта</label>
@@ -518,114 +526,88 @@ export function Editor() {
           />
         </div>
       </div>
-      <div className="flex-1 flex flex-col p-4">
-        <div className="flex justify-between items-center mb-4">
+
+      {/* === MAIN AREA (toolbar + canvas) === */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* === DESKTOP TOOLBAR === */}
+        <div className="hidden lg:flex items-center gap-2 px-4 pt-4 pb-2 flex-wrap">
           <button
             onClick={handleBackToProjects}
-            className="px-5 py-2.5 bg-white text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] flex items-center gap-2"
+            className="px-4 py-2 bg-white text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] flex items-center gap-1.5 shrink-0"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Все проекты
+            Проекты
           </button>
-          <div className="flex gap-3 items-center">
-            <div className="flex items-center bg-white rounded-full border border-[#d2d2d7]">
-              <button
-                onClick={undo}
-                disabled={!canUndo}
-                className="px-4 py-2.5 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-l-full disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Отменить (Ctrl+Z)"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                </svg>
-              </button>
-              <div className="w-px h-6 bg-[#d2d2d7]" />
-              <button
-                onClick={redo}
-                disabled={!canRedo}
-                className="px-4 py-2.5 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-r-full disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Повторить (Ctrl+Shift+Z)"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
-                </svg>
-              </button>
-            </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]"
-            >
-              Загрузить JSON
+          <div className="flex items-center bg-white rounded-full border border-[#d2d2d7] shrink-0">
+            <button onClick={undo} disabled={!canUndo} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-l-full disabled:opacity-40 disabled:cursor-not-allowed" title="Отменить (Ctrl+Z)">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
             </button>
-            <button
-              onClick={handleExport}
-              className="px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]"
-            >
-              Скачать JSON
-            </button>
-            {import.meta.env.VITE_PI_MODE === 'true' && (
-              <button
-                onClick={handleSendToDisplay}
-                disabled={sendingToDisplay}
-                className="px-5 py-2.5 bg-[#1d1d1f] text-white rounded-full text-sm font-medium hover:bg-[#3a3a3c] transition-all duration-200 disabled:opacity-50"
-              >
-                {sendingToDisplay ? 'Отправка...' : '📺 На экран'}
-              </button>
-            )}
-            {import.meta.env.VITE_PI_MODE !== 'true' && (
-              <button
-                onClick={handleBuildPiImage}
-                disabled={buildingImage}
-                className="px-5 py-2.5 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50"
-                title="Собрать образ для Raspberry Pi с текущим дизайном"
-              >
-                {buildingImage ? 'Сборка...' : 'Образ для Pi'}
-              </button>
-            )}
-            <button
-              onClick={handleSaveToBackend}
-              disabled={saving || saved}
-              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                saved
-                  ? 'bg-[#34c759] text-white cursor-default'
-                  : 'bg-[#0071e3] text-white hover:bg-[#0077ED] shadow-[0_4px_12px_rgb(0,113,227,0.3)]'
-              } disabled:opacity-50`}
-            >
-              {saving ? 'Сохранение...' : saved ? 'Сохранено' : 'Сохранить'}
-            </button>
-            <button
-              onClick={loadHistory}
-              disabled={loadingHistory}
-              className="px-5 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] disabled:opacity-50"
-            >
-              История
+            <div className="w-px h-5 bg-[#d2d2d7]" />
+            <button onClick={redo} disabled={!canRedo} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-r-full disabled:opacity-40 disabled:cursor-not-allowed" title="Повторить (Ctrl+Shift+Z)">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
             </button>
           </div>
+          <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] shrink-0">Импорт</button>
+          <button onClick={handleExport} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] shrink-0">Экспорт</button>
+          {import.meta.env.VITE_PI_MODE === 'true' && (
+            <button onClick={handleSendToDisplay} disabled={sendingToDisplay} className="px-4 py-2 bg-[#1d1d1f] text-white rounded-full text-sm font-medium hover:bg-[#3a3a3c] transition-all duration-200 disabled:opacity-50 shrink-0">
+              {sendingToDisplay ? 'Отправка...' : 'На экран'}
+            </button>
+          )}
+          {import.meta.env.VITE_PI_MODE !== 'true' && (
+            <button onClick={handleBuildPiImage} disabled={buildingImage} className="px-4 py-2 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50 shrink-0" title="Собрать образ для Raspberry Pi">
+              {buildingImage ? 'Сборка...' : 'Образ для Pi'}
+            </button>
+          )}
+          <button onClick={handleSaveToBackend} disabled={saving || saved} className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shrink-0 ${saved ? 'bg-[#34c759] text-white cursor-default' : 'bg-[#0071e3] text-white hover:bg-[#0077ED] shadow-[0_4px_12px_rgb(0,113,227,0.3)]'} disabled:opacity-50`}>
+            {saving ? 'Сохранение...' : saved ? 'Сохранено' : 'Сохранить'}
+          </button>
+          <button onClick={loadHistory} disabled={loadingHistory} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] disabled:opacity-50 shrink-0">История</button>
         </div>
-        <div className="flex-1 bg-[#e8e8ed] p-8 rounded-2xl">
+
+        {/* === MOBILE TOOLBAR === */}
+        <div className="lg:hidden flex items-center gap-1 px-2 py-1.5 bg-white border-b border-[#d2d2d7] overflow-x-auto shrink-0">
+          <button onClick={handleBackToProjects} className="shrink-0 p-2 text-[#0071e3]">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <div className="flex items-center bg-[#f5f5f7] rounded-full border border-[#d2d2d7] shrink-0">
+            <button onClick={undo} disabled={!canUndo} className="px-2.5 py-1.5 text-[#1d1d1f] disabled:opacity-40">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+            </button>
+            <div className="w-px h-4 bg-[#d2d2d7]" />
+            <button onClick={redo} disabled={!canRedo} className="px-2.5 py-1.5 text-[#1d1d1f] disabled:opacity-40">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+            </button>
+          </div>
+          <span className="text-xs text-[#86868b] truncate shrink-0 max-w-[100px]">{schemaName}</span>
+          <div className="flex-1" />
+          <button onClick={handleSaveToBackend} disabled={saving} className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${saved ? 'bg-[#34c759] text-white' : 'bg-[#0071e3] text-white'} disabled:opacity-50`}>
+            {saved ? '✓' : 'Сохранить'}
+          </button>
+        </div>
+
+        {/* === CANVAS AREA === */}
+        <div className="flex-1 bg-[#e8e8ed] lg:p-8 p-2 lg:rounded-2xl rounded-none min-h-0">
           {viewingVersion && (
             <div className="mb-4 p-4 bg-[#0071e3]/10 border border-[#0071e3]/30 rounded-xl flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-[#0071e3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-[#0071e3] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-[#0071e3] font-medium">
+                <span className="text-[#0071e3] font-medium text-sm">
                   Просмотр версии от {new Date(viewingVersion.date).toLocaleString('ru-RU')}
                 </span>
               </div>
-              <button
-                onClick={handleRestoreCurrent}
-                className="px-4 py-2 bg-[#0071e3] text-white rounded-lg text-sm font-medium hover:bg-[#0077ED] transition-all duration-200"
-              >
+              <button onClick={handleRestoreCurrent} className="shrink-0 px-4 py-2 bg-[#0071e3] text-white rounded-lg text-sm font-medium hover:bg-[#0077ED] transition-all duration-200">
                 Вернуться к текущей
               </button>
             </div>
           )}
           <div className="w-full h-full flex items-center justify-center" style={{ containerType: 'size' }}>
             <div
-              className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden"
+              className="bg-white lg:rounded-2xl rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden"
               style={{
                 aspectRatio: '16/9',
                 width: 'min(100cqw, calc(100cqh * 16 / 9))',
@@ -643,11 +625,88 @@ export function Editor() {
             </div>
           </div>
         </div>
+
+        {/* === MOBILE BOTTOM PANEL === */}
+        {mobilePanel && (
+          <div className="lg:hidden bg-white border-t border-[#d2d2d7] max-h-[45vh] overflow-y-auto">
+            {mobilePanel === 'project' && (
+              <div className="p-4 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Название проекта</label>
+                  <input
+                    type="text"
+                    value={schemaName}
+                    onChange={(e) => setSchemaName(e.target.value)}
+                    className="w-full mt-1.5 px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => { fileInputRef.current?.click(); setMobilePanel(null); }} className="px-4 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-lg text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]">
+                    Загрузить JSON
+                  </button>
+                  <button onClick={() => { handleExport(); setMobilePanel(null); }} className="px-4 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-lg text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7]">
+                    Скачать JSON
+                  </button>
+                  {import.meta.env.VITE_PI_MODE === 'true' && (
+                    <button onClick={() => { handleSendToDisplay(); setMobilePanel(null); }} disabled={sendingToDisplay} className="px-4 py-2.5 bg-[#1d1d1f] text-white rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50">
+                      {sendingToDisplay ? 'Отправка...' : 'На экран'}
+                    </button>
+                  )}
+                  {import.meta.env.VITE_PI_MODE !== 'true' && (
+                    <button onClick={() => { handleBuildPiImage(); setMobilePanel(null); }} disabled={buildingImage} className="px-4 py-2.5 bg-[#6e3ff3] text-white rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50">
+                      {buildingImage ? 'Сборка...' : 'Образ для Pi'}
+                    </button>
+                  )}
+                  <button onClick={() => { loadHistory(); setMobilePanel(null); }} disabled={loadingHistory} className="px-4 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-lg text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] disabled:opacity-50">
+                    История
+                  </button>
+                </div>
+              </div>
+            )}
+            {mobilePanel === 'blocks' && (
+              <div className="p-4">
+                <BlocksPalette onAddBlock={(type) => { handleAddBlock(type); setMobilePanel(null); }} />
+              </div>
+            )}
+            {mobilePanel === 'properties' && (
+              <div className="p-4">
+                <PropertiesPanel
+                  selectedBlock={selectedBlock}
+                  onUpdateBlock={handleUpdateBlockWithHistory}
+                  onDeleteBlock={handleDeleteBlock}
+                  projectId={projectId || ''}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* === MOBILE TAB BAR === */}
+        <div className="lg:hidden flex bg-white border-t border-[#d2d2d7] shrink-0">
+          <button
+            className={mobileTabClass('project')}
+            onClick={() => setMobilePanel(mobilePanel === 'project' ? null : 'project')}
+          >
+            Проект
+          </button>
+          <button
+            className={mobileTabClass('blocks')}
+            onClick={() => setMobilePanel(mobilePanel === 'blocks' ? null : 'blocks')}
+          >
+            Блоки
+          </button>
+          <button
+            className={mobileTabClass('properties')}
+            onClick={() => setMobilePanel(mobilePanel === 'properties' ? null : 'properties')}
+          >
+            Свойства
+          </button>
+        </div>
       </div>
 
       {showHistory && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-[0_20px_60px_rgb(0,0,0,0.3)]">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-[0_20px_60px_rgb(0,0,0,0.3)] max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold text-[#1d1d1f]">История версий</h3>
               <button

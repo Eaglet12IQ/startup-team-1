@@ -20,106 +20,170 @@ interface CanvasProps {
   onDuplicateBlock: (id: string) => void;
 }
 
+interface DragStart {
+  x: number;
+  y: number;
+  blockX: number;
+  blockY: number;
+  startWidth: number;
+  startHeight: number;
+}
+
+type PointEvent = { clientX: number; clientY: number };
+
+function getXY(e: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent): PointEvent {
+  if ('touches' in e) {
+    const t = e.touches[0] || (e as TouchEvent).changedTouches[0];
+    return t ? { clientX: t.clientX, clientY: t.clientY } : { clientX: 0, clientY: 0 };
+  }
+  return { clientX: e.clientX, clientY: e.clientY };
+}
+
 export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onMoveBlock, onBlockChangeEnd, onDuplicateBlock }: CanvasProps) => {
-  const dragStartRef = useRef({ x: 0, y: 0, blockX: 0, blockY: 0, startWidth: 0, startHeight: 0 });
+  const dragStartRef = useRef<DragStart>({ x: 0, y: 0, blockX: 0, blockY: 0, startWidth: 0, startHeight: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
   const blocksRef = useRef(blocks);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   blocksRef.current = blocks;
 
-  const handleMouseDown = (e: React.MouseEvent, blockId: string) => {
-    if (e.button !== 0) return;
-    e.stopPropagation();
-    onSelectBlock(blockId);
-    
+  const startDrag = (blockId: string, clientX: number, clientY: number) => {
     const block = blocks.find(b => b.id === blockId);
     if (!block) return;
-    
-    dragStartRef.current = { 
-      x: e.clientX, 
-      y: e.clientY, 
-      blockX: block.x, 
-      blockY: block.y 
+
+    dragStartRef.current = {
+      x: clientX,
+      y: clientY,
+      blockX: block.x,
+      blockY: block.y,
+      startWidth: block.width,
+      startHeight: block.height,
     };
-    
-    const handleMouseMove = (moveEvent: MouseEvent) => {
+
+    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      
+
+      const pt = getXY(moveEvent);
       const rect = canvas.getBoundingClientRect();
-      const deltaX = moveEvent.clientX - dragStartRef.current.x;
-      const deltaY = moveEvent.clientY - dragStartRef.current.y;
-      
+      const deltaX = pt.clientX - dragStartRef.current.x;
+      const deltaY = pt.clientY - dragStartRef.current.y;
+
       onUpdateBlock(blockId, {
         x: dragStartRef.current.blockX + (deltaX / rect.width) * 100,
         y: dragStartRef.current.blockY + (deltaY / rect.height) * 100,
       });
     };
-    
-    const handleMouseUp = () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      
+
+    const endDrag = () => {
+      window.removeEventListener('mousemove', handleMove as EventListener);
+      window.removeEventListener('mouseup', endDrag);
+      window.removeEventListener('touchmove', handleMove as EventListener, { passive: false } as AddEventListenerOptions);
+      window.removeEventListener('touchend', endDrag);
+
+      if (longPressRef.current) {
+        clearTimeout(longPressRef.current);
+        longPressRef.current = null;
+      }
+
       const currentBlock = blocksRef.current.find(b => b.id === blockId);
       if (currentBlock) {
-        const posChanged = Math.abs(currentBlock.x - dragStartRef.current.blockX) > 0.01 || 
+        const posChanged = Math.abs(currentBlock.x - dragStartRef.current.blockX) > 0.01 ||
                           Math.abs(currentBlock.y - dragStartRef.current.blockY) > 0.01;
         if (posChanged) {
           onBlockChangeEnd?.();
         }
       }
     };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+
+    window.addEventListener('mousemove', handleMove as EventListener);
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchmove', handleMove as EventListener, { passive: false });
+    window.addEventListener('touchend', endDrag);
   };
 
-  const handleResize = (e: React.MouseEvent, blockId: string) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const startResize = (blockId: string, clientX: number, clientY: number) => {
     const block = blocksRef.current.find(b => b.id === blockId);
     if (!block) return;
-    
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     dragStartRef.current.startWidth = block.width;
     dragStartRef.current.startHeight = block.height;
-    
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const cursorX = moveEvent.clientX - rect.left;
-      const cursorY = moveEvent.clientY - rect.top;
-      
+
+    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const pt = getXY(moveEvent);
+      const cursorX = pt.clientX - rect.left;
+      const cursorY = pt.clientY - rect.top;
+
       const centerX = (block.x / 100) * rect.width;
       const centerY = (block.y / 100) * rect.height;
-      
+
       const newWidthPercent = Math.max(5, 2 * (cursorX - centerX) / rect.width * 100);
       const newHeightPercent = Math.max(5, 2 * (cursorY - centerY) / rect.height * 100);
-      
+
       onUpdateBlock(blockId, {
         width: newWidthPercent,
         height: newHeightPercent,
       });
     };
-    
-    const handleMouseUp = () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      
+
+    const endResize = () => {
+      window.removeEventListener('mousemove', handleMove as EventListener);
+      window.removeEventListener('mouseup', endResize);
+      window.removeEventListener('touchmove', handleMove as EventListener, { passive: false } as AddEventListenerOptions);
+      window.removeEventListener('touchend', endResize);
+
+      if (longPressRef.current) {
+        clearTimeout(longPressRef.current);
+        longPressRef.current = null;
+      }
+
       const currentBlock = blocksRef.current.find(b => b.id === blockId);
       if (currentBlock) {
-        const sizeChanged = Math.abs(currentBlock.width - dragStartRef.current.startWidth) > 0.01 || 
+        const sizeChanged = Math.abs(currentBlock.width - dragStartRef.current.startWidth) > 0.01 ||
                            Math.abs(currentBlock.height - dragStartRef.current.startHeight) > 0.01;
         if (sizeChanged) {
           onBlockChangeEnd?.();
         }
       }
     };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+
+    window.addEventListener('mousemove', handleMove as EventListener);
+    window.addEventListener('mouseup', endResize);
+    window.addEventListener('touchmove', handleMove as EventListener, { passive: false });
+    window.addEventListener('touchend', endResize);
+  };
+
+  const handlePointerDown = (e: React.MouseEvent | React.TouchEvent, blockId: string) => {
+    if ('button' in e && e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    onSelectBlock(blockId);
+
+    const pt = getXY(e);
+    startDrag(blockId, pt.clientX, pt.clientY);
+
+    longPressRef.current = setTimeout(() => {
+      const currentPt = getXY(e);
+      setContextMenu({ x: currentPt.clientX, y: currentPt.clientY, blockId });
+    }, 500);
+  };
+
+  const handleResizePointerDown = (e: React.MouseEvent | React.TouchEvent, blockId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+    }
+
+    const pt = getXY(e);
+    startResize(blockId, pt.clientX, pt.clientY);
   };
 
   const handleContextMenu = (e: React.MouseEvent, blockId: string) => {
@@ -127,6 +191,16 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
     e.stopPropagation();
     onSelectBlock(blockId);
     setContextMenu({ x: e.clientX, y: e.clientY, blockId });
+  };
+
+  const handleCanvasPointerUp = (e: React.MouseEvent | React.TouchEvent) => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+    }
+    if (e.target === canvasRef.current) {
+      onSelectBlock(null);
+    }
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
@@ -140,69 +214,70 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
   return (
     <div
       ref={canvasRef}
-      className="w-full h-full bg-white relative overflow-hidden"
+      className="w-full h-full bg-white relative overflow-hidden touch-none"
       onClick={handleCanvasClick}
+      onMouseUp={handleCanvasPointerUp}
+      onTouchEnd={handleCanvasPointerUp}
       style={{ containerType: 'size' }}
     >
       {blocks.map((block, index) => {
         const isSelected = block.id === selectedBlockId;
         const zIndex = 10 + index;
-        
+
+        const commonStyle: React.CSSProperties = {
+          left: `${block.x}%`,
+          top: `${block.y}%`,
+          width: `${block.width}%`,
+          height: `${block.height}%`,
+          transform: 'translate(-50%, -50%)',
+          zIndex: isSelected ? zIndex + 1000 : zIndex,
+          touchAction: 'none',
+        };
+
         if (block.type === 'text') {
           return (
             <div
               key={block.id}
               className={`absolute cursor-move select-none transition-shadow duration-200 ${isSelected ? 'ring-2 ring-[#0071e3] shadow-[0_0_0_1px_#0071e3,0_4px_16px_rgb(0,113,227,0.25)]' : ''}`}
-              style={{
-                left: `${block.x}%`,
-                top: `${block.y}%`,
-                width: `${block.width}%`,
-                height: `${block.height}%`,
-                transform: 'translate(-50%, -50%)',
-                zIndex: isSelected ? zIndex + 1000 : zIndex,
-                '--block-height': block.height,
-              } as React.CSSProperties}
-              onMouseDown={(e) => handleMouseDown(e, block.id)}
+              style={{ ...commonStyle, '--block-height': block.height } as React.CSSProperties}
+              onMouseDown={(e) => handlePointerDown(e, block.id)}
+              onTouchStart={(e) => handlePointerDown(e, block.id)}
               onContextMenu={(e) => handleContextMenu(e, block.id)}
             >
               <TextBlock {...block} blockHeight={block.height} />
               {isSelected && (
                 <div
-                  className="absolute w-4 h-4 bg-white border-2 border-[#0071e3] rounded-full cursor-se-resize -right-2 -bottom-2 shadow-[0_2px_8px_rgb(0,113,227,0.3)] hover:bg-[#0071e3] transition-colors duration-150"
-                  onMouseDown={(e) => handleResize(e, block.id)}
+                  className="absolute w-6 h-6 bg-white border-2 border-[#0071e3] rounded-full cursor-se-resize -right-3 -bottom-3 shadow-[0_2px_8px_rgb(0,113,227,0.3)] hover:bg-[#0071e3] transition-colors duration-150"
+                  onMouseDown={(e) => handleResizePointerDown(e, block.id)}
+                  onTouchStart={(e) => handleResizePointerDown(e, block.id)}
                 />
               )}
             </div>
           );
         }
-        
+
         if (block.type === 'image') {
           return (
             <div
               key={block.id}
               className={`absolute cursor-move select-none transition-shadow duration-200 ${isSelected ? 'ring-2 ring-[#0071e3] shadow-[0_0_0_1px_#0071e3,0_4px_16px_rgb(0,113,227,0.25)]' : ''}`}
-              style={{
-                left: `${block.x}%`,
-                top: `${block.y}%`,
-                width: `${block.width}%`,
-                height: `${block.height}%`,
-                transform: 'translate(-50%, -50%)',
-                zIndex: isSelected ? zIndex + 1000 : zIndex,
-              }}
-              onMouseDown={(e) => handleMouseDown(e, block.id)}
+              style={commonStyle}
+              onMouseDown={(e) => handlePointerDown(e, block.id)}
+              onTouchStart={(e) => handlePointerDown(e, block.id)}
               onContextMenu={(e) => handleContextMenu(e, block.id)}
             >
               <ImageBlock {...block} />
               {isSelected && (
                 <div
-                  className="absolute w-4 h-4 bg-white border-2 border-[#0071e3] rounded-full cursor-se-resize -right-2 -bottom-2 shadow-[0_2px_8px_rgb(0,113,227,0.3)] hover:bg-[#0071e3] transition-colors duration-150"
-                  onMouseDown={(e) => handleResize(e, block.id)}
+                  className="absolute w-6 h-6 bg-white border-2 border-[#0071e3] rounded-full cursor-se-resize -right-3 -bottom-3 shadow-[0_2px_8px_rgb(0,113,227,0.3)] hover:bg-[#0071e3] transition-colors duration-150"
+                  onMouseDown={(e) => handleResizePointerDown(e, block.id)}
+                  onTouchStart={(e) => handleResizePointerDown(e, block.id)}
                 />
               )}
             </div>
           );
         }
-        
+
         return null;
       })}
 
