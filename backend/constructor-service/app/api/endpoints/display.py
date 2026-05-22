@@ -15,7 +15,7 @@ _sse_clients: list[asyncio.Queue] = []
 _current_html: str = ""
 
 
-def _load_initial_html() -> str:
+def _load_display_html() -> str:
     if os.path.exists(DISPLAY_FILE):
         try:
             with open(DISPLAY_FILE, "r", encoding="utf-8") as f:
@@ -25,18 +25,80 @@ def _load_initial_html() -> str:
     return ""
 
 
-def _save_html(html: str) -> None:
+def _save_full_page(blocks_html: str) -> None:
+    page = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; }}
+  #content {{ width: 100%; height: 100%; position: relative; }}
+</style>
+</head>
+<body>
+<div id="content">{blocks_html}</div>
+<script>
+  var content = document.getElementById('content');
+  function connect() {{
+    var es = new EventSource('/api/display/stream');
+    es.addEventListener('update', function(e) {{
+      if (e.data) content.innerHTML = e.data;
+    }});
+    es.onerror = function() {{
+      es.close();
+      setTimeout(connect, 2000);
+    }};
+  }}
+  connect();
+</script>
+</body>
+</html>"""
     try:
         os.makedirs(os.path.dirname(DISPLAY_FILE), exist_ok=True)
         with open(DISPLAY_FILE, "w", encoding="utf-8") as f:
-            f.write(html)
+            f.write(page)
     except OSError:
         pass
 
 
-# Загружаем при импорте модуля (старт бэкенда)
-_current_html = _load_initial_html()
+DEFAULT_PAGE = """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; }
+  #content { width: 100%; height: 100%; position: relative; }
+</style>
+</head>
+<body>
+<div id="content">
+<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;">
+<p style="color:#444;font-family:sans-serif;font-size:24px">Ожидание контента...</p>
+</div>
+</div>
+<script>
+  var content = document.getElementById('content');
+  function connect() {
+    var es = new EventSource('/api/display/stream');
+    es.addEventListener('update', function(e) {
+      if (e.data) content.innerHTML = e.data;
+    });
+    es.onerror = function() {
+      es.close();
+      setTimeout(connect, 2000);
+    };
+  }
+  connect();
+</script>
+</body>
+</html>"""
 
+# Загружаем при старте
+_initial_page = _load_display_html()
 
 PLACEHOLDER_HTML = (
     '<div style="width:100%;height:100%;display:flex;align-items:center;'
@@ -44,39 +106,6 @@ PLACEHOLDER_HTML = (
     '<p style="color:#444;font-family:sans-serif;font-size:24px">Ожидание контента...</p>'
     '</div>'
 )
-
-DISPLAY_PAGE_HTML = """<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; }
-  #content { width: 100%; height: 100%; position: relative; }
-</style>
-</head>
-<body>
-<div id="content"></div>
-<script>
-  var content = document.getElementById('content');
-
-  function connect() {
-    var es = new EventSource('/api/display/stream');
-
-    es.addEventListener('update', function(e) {
-      content.innerHTML = e.data;
-    });
-
-    es.onerror = function() {
-      es.close();
-      setTimeout(connect, 2000);
-    };
-  }
-
-  connect();
-</script>
-</body>
-</html>"""
 
 
 class DisplayPayload(BaseModel):
@@ -150,7 +179,10 @@ def render_blocks_to_html(blocks: list) -> str:
 
 @router.get("/", response_class=HTMLResponse)
 async def get_display():
-    return HTMLResponse(content=DISPLAY_PAGE_HTML)
+    page = _load_display_html()
+    if page:
+        return HTMLResponse(content=page)
+    return HTMLResponse(content=DEFAULT_PAGE)
 
 
 @router.get("/stream")
@@ -158,11 +190,13 @@ async def stream_display():
     queue: asyncio.Queue = asyncio.Queue()
     _sse_clients.append(queue)
 
+    # Читаем свежее состояние из файла (могло быть записано до старта процесса)
+    saved = _load_display_html()
+    initial_blocks = _current_html if _current_html else PLACEHOLDER_HTML
+
     async def event_generator():
         try:
-            # Сразу отдаём текущий контент — либо сохранённый дизайн, либо placeholder
-            initial = _current_html if _current_html else PLACEHOLDER_HTML
-            yield f"event: update\ndata: {initial}\n\n"
+            yield f"event: update\ndata: {initial_blocks}\n\n"
 
             while True:
                 try:
@@ -188,11 +222,11 @@ async def stream_display():
 async def apply_display(payload: DisplayPayload):
     global _current_html
 
-    html = render_blocks_to_html(payload.blocks)
-    _current_html = html
-    _save_html(html)
+    blocks_html = render_blocks_to_html(payload.blocks)
+    _current_html = blocks_html
+    _save_full_page(blocks_html)
 
     for q in list(_sse_clients):
-        await q.put(html)
+        await q.put(blocks_html)
 
     return {"status": "ok"}
