@@ -3,7 +3,7 @@ export { ImageBlock } from './ImageBlock';
 export const imageModule = {
   type: 'image',
   defaultProps: {
-    src: 'https://via.placeholder.com/200',
+    src: '',
     objectFit: 'cover',
     x: 0,
     y: 0,

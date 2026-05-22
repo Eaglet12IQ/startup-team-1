@@ -10,6 +10,7 @@ services:
       - "8082:8082"
     volumes:
       - ./backend/constructor-service/schemas:/app/schemas
+      - ./backend/constructor-service/uploads:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped

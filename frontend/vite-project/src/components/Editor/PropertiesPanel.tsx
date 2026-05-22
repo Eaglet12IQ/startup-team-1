@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BlockData } from '../../types';
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { GoDotFill } from "react-icons/go";
+import { uploadImage } from '../../services/api';
 
 interface PropertiesPanelProps {
   selectedBlock: BlockData | null;
   onUpdateBlock: (id: string, updates: Partial<BlockData>) => void;
   onDeleteBlock: (id: string) => void;
+  projectId: string;
 }
 
 interface NumberInputProps {
@@ -47,7 +49,26 @@ const NumberInput = ({ label, value, onChange }: NumberInputProps) => {
   );
 };
 
-export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock }: PropertiesPanelProps) => {
+export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock, projectId }: PropertiesPanelProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedBlock || selectedBlock.type !== 'image') return;
+
+    setUploading(true);
+    try {
+      const fileId = await uploadImage(file, projectId);
+      onUpdateBlock(selectedBlock.id, { src: `${projectId}/${fileId}` });
+    } catch {
+      alert('Ошибка загрузки изображения');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
   if (!selectedBlock) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -222,13 +243,38 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock }:
       {selectedBlock.type === 'image' && (
         <div className="space-y-4 pt-4 border-t border-[#d2d2d7]">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">URL изображения</label>
+            <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Изображение</label>
             <input
-              type="text"
-              value={selectedBlock.src}
-              onChange={(e) => onUpdateBlock(selectedBlock.id, { src: e.target.value })}
-              className="w-full px-3 py-2.5 bg-[#f5f5f7] rounded-lg text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
             />
+            {selectedBlock.src ? (
+              <div className="space-y-2">
+                <img
+                  src={selectedBlock.src.startsWith('data:') || selectedBlock.src.startsWith('http') || selectedBlock.src.startsWith('/') ? selectedBlock.src : `/api/uploads/${selectedBlock.src}`}
+                  alt=""
+                  className="w-full h-32 object-cover rounded-lg"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full px-3 py-2.5 bg-[#f5f5f7] text-[#1d1d1f] rounded-lg text-sm hover:bg-[#e8e8ed] transition-all duration-200 disabled:opacity-50"
+                >
+                  {uploading ? 'Загрузка...' : 'Заменить изображение'}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full px-3 py-2.5 bg-[#0071e3] text-white rounded-lg text-sm font-medium hover:bg-[#0077ED] transition-all duration-200 disabled:opacity-50"
+              >
+                {uploading ? 'Загрузка...' : 'Загрузить изображение'}
+              </button>
+            )}
           </div>
           
           <div className="space-y-1.5">

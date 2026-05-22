@@ -133,7 +133,10 @@ def render_blocks_to_html(blocks: list) -> str:
             )
 
         elif block.get("type") == "image":
-            src = html_lib.escape(block.get("src", ""))
+            src = block.get("src", "")
+            if src and not src.startswith("data:") and not src.startswith("http://") and not src.startswith("https://") and not src.startswith("/"):
+                src = f"/api/uploads/{src}"
+            src = html_lib.escape(src)
             object_fit = block.get("objectFit", "cover")
             img_style = f"width:100%;height:100%;object-fit:{object_fit};display:block;"
             elements.append(

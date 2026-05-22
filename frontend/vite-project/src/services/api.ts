@@ -59,3 +59,18 @@ export async function getSchemaVersion(schemaId: number, commitSha: string): Pro
   const data = await res.json();
   return data.data;
 }
+
+export async function uploadImage(file: File, schemaId: string | number): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const userId = PI_MODE ? '1' : (localStorage.getItem('user-id') || '');
+  const res = await fetch(`${API_BASE}/api/upload/${schemaId}`, {
+    method: 'POST',
+    headers: { 'X-User-ID': userId },
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`Failed to upload image: ${res.status}`);
+  const data = await res.json();
+  return data.file_id;
+}

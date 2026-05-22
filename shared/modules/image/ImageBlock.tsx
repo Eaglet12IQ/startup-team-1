@@ -5,13 +5,21 @@ interface ImageBlockProps extends ModuleProps {
   objectFit?: 'cover' | 'contain' | 'fill';
 }
 
+function resolveSrc(src: string): string {
+  if (!src) return '';
+  if (src.startsWith('data:') || src.startsWith('http://') || src.startsWith('https://') || src.startsWith('/')) {
+    return src;
+  }
+  return `/api/uploads/${src}`;
+}
+
 export const ImageBlock = ({
   src,
   objectFit = 'cover',
 }: ImageBlockProps) => {
   return (
     <img
-      src={src}
+      src={resolveSrc(src)}
       alt=""
       draggable={false}
       style={{

@@ -9,7 +9,7 @@ const MAX_HISTORY = 50;
 
 const defaultBlocks: BlockData[] = [
   { type: 'text', id: '1', content: 'Заголовок', x: 50, y: 10, width: 50, height: 50, fontSize: 50, fontWeight: 'bold', color: '#000000', textAlign: 'center', verticalAlign: 'center', fitText: false },
-  { type: 'image', id: '2', src: 'https://i0.wp.com/kifabrik.mirmi.tum.de/wp-content/uploads/2022/05/placeholder-139.png?fit=1200%2C800&ssl=1&w=640', x: 50, y: 50, width: 20, height: 20, objectFit: 'cover' },
+  { type: 'image', id: '2', src: '', x: 50, y: 50, width: 20, height: 20, objectFit: 'cover' },
 ];
 
 const defaultSchemaName = 'Новый проект';
@@ -171,7 +171,7 @@ function App() {
       : {
           type: 'image',
           id: crypto.randomUUID(),
-          src: 'https://via.placeholder.com/200',
+          src: '',
           x: 50,
           y: 50,
           width: 15,
