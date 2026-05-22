@@ -62,12 +62,10 @@ export function Editor() {
             const backendSchema = await getSchema(numericId);
             const payload = backendSchema.payload as { blocks?: BlockData[] } | BlockData[];
             const loadedBlocks = Array.isArray(payload) ? payload : (payload?.blocks ?? []);
-            if (loadedBlocks.length > 0) {
-              setBlocks(loadedBlocks);
-              setSchemaName(backendSchema.schema_name);
-              historyRef.current = [[...loadedBlocks]];
-              historyIndexRef.current = 0;
-            }
+            setBlocks(loadedBlocks);
+            setSchemaName(backendSchema.schema_name);
+            historyRef.current = [[...loadedBlocks]];
+            historyIndexRef.current = 0;
           } catch {
             const localKey = `${STORAGE_KEY}-${projectId}`;
             const localData = localStorage.getItem(localKey);
@@ -584,7 +582,7 @@ export function Editor() {
                 className="px-5 py-2.5 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50"
                 title="Собрать образ для Raspberry Pi с текущим дизайном"
               >
-                {buildingImage ? 'Сборка...' : '🍓 Образ для Pi'}
+                {buildingImage ? 'Сборка...' : 'Образ для Pi'}
               </button>
             )}
             <button
