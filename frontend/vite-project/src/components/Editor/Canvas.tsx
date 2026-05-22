@@ -77,10 +77,19 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
     };
 
     const endDrag = () => {
+      cleanupDrag();
+    };
+
+    const cancelDrag = () => {
+      cleanupDrag();
+    };
+
+    const cleanupDrag = () => {
       window.removeEventListener('mousemove', handleMove as EventListener);
       window.removeEventListener('mouseup', endDrag);
-      window.removeEventListener('touchmove', handleMove as EventListener, { passive: false } as AddEventListenerOptions);
+      window.removeEventListener('touchmove', handleMove as EventListener);
       window.removeEventListener('touchend', endDrag);
+      window.removeEventListener('touchcancel', cancelDrag);
 
       if (longPressRef.current) {
         clearTimeout(longPressRef.current);
@@ -99,8 +108,9 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
 
     window.addEventListener('mousemove', handleMove as EventListener);
     window.addEventListener('mouseup', endDrag);
-    window.addEventListener('touchmove', handleMove as EventListener, { passive: false });
+    window.addEventListener('touchmove', handleMove as EventListener, { passive: true });
     window.addEventListener('touchend', endDrag);
+    window.addEventListener('touchcancel', cancelDrag);
   };
 
   const startResize = (blockId: string, clientX: number, clientY: number) => {
@@ -132,10 +142,19 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
     };
 
     const endResize = () => {
+      cleanupResize();
+    };
+
+    const cancelResize = () => {
+      cleanupResize();
+    };
+
+    const cleanupResize = () => {
       window.removeEventListener('mousemove', handleMove as EventListener);
       window.removeEventListener('mouseup', endResize);
-      window.removeEventListener('touchmove', handleMove as EventListener, { passive: false } as AddEventListenerOptions);
+      window.removeEventListener('touchmove', handleMove as EventListener);
       window.removeEventListener('touchend', endResize);
+      window.removeEventListener('touchcancel', cancelResize);
 
       if (longPressRef.current) {
         clearTimeout(longPressRef.current);
@@ -154,8 +173,9 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
 
     window.addEventListener('mousemove', handleMove as EventListener);
     window.addEventListener('mouseup', endResize);
-    window.addEventListener('touchmove', handleMove as EventListener, { passive: false });
+    window.addEventListener('touchmove', handleMove as EventListener, { passive: true });
     window.addEventListener('touchend', endResize);
+    window.addEventListener('touchcancel', cancelResize);
   };
 
   const handlePointerDown = (e: React.MouseEvent | React.TouchEvent, blockId: string) => {

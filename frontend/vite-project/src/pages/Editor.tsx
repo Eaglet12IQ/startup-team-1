@@ -210,8 +210,9 @@ export function Editor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocks: blocksWithBase64 }),
       });
-      if (!res.ok) throw new Error();
-    } catch {
+      if (!res.ok) throw new Error(`Статус: ${res.status}`);
+    } catch (err) {
+      console.error('Send to display error:', err);
       alert('Не удалось отправить на экран');
     } finally {
       setSendingToDisplay(false);
@@ -236,7 +237,7 @@ export function Editor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocks: blocksWithBase64 }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error(`Статус: ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -244,7 +245,8 @@ export function Editor() {
       a.download = 'pidisplay.img';
       a.click();
       URL.revokeObjectURL(url);
-    } catch {
+    } catch (err) {
+      console.error('Build Pi image error:', err);
       alert('Не удалось собрать образ');
     } finally {
       setBuildingImage(false);
@@ -530,7 +532,7 @@ export function Editor() {
       {/* === MAIN AREA (toolbar + canvas) === */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* === DESKTOP TOOLBAR === */}
-        <div className="hidden lg:flex items-center gap-2 px-4 pt-4 pb-2 flex-wrap">
+        <div className="hidden lg:flex justify-between items-center px-4 pt-4 pb-2">
           <button
             onClick={handleBackToProjects}
             className="px-4 py-2 bg-white text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] flex items-center gap-1.5 shrink-0"
@@ -540,31 +542,33 @@ export function Editor() {
             </svg>
             Проекты
           </button>
-          <div className="flex items-center bg-white rounded-full border border-[#d2d2d7] shrink-0">
-            <button onClick={undo} disabled={!canUndo} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-l-full disabled:opacity-40 disabled:cursor-not-allowed" title="Отменить (Ctrl+Z)">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center bg-white rounded-full border border-[#d2d2d7] shrink-0">
+              <button onClick={undo} disabled={!canUndo} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-l-full disabled:opacity-40 disabled:cursor-not-allowed" title="Отменить (Ctrl+Z)">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+              </button>
+              <div className="w-px h-5 bg-[#d2d2d7]" />
+              <button onClick={redo} disabled={!canRedo} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-r-full disabled:opacity-40 disabled:cursor-not-allowed" title="Повторить (Ctrl+Shift+Z)">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
+              </button>
+            </div>
+            <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] shrink-0">Импорт</button>
+            <button onClick={handleExport} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] shrink-0">Экспорт</button>
+            {import.meta.env.VITE_PI_MODE === 'true' && (
+              <button onClick={handleSendToDisplay} disabled={sendingToDisplay} className="px-4 py-2 bg-[#1d1d1f] text-white rounded-full text-sm font-medium hover:bg-[#3a3a3c] transition-all duration-200 disabled:opacity-50 shrink-0">
+                {sendingToDisplay ? 'Отправка...' : 'На экран'}
+              </button>
+            )}
+            {import.meta.env.VITE_PI_MODE !== 'true' && (
+              <button onClick={handleBuildPiImage} disabled={buildingImage} className="px-4 py-2 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50 shrink-0" title="Собрать образ для Raspberry Pi">
+                {buildingImage ? 'Сборка...' : 'Образ для Pi'}
+              </button>
+            )}
+            <button onClick={handleSaveToBackend} disabled={saving || saved} className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shrink-0 ${saved ? 'bg-[#34c759] text-white cursor-default' : 'bg-[#0071e3] text-white hover:bg-[#0077ED] shadow-[0_4px_12px_rgb(0,113,227,0.3)]'} disabled:opacity-50`}>
+              {saving ? 'Сохранение...' : saved ? 'Сохранено' : 'Сохранить'}
             </button>
-            <div className="w-px h-5 bg-[#d2d2d7]" />
-            <button onClick={redo} disabled={!canRedo} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#e8e8ed] transition-all duration-200 rounded-r-full disabled:opacity-40 disabled:cursor-not-allowed" title="Повторить (Ctrl+Shift+Z)">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" /></svg>
-            </button>
+            <button onClick={loadHistory} disabled={loadingHistory} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] disabled:opacity-50 shrink-0">История</button>
           </div>
-          <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] shrink-0">Импорт</button>
-          <button onClick={handleExport} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] shrink-0">Экспорт</button>
-          {import.meta.env.VITE_PI_MODE === 'true' && (
-            <button onClick={handleSendToDisplay} disabled={sendingToDisplay} className="px-4 py-2 bg-[#1d1d1f] text-white rounded-full text-sm font-medium hover:bg-[#3a3a3c] transition-all duration-200 disabled:opacity-50 shrink-0">
-              {sendingToDisplay ? 'Отправка...' : 'На экран'}
-            </button>
-          )}
-          {import.meta.env.VITE_PI_MODE !== 'true' && (
-            <button onClick={handleBuildPiImage} disabled={buildingImage} className="px-4 py-2 bg-[#6e3ff3] text-white rounded-full text-sm font-medium hover:bg-[#5a2fd4] transition-all duration-200 disabled:opacity-50 shrink-0" title="Собрать образ для Raspberry Pi">
-              {buildingImage ? 'Сборка...' : 'Образ для Pi'}
-            </button>
-          )}
-          <button onClick={handleSaveToBackend} disabled={saving || saved} className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shrink-0 ${saved ? 'bg-[#34c759] text-white cursor-default' : 'bg-[#0071e3] text-white hover:bg-[#0077ED] shadow-[0_4px_12px_rgb(0,113,227,0.3)]'} disabled:opacity-50`}>
-            {saving ? 'Сохранение...' : saved ? 'Сохранено' : 'Сохранить'}
-          </button>
-          <button onClick={loadHistory} disabled={loadingHistory} className="px-4 py-2 bg-[#f5f5f7] text-[#1d1d1f] rounded-full text-sm font-medium hover:bg-[#e8e8ed] transition-all duration-200 border border-[#d2d2d7] disabled:opacity-50 shrink-0">История</button>
         </div>
 
         {/* === MOBILE TOOLBAR === */}

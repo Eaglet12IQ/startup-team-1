@@ -70,7 +70,7 @@ DEFAULT_PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
   #content { width: 100%; height: 100%; position: relative; }
 </style>
 </head>
