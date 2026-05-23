@@ -533,7 +533,7 @@ export function Editor() {
 
             const finalMessage: Message = {
               role: 'assistant',
-              content: aiBlocks.length > 0 ? '✅ Схема сгенерирована' : '✅ Готово',
+              content: aiBlocks.length > 0 ? '✅ Схема сгенерирована' : '❌ Ошибка',
               timestamp: new Date().toISOString(),
               aiBlocks: aiBlocks.length > 0 ? aiBlocks : undefined,
             };
@@ -648,7 +648,7 @@ export function Editor() {
           />
         </div>
       </div>
-      <div className={`flex-1 flex flex-col p-4 transition-all duration-300 ${showChat ? 'mr-80' : ''}`}>
+      <div className="flex-1 flex flex-col p-4">
         <div className="flex justify-between items-center mb-4">
           <button
             onClick={handleBackToProjects}
@@ -713,19 +713,7 @@ export function Editor() {
             >
               История
             </button>
-            <button
-              onClick={() => setShowChat(!showChat)}
-              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 border ${
-                showChat
-                  ? 'bg-[#0071e3] text-white border-[#0071e3]'
-                  : 'bg-[#f5f5f7] text-[#1d1d1f] border-[#d2d2d7] hover:bg-[#e8e8ed]'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              {showChat ? 'Скрыть' : 'Чат'}
-            </button>
+
           </div>
         </div>
         <div className="flex-1 bg-[#e8e8ed] p-8 rounded-2xl">
@@ -815,6 +803,23 @@ export function Editor() {
         </div>
       )}
 
+      {/* Toggle arrow — always visible */}
+      <button
+        onClick={() => setShowChat(!showChat)}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white border border-[#d2d2d7] rounded-l-lg shadow-md p-2 hover:bg-[#f5f5f7] transition-all duration-200"
+        style={{ right: showChat ? '320px' : '0' }}
+        title={showChat ? 'Скрыть чат' : 'Открыть чат'}
+      >
+        <svg
+          className={`w-5 h-5 text-[#6e6e73] transition-transform duration-200 ${showChat ? '' : 'rotate-180'}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
       {/* AI Chat Panel - absolute positioned to not affect main layout */}
       {showChat && (
         <div className="absolute right-0 top-0 bottom-0 w-80 flex flex-col border-l border-[#d2d2d7] bg-white shadow-lg z-20">
@@ -835,14 +840,6 @@ export function Editor() {
               >
                 <svg className="w-4 h-4 text-[#6e6e73]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setShowChat(false)}
-                className="p-1 hover:bg-[#f5f5f7] rounded-lg transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>

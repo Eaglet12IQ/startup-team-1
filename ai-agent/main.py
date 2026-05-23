@@ -109,7 +109,7 @@ async def call_llm(messages, tools=None):
     MAX_CONTEXT = 32000
     RESERVE_TOKENS = 4000
     available = MAX_CONTEXT - current_tokens - RESERVE_TOKENS
-    max_tokens = max(512, min(available, 2048))
+    max_tokens = max(512, min(available, 3072))
 
     kwargs = {"tools": tools, "tool_choice": "auto"} if tools else {}
 
