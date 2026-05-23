@@ -1,0 +1,178 @@
+{
+  "identifier": "@local:startup-6",
+  "name": "startup 6",
+  "changed": true,
+  "operation": {
+    "fields": [
+      {
+        "key": "llm.prediction.structured",
+        "value": {
+          "type": "json",
+          "jsonSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://example.com/lmstudio-canvas-blocks.schema.json",
+            "title": "LM Studio Canvas / Blocks Collection (Percentage-based)",
+            "description": "Payload array of blocks on LM Studio canvas using percentage positions and sizes (0–100%). Supports 'image' and 'text' block types.",
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "description": "Image block",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "image"
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "width": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 100
+                    },
+                    "height": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 100
+                    },
+                    "src": {
+                      "type": "string"
+                    },
+                    "objectFit": {
+                      "type": "string",
+                      "enum": [
+                        "cover",
+                        "contain",
+                        "fill"
+                      ],
+                      "default": "cover"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "id",
+                    "x",
+                    "y",
+                    "width",
+                    "height",
+                    "src",
+                    "objectFit"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "description": "Text block",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "text"
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "width": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 100
+                    },
+                    "height": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 100
+                    },
+                    "content": {
+                      "type": "string"
+                    },
+                    "fontSize": {
+                      "type": "number",
+                      "default": 50
+                    },
+                    "fontWeight": {
+                      "type": "string",
+                      "default": "normal"
+                    },
+                    "color": {
+                      "type": "string",
+                      "default": "#000000"
+                    },
+                    "textAlign": {
+                      "type": "string",
+                      "enum": [
+                        "left",
+                        "center",
+                        "right"
+                      ],
+                      "default": "left"
+                    },
+                    "verticalAlign": {
+                      "type": "string",
+                      "enum": [
+                        "top",
+                        "center",
+                        "bottom"
+                      ],
+                      "default": "center"
+                    },
+                    "fitText": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "id",
+                    "x",
+                    "y",
+                    "width",
+                    "height",
+                    "content",
+                    "fontSize",
+                    "fontWeight",
+                    "color",
+                    "textAlign",
+                    "verticalAlign",
+                    "fitText"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "minItems": 1
+          }
+        }
+      },
+      {
+        "key": "llm.prediction.systemPrompt",
+        "value": ""
+      }
+    ]
+  },
+  "load": {
+    "fields": []
+  }
+}

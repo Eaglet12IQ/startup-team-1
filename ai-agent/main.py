@@ -348,11 +348,18 @@ async def llm_worker():
 
                         # Конвертируем историю
                         langchain_messages = []
+
+                        # Добавляем MAIN_SYSTEM_PROMPT первым системным сообщением
+                        if MAIN_SYSTEM_PROMPT:
+                            langchain_messages.append(SystemMessage(content=MAIN_SYSTEM_PROMPT))
+
                         for m in history:
                             role = m.get("role")
                             content = m.get("content", "")
                             if role == "system":
-                                langchain_messages.append(SystemMessage(content=content))
+                                # Пропускаем системные сообщения из истории,
+                                # чтобы не дублировать MAIN_SYSTEM_PROMPT
+                                continue
                             elif role == "user":
                                 langchain_messages.append(HumanMessage(content=content))
                             elif role == "assistant":

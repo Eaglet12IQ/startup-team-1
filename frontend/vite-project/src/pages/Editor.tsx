@@ -11,6 +11,7 @@ interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp?: string;
+  aiBlocks?: BlockData[]; // Блоки от AI для кнопки "Применить"
 }
 
 interface StreamEvent {
@@ -444,10 +445,31 @@ export function Editor() {
       switch (data.type) {
         case 'chat_history':
           if (data.messages) {
-            // Фильтруем сообщения с пустым content от assistant
-            const filteredMessages = data.messages.filter(
-              msg => msg.role !== 'assistant' || (msg.role === 'assistant' && msg.content && msg.content.trim())
-            );
+            const filteredMessages = data.messages
+              .filter(
+                msg => msg.role !== 'assistant' || (msg.role === 'assistant' && msg.content && msg.content.trim())
+              )
+              .map((msg) => {
+                // Парсим блоки из сообщений assistant
+                if (msg.role === 'assistant' && msg.content) {
+                  try {
+                    const aiResponse = JSON.parse(msg.content);
+                    const aiBlocks = Array.isArray(aiResponse)
+                      ? aiResponse
+                      : aiResponse?.blocks ?? [];
+                    if (aiBlocks.length > 0) {
+                      return {
+                        ...msg,
+                        content: '✅ Схема сгенерирована',
+                        aiBlocks,
+                      };
+                    }
+                  } catch {
+                    // не JSON — оставляем как есть
+                  }
+                }
+                return msg;
+              });
             setChatMessages(filteredMessages);
           }
           break;
@@ -494,18 +516,31 @@ export function Editor() {
 
         case 'done':
           console.log('Chat stream completed', data.run_id);
-          // Показываем финальное сообщение только один раз
           if (!generationComplete) {
+            // Парсим блоки от AI
+            let aiBlocks: BlockData[] = [];
+            try {
+              const raw = accumulatedContentRef.current.trim();
+              if (raw) {
+                const aiResponse = JSON.parse(raw);
+                aiBlocks = Array.isArray(aiResponse)
+                  ? aiResponse
+                  : aiResponse?.blocks ?? [];
+              }
+            } catch {
+              // ignore parse errors
+            }
+
             const finalMessage: Message = {
               role: 'assistant',
-              content: '✅ Схема готова',
+              content: aiBlocks.length > 0 ? '✅ Схема сгенерирована' : '✅ Готово',
               timestamp: new Date().toISOString(),
+              aiBlocks: aiBlocks.length > 0 ? aiBlocks : undefined,
             };
             setChatMessages((prev) => [...prev, finalMessage]);
             setGenerationComplete(true);
           }
           
-          // Сбрасываем состояние
           setCurrentBlockId(null);
           setCurrentStatus(null);
           accumulatedContentRef.current = '';
@@ -562,6 +597,12 @@ export function Editor() {
       e.preventDefault();
       sendChatMessage();
     }
+  };
+
+  const handleApplyAiSchema = (aiBlocks: BlockData[]) => {
+    setBlocks(aiBlocks);
+    saveToHistory(aiBlocks);
+    setSelectedBlockId(null);
   };
 
   void historyVersion;
@@ -828,6 +869,17 @@ export function Editor() {
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.content}</p>
+                      {msg.aiBlocks && msg.aiBlocks.length > 0 && (
+                        <button
+                          onClick={() => handleApplyAiSchema(msg.aiBlocks!)}
+                          className="mt-2 px-3 py-1.5 bg-[#0071e3] text-white text-xs font-medium rounded-lg hover:bg-[#0077ED] transition-all duration-200 flex items-center gap-1.5"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Применить схему
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
