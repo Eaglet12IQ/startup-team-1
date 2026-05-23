@@ -134,10 +134,12 @@ class AgentState(TypedDict):
     iteration_count: int
     max_iterations: int
     langchain_tools: list
+    run_id: str
 
 
 async def llm_node(state: AgentState, redis_client, stream_key: str):
     messages_for_llm = list(state["messages"])
+    run_id = state.get("run_id", "")
 
     # Напоминание
     for i in range(len(messages_for_llm) - 1, -1, -1):
@@ -164,7 +166,8 @@ async def llm_node(state: AgentState, redis_client, stream_key: str):
             await redis_client.xadd(stream_key, {
                 "type": "reasoning",
                 "content": reasoning,
-                "is_done": "false"
+                "is_done": "false",
+                "run_id": run_id
             })
             accumulated_reasoning += reasoning
 
@@ -174,22 +177,25 @@ async def llm_node(state: AgentState, redis_client, stream_key: str):
             await redis_client.xadd(stream_key, {
                 "type": "content",
                 "content": content,
-                "is_done": "false"
+                "is_done": "false",
+                "run_id": run_id
             })
             accumulated_content += content
 
     # Финальное AI сообщение
     ai_message = AIMessage(content=accumulated_content)
-    return {"messages": [ai_message], "iteration_count": state.get("iteration_count", 0) + 1}
+    print(f"llm_node завершена, accumulated_content: {len(accumulated_content)} символов, run_id: {run_id}")
+    return {"messages": [ai_message], "iteration_count": state.get("iteration_count", 0) + 1, "run_id": run_id}
 
 
 async def tool_node(state: AgentState, redis_client, stream_key: str):
     """Tool node с отправкой вызова и результата в Redis Stream"""
     messages = state["messages"]
+    run_id = state.get("run_id", "")
     last_ai_message = messages[-1]
 
     if not hasattr(last_ai_message, "tool_calls") or not last_ai_message.tool_calls:
-        return {"messages": []}
+        return {"messages": [], "run_id": run_id}
 
     tool_results = []
 
@@ -203,7 +209,8 @@ async def tool_node(state: AgentState, redis_client, stream_key: str):
             "type": "tool_call_start",
             "tool_name": tool_name,
             "tool_args": json.dumps(try_deep_parse(tool_args), ensure_ascii=False),
-            "is_done": "false"
+            "is_done": "false",
+            "run_id": run_id
         })
 
         try:
@@ -224,7 +231,8 @@ async def tool_node(state: AgentState, redis_client, stream_key: str):
                 "tool_name": tool_name,
                 "tool_args": json.dumps(try_deep_parse(tool_args), ensure_ascii=False),
                 "content": result_str,
-                "is_done": "false"
+                "is_done": "false",
+                "run_id": run_id
             })
 
             tool_results.append(
@@ -237,13 +245,14 @@ async def tool_node(state: AgentState, redis_client, stream_key: str):
                 "type": "tool_result",
                 "tool_name": tool_name,
                 "content": error_str,
-                "is_done": "false"
+                "is_done": "false",
+                "run_id": run_id
             })
             tool_results.append(
                 ToolMessage(content=error_str, tool_call_id=tool_call_id, name=tool_name)
             )
 
-    return {"messages": tool_results}
+    return {"messages": tool_results, "run_id": run_id}
 
 
 def should_continue(state: AgentState) -> Literal["tools", "llm", "end"]:
@@ -361,21 +370,26 @@ async def llm_worker():
                             "iteration_count": 0,
                             "max_iterations": 10,
                             "langchain_tools": mcp_tools,
+                            "run_id": run_id
                         }
 
                         config = {"configurable": {"thread_id": f"chat_{chat_id}"}}
 
                         # Запускаем граф
+                        print(f"🔄 Запуск графа для run_id={run_id}")
                         async for event in graph.astream(initial_state, config=config):
                             pass
+                        print(f"✅ Граф завершен для run_id={run_id}")
 
                         # Финальное сообщение
+                        print(f"📤 Отправляем событие done для run_id={run_id}")
                         await redis_client.xadd(output_stream_key, {
                             "type": "done",
                             "content": "",
                             "is_done": "true",
                             "run_id": run_id
                         })
+                        print(f"✅ Событие done отправлено для run_id={run_id}")
 
                         await redis_client.xack(stream_name, group_name, entry_id)
 

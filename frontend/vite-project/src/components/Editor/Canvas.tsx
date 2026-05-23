@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { BlockData } from '../types';
+import { BlockData } from '../../types';
 import { TextBlock } from '@shared/modules/text';
 import { ImageBlock } from '@shared/modules/image';
 import { ContextMenu, MenuItem, MenuDivider, MenuLabel } from './ContextMenu';
@@ -39,7 +39,9 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
       x: e.clientX, 
       y: e.clientY, 
       blockX: block.x, 
-      blockY: block.y 
+      blockY: block.y,
+      startWidth: block.width,
+      startHeight: block.height
     };
     
     const handleMouseMove = (moveEvent: MouseEvent) => {

@@ -1,13 +1,25 @@
 version: "3.8"
 
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/vite-project/Dockerfile
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - chat-service
+      - constructor-service
+    restart: unless-stopped
+
   constructor-service:
     build:
       context: ./constructor-service
       dockerfile: Dockerfile
     container_name: constructor-service
-    # ports:
-    #   - "${CONSTRUCTOR_SERVICE_PORT}:${CONSTRUCTOR_SERVICE_PORT}"
+    ports:
+      - "${CONSTRUCTOR_SERVICE_PORT}:${CONSTRUCTOR_SERVICE_PORT}"
     volumes:
       - ./constructor-service/schemas:/app/schemas
     environment:
@@ -58,8 +70,8 @@ services:
     image: redis:7-alpine
     container_name: chat-redis
     command: redis-server --port ${CHAT_REDIS_PORT} --appendonly yes --save 60 1 --protected-mode no
-    # ports:
-    #   - "${CHAT_REDIS_PORT}:${CHAT_REDIS_PORT}"
+    ports:
+      - "${CHAT_REDIS_PORT}:${CHAT_REDIS_PORT}"
     volumes:
       - chat_redis_data:/data
 
