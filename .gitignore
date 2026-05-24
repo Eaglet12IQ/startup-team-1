@@ -8,3 +8,5 @@
 /.obsidian/community-plugins.json
 /.obsidian/core-plugins.json
 pidisplay.img
+/logs
+/.idea/
