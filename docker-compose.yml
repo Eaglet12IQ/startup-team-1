@@ -302,6 +302,12 @@ services:
           -d 'paths[]=~/api/upload/\d%2B$$' \
           -d strip_path=false
 
+        # Public route for serving uploaded images (no auth — <img> tags)
+        curl -s -X POST http://kong:8001/services/constructor-service/routes \
+          -d name=constructor-uploads-routes \
+          -d 'paths[]=~/api/uploads/\d%2B/[^/]%2B$$' \
+          -d strip_path=false
+
         # Apply jwt-check plugin to constructor routes
         for route in constructor-schema-routes constructor-dynamic-routes; do
           curl -s -X POST http://kong:8001/routes/$$route/plugins \

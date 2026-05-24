@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useLocation } from 'react-router';
 import { Canvas } from '../components/Editor/Canvas';
 import { BlocksPalette } from '../components/Editor/BlocksPalette';
 import { PropertiesPanel } from '../components/Editor/PropertiesPanel';
@@ -42,8 +42,9 @@ interface SavedState {
 
 export function Editor() {
   const navigate = useNavigate();
+  const location = useLocation();
   const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
-  const { isAuthenticated, userId: authUserId, accessToken } = useAuth();
+  const { isAuthenticated, userId: authUserId } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -74,7 +75,7 @@ export function Editor() {
   const accumulatedContentRef = useRef<string>(''); // Накопленный контент для парсинга
   const wsAuthParam = PI_MODE
     ? `X-User-ID=1`
-    : (accessToken ? `token=${accessToken}` : `X-User-ID=${authUserId || 1}`);
+    : `X-User-ID=${authUserId || 1}`;
   const chatId = parseInt(projectId || '1', 10); // Use projectId as chatId
   const CHAT_SERVICE_PORT = 8083; // From .env.example
   
@@ -145,7 +146,7 @@ export function Editor() {
         wsRef.current.close();
       }
     };
-  }, [projectId]);
+  }, [projectId, authUserId, location.key]);
 
   const loadHistory = useCallback(async () => {
     const numericId = parseInt(projectId || '', 10);
