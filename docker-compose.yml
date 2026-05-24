@@ -60,6 +60,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - kong-net
 
   chat-service:
     build: ./chat-service
@@ -96,6 +98,8 @@ services:
       - "${CHAT_REDIS_PORT}:${CHAT_REDIS_PORT}"
     volumes:
       - chat_redis_data:/data
+    networks:
+      - kong-net
 
   ai-agent:
     build: ./ai-agent
@@ -110,6 +114,8 @@ services:
     depends_on:
       - chat-redis
     restart: unless-stopped
+    networks:
+      - kong-net
 
   auth-service:
     build: ./auth-service
