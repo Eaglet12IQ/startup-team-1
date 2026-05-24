@@ -9,13 +9,15 @@ export const BlocksPalette = ({ onAddBlock }: BlocksPaletteProps) => {
       <div className="flex gap-3">
         <button
           onClick={() => onAddBlock('text')}
-          className="flex-1 px-4 py-3 bg-[#0071e3] text-white rounded-xl text-sm font-medium hover:bg-[#0077ED] transition-all duration-200 active:scale-[0.98]"
+          onPointerDown={(e) => { e.preventDefault(); onAddBlock('text'); }}
+          className="flex-1 px-4 py-3 bg-[#0071e3] text-white rounded-xl text-sm font-medium hover:bg-[#0077ED] transition-all duration-200 active:scale-[0.98] touch-manipulation"
         >
           Текст
         </button>
         <button
           onClick={() => onAddBlock('image')}
-          className="flex-1 px-4 py-3 bg-[#34c759] text-white rounded-xl text-sm font-medium hover:bg-[#30d158] transition-all duration-200 active:scale-[0.98]"
+          onPointerDown={(e) => { e.preventDefault(); onAddBlock('image'); }}
+          className="flex-1 px-4 py-3 bg-[#34c759] text-white rounded-xl text-sm font-medium hover:bg-[#30d158] transition-all duration-200 active:scale-[0.98] touch-manipulation"
         >
           Картинка
         </button>

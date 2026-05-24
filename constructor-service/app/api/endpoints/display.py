@@ -33,7 +33,7 @@ def _save_full_page(blocks_html: str) -> None:
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-  body {{ width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; }}
+  body {{ width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: "DejaVu Sans", sans-serif; }}
   #content {{ width: 100%; height: 100%; position: relative; }}
 </style>
 </head>
@@ -63,6 +63,16 @@ def _save_full_page(blocks_html: str) -> None:
         pass
 
 
+# Загружаем при старте
+_initial_page = _load_display_html()
+
+PLACEHOLDER_HTML = (
+    '<div style="width:100%;height:100%;display:flex;align-items:center;'
+    'justify-content:center;background:#fff;">'
+    '<p style="color:#86868b;font-family:sans-serif;font-size:24px">Ожидание контента...</p>'
+    '</div>'
+)
+
 DEFAULT_PAGE = """<!DOCTYPE html>
 <html>
 <head>
@@ -70,14 +80,14 @@ DEFAULT_PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: "DejaVu Sans", sans-serif; }
   #content { width: 100%; height: 100%; position: relative; }
 </style>
 </head>
 <body>
 <div id="content">
-<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;">
-<p style="color:#444;font-family:sans-serif;font-size:24px">Ожидание контента...</p>
+<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#fff;">
+<p style="color:#86868b;font-family:sans-serif;font-size:24px">Ожидание контента...</p>
 </div>
 </div>
 <script>
@@ -96,16 +106,6 @@ DEFAULT_PAGE = """<!DOCTYPE html>
 </script>
 </body>
 </html>"""
-
-# Загружаем при старте
-_initial_page = _load_display_html()
-
-PLACEHOLDER_HTML = (
-    '<div style="width:100%;height:100%;display:flex;align-items:center;'
-    'justify-content:center;background:#000;">'
-    '<p style="color:#444;font-family:sans-serif;font-size:24px">Ожидание контента...</p>'
-    '</div>'
-)
 
 
 class DisplayPayload(BaseModel):

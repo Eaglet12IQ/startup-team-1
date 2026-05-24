@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  backend:
+  pidisplay-backend:
     image: pidisplay-backend:latest
     container_name: pidisplay-backend
     ports:
@@ -11,6 +11,7 @@ services:
       - /opt/pidisplay:/opt/pidisplay
     environment:
       - PYTHONUNBUFFERED=1
+      - SERVICE_PORT=8082
     restart: unless-stopped
 
   frontend:

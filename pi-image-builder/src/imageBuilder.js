@@ -58,7 +58,7 @@ function renderBlocksToHtml(blocks) {
 <meta charset="utf-8">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; font-family: "DejaVu Sans", sans-serif; }
 </style>
 </head>
 <body>
@@ -87,8 +87,8 @@ export async function buildImage(blocks = []) {
     exec(
       `docker buildx build --platform linux/arm/v7 ` +
       `--load -t ${BACKEND_IMAGE} ` +
-      `-f /app/source/backend/constructor-service/Dockerfile ` +
-      `/app/source/backend/constructor-service`
+      `-f /app/source/constructor-service/Dockerfile ` +
+      `/app/source/constructor-service`
     )
 
     exec(
@@ -140,7 +140,7 @@ export async function buildImage(blocks = []) {
     exec(
       `chroot ${rootMount} /bin/bash -c "` +
       `apt-get update -qq && ` +
-      `apt-get install -y --no-install-recommends docker.io hostapd dnsmasq && ` +
+      `apt-get install -y --no-install-recommends docker.io hostapd dnsmasq fonts-dejavu-core && ` +
       `apt-get clean && rm -rf /var/lib/apt/lists/*` +
       `"`
     )
@@ -199,7 +199,7 @@ export async function buildImage(blocks = []) {
     mkdirSync(displayDir, { recursive: true })
     const initialHtml = blocks.length > 0
       ? renderBlocksToHtml(blocks)
-      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;}<\/style></head><body><p style="color:#444;font-family:sans-serif;font-size:24px">Ожидание контента...</p></body></html>`
+      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;font-family:"DejaVu Sans",sans-serif;}<\/style></head><body><p style="color:#444;font-size:24px">Ожидание контента...</p></body></html>`
     writeFileSync(join(displayDir, 'display.html'), initialHtml, 'utf8')
 
     // 5d. Docker-образы

@@ -3,12 +3,12 @@ const PI_MODE = import.meta.env.VITE_PI_MODE === 'true';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('access-token');
+  const userId = localStorage.getItem('user-id') || '1';
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
+    'X-User-ID': PI_MODE ? '1' : (userId || '1'),
   };
-  if (PI_MODE) {
-    headers['X-User-ID'] = '1';
-  } else if (token) {
+  if (!PI_MODE && token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
   return headers;
@@ -89,11 +89,10 @@ export async function uploadImage(file: File, schemaId: string | number): Promis
   const formData = new FormData();
   formData.append('file', file);
 
-  const headers: HeadersInit = {};
+  const userId = PI_MODE ? '1' : (localStorage.getItem('user-id') || '1');
   const token = localStorage.getItem('access-token');
-  if (PI_MODE) {
-    headers['X-User-ID'] = '1';
-  } else if (token) {
+  const headers: HeadersInit = { 'X-User-ID': userId };
+  if (!PI_MODE && token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 

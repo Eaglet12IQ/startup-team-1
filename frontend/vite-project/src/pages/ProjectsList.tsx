@@ -76,19 +76,21 @@ export function ProjectsList() {
     <PageTransition>
     <div className="h-full bg-[#f5f5f7] overflow-auto">
       <main className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-8">
-        <div className="flex justify-between items-center mb-6 sm:mb-8">
-          <div className="flex gap-3">
-            <button
-              onClick={() => setIsCreating(true)}
-              className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)] flex items-center gap-2 text-sm sm:text-base"
-            >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Создать табло
-            </button>
+        {projects.length > 0 && !isCreating && (
+          <div className="flex justify-between items-center mb-6 sm:mb-8">
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsCreating(true)}
+                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#0071e3] text-white rounded-full font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)] flex items-center gap-2 text-sm sm:text-base"
+              >
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Создать табло
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {isCreating && (
           <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
