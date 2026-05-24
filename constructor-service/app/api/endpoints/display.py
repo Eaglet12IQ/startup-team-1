@@ -41,10 +41,11 @@ def _save_full_page(blocks_html: str) -> None:
 <div id="content">{blocks_html}</div>
 <script>
   var content = document.getElementById('content');
+  var lastHtml = content.innerHTML;
   function connect() {{
     var es = new EventSource('/api/display/stream');
     es.addEventListener('update', function(e) {{
-      if (e.data) content.innerHTML = e.data;
+      if (e.data) {{ content.innerHTML = e.data; lastHtml = e.data; }}
     }});
     es.onerror = function() {{
       es.close();
@@ -52,6 +53,16 @@ def _save_full_page(blocks_html: str) -> None:
     }};
   }}
   connect();
+  setInterval(function() {{
+    fetch('/api/display/current')
+      .then(function(r) {{ return r.text(); }})
+      .then(function(html) {{
+        if (html && html !== lastHtml) {{
+          lastHtml = html;
+          content.innerHTML = html;
+        }}
+      }});
+  }}, 3000);
 </script>
 </body>
 </html>"""
@@ -113,10 +124,11 @@ DEFAULT_PAGE = """<!DOCTYPE html>
 </div>
 <script>
   var content = document.getElementById('content');
+  var lastHtml = content.innerHTML;
   function connect() {
     var es = new EventSource('/api/display/stream');
     es.addEventListener('update', function(e) {
-      if (e.data) content.innerHTML = e.data;
+      if (e.data) { content.innerHTML = e.data; lastHtml = e.data; }
     });
     es.onerror = function() {
       es.close();
@@ -124,6 +136,16 @@ DEFAULT_PAGE = """<!DOCTYPE html>
     };
   }
   connect();
+  setInterval(function() {
+    fetch('/api/display/current')
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        if (html && html !== lastHtml) {
+          lastHtml = html;
+          content.innerHTML = html;
+        }
+      });
+  }, 3000);
 </script>
 </body>
 </html>"""
@@ -250,4 +272,10 @@ async def apply_display(payload: DisplayPayload):
     for q in list(_sse_clients):
         await q.put(blocks_html)
 
-    return {"status": "ok"}
+    return {"status": "ok", "sse_clients": len(_sse_clients)}
+
+
+@router.get("/current")
+async def get_current():
+    html = _current_html if _current_html else PLACEHOLDER_HTML
+    return HTMLResponse(content=html)
