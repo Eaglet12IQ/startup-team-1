@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { BlockData } from '../types';
+import { BlockData } from '../../types';
 import { TextBlock } from '@shared/modules/text';
 import { ImageBlock } from '@shared/modules/image';
 import { ContextMenu, MenuItem, MenuDivider, MenuLabel } from './ContextMenu';
@@ -113,7 +113,7 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
     window.addEventListener('touchcancel', cancelDrag);
   };
 
-  const startResize = (blockId: string, clientX: number, clientY: number) => {
+  const startResize = (blockId: string, _clientX: number, _clientY: number) => {
     const block = blocksRef.current.find(b => b.id === blockId);
     if (!block) return;
 

@@ -1,4 +1,3 @@
-import { Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
 
 const plans = [

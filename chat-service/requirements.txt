@@ -1,0 +1,8 @@
+sqlalchemy
+fastapi
+alembic
+uvicorn
+psycopg2-binary
+python-dotenv
+websockets
+redis[asyncio]

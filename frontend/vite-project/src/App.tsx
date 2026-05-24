@@ -20,6 +20,8 @@ interface SavedState {
 }
 
 function App() {
+  const [projectId] = useState<string>(() => crypto.randomUUID());
+
   const [schemaName, setSchemaName] = useState<string>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -199,6 +201,26 @@ function App() {
     setSelectedBlockId(null);
   };
 
+  const handleDuplicateBlock = (id: string) => {
+    const index = blocks.findIndex(b => b.id === id);
+    if (index === -1) return;
+
+    const original = blocks[index];
+    const duplicate: BlockData = {
+      ...original,
+      id: crypto.randomUUID(),
+      x: Math.min(95, original.x + 3),
+      y: Math.min(95, original.y + 3),
+    };
+
+    const newBlocks = [...blocks];
+    newBlocks.splice(index + 1, 0, duplicate);
+
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
+    setSelectedBlockId(duplicate.id);
+  };
+
   const handleMoveBlock = (id: string, direction: 'up' | 'down' | 'top' | 'bottom') => {
     const index = blocks.findIndex(b => b.id === id);
     if (index === -1) return;
@@ -271,6 +293,7 @@ function App() {
             selectedBlock={selectedBlock}
             onUpdateBlock={handleUpdateBlock}
             onDeleteBlock={handleDeleteBlock}
+            projectId={projectId}
           />
         </div>
       </div>
@@ -304,6 +327,7 @@ function App() {
               onUpdateBlock={handleUpdateBlock}
               onMoveBlock={handleMoveBlock}
               onBlockChangeEnd={() => saveToHistory(blocksRef.current)}
+              onDuplicateBlock={handleDuplicateBlock}
             />
           </div>
         </div>

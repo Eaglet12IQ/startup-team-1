@@ -3,29 +3,50 @@ import { useNavigate, Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    const users = JSON.parse(localStorage.getItem('registered-users') || '[]');
-    const user = users.find((u: { email: string }) => u.email === formData.email);
-    if (!user) {
-      setError('Пользователь не найден');
-      return;
-    }
-    if (user.password !== formData.password) {
-      setError('Неверный пароль');
-      return;
-    }
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+      });
 
-    login(user.id, user.name, user.email);
-    navigate('/projects');
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.message || data?.error || 'Неверный email или пароль');
+        return;
+      }
+
+      const data = await res.json();
+
+      const parts = data.access.split('.');
+      let userId = 0;
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        userId = payload.user_id || 0;
+      }
+
+      login(data.access, userId, '', formData.email);
+      navigate('/projects');
+    } catch {
+      setError('Ошибка соединения с сервером');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,9 +88,10 @@ export function Login() {
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           <button
             type="submit"
-            className="w-full px-6 py-3.5 bg-[#0071e3] text-white rounded-xl font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12pxrgb(0,113,227,0.3)]"
+            disabled={loading}
+            className="w-full px-6 py-3.5 bg-[#0071e3] text-white rounded-xl font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)] disabled:opacity-50"
           >
-            Войти
+            {loading ? 'Вход...' : 'Войти'}
           </button>
         </form>
 

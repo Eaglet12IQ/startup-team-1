@@ -1,19 +1,20 @@
-version: "3.8"
-
 services:
   backend:
     build:
-      context: ./backend/constructor-service
+      context: ./constructor-service
       dockerfile: Dockerfile
     container_name: pidisplay-backend
     ports:
       - "8082:8082"
     volumes:
-      - ./backend/constructor-service/schemas:/app/schemas
+      - ./constructor-service/schemas:/app/schemas
       - ./backend/constructor-service/uploads:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
+      - SERVICE_PORT=8082
     restart: unless-stopped
+    networks:
+      - kong-net
 
   pi-image-builder:
     build:
@@ -23,13 +24,91 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # Исходники проекта для сборки ARM64-образов
       - .:/app/source:ro
-      # Базовый образ FullPageOS кладётся сюда вручную
       - ./pi-image-builder/images:/app/images
-      # Docker socket для buildx
       - /var/run/docker.sock:/var/run/docker.sock
     privileged: true
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/vite-project/Dockerfile
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - chat-service
+      - backend
+      - kong
+    restart: unless-stopped
+    networks:
+      - kong-net
+
+  chat-postgres:
+    image: postgres:15
+    container_name: chat-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${CHAT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${CHAT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${CHAT_POSTGRES_DB}
+    volumes:
+      - chat_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CHAT_POSTGRES_USER} -d ${CHAT_POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chat-service:
+    build: ./chat-service
+    container_name: chat-service
+    restart: always
+    depends_on:
+      chat-postgres:
+        condition: service_healthy
+      chat-redis:
+        condition: service_started
+      ai-agent:
+        condition: service_started
+    environment:
+      POSTGRES_HOST: ${CHAT_POSTGRES_HOST}
+      POSTGRES_PORT: ${CHAT_POSTGRES_PORT}
+      POSTGRES_USER: ${CHAT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${CHAT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${CHAT_POSTGRES_DB}
+      REDIS_HOST: chat-redis
+      REDIS_PORT: ${CHAT_REDIS_PORT}
+      SERVICE_PORT: ${CHAT_SERVICE_PORT}
+    ports:
+      - "${CHAT_SERVICE_PORT}:${CHAT_SERVICE_PORT}"
+    volumes:
+      - ./chat-service/alembic:/app/alembic
+    networks:
+      - kong-net
+
+  chat-redis:
+    image: redis:7-alpine
+    container_name: chat-redis
+    command: redis-server --port ${CHAT_REDIS_PORT} --appendonly yes --save 60 1 --protected-mode no
+    ports:
+      - "${CHAT_REDIS_PORT}:${CHAT_REDIS_PORT}"
+    volumes:
+      - chat_redis_data:/data
+
+  ai-agent:
+    build: ./ai-agent
+    container_name: ai-agent
+    environment:
+      REDIS_HOST: chat-redis
+      REDIS_PORT: ${CHAT_REDIS_PORT}
+      LLM_URL: ${LLM_URL}
+      LLM_API_KEY: ${LLM_API_KEY}
+      MODEL_NAME: ${MODEL_NAME}
+      MAIN_SYSTEM_PROMPT: ${MAIN_SYSTEM_PROMPT}
+    depends_on:
+      - chat-redis
     restart: unless-stopped
 
   auth-service:
@@ -153,6 +232,8 @@ services:
         condition: service_started
       auth-service:
         condition: service_started
+      backend:
+        condition: service_started
     networks:
       - kong-net
     restart: "no"
@@ -163,57 +244,77 @@ services:
         set -e
 
         echo 'Waiting for Kong Admin API...'
-        sleep 30
+        for i in $$(seq 1 60); do
+          if curl -s -o /dev/null -w '%{http_code}' http://kong:8001/status | grep -q 200; then
+            echo 'Kong Admin API is ready'
+            break
+          fi
+          echo "Waiting... ($$i/60)"
+          sleep 2
+        done
 
-        echo 'Kong is ready, creating services and routes...'
+        echo 'Creating services and routes...'
 
-        # Создаём сервис
-        curl -i -X POST http://kong:8001/services \
+        # === AUTH SERVICE ===
+        curl -s -X POST http://kong:8001/services \
           -d name=auth-service \
           -d url=http://auth-service:8080
 
-        # Создаём публичные маршруты
-        curl -i -X POST http://kong:8001/services/auth-service/routes \
+        # Public auth routes (no jwt-check plugin)
+        curl -s -X POST http://kong:8001/services/auth-service/routes \
           -d name=auth-public-routes \
           -d 'paths[]=/api/v1/register' \
           -d 'paths[]=/api/v1/auth' \
           -d strip_path=false
 
-        # Создаём защищённые маршруты
-        curl -i -X POST http://kong:8001/services/auth-service/routes \
+        # Protected auth route (with jwt-check)
+        curl -s -X POST http://kong:8001/services/auth-service/routes \
           -d name=auth-protected-routes \
           -d 'paths[]=/api/v1/refresh' \
           -d strip_path=false
 
-        # JWT plugin для публичных маршрутов
-        curl -i -X POST http://kong:8001/routes/auth-public-routes/plugins \
-          -d name=jwt \
-          -d "config.secret=${JWT_SECRET}" \
-          -d 'config.algorithms[]=HS256'
-
-        # JWT plugin для защищённых маршрутов
-        curl -i -X POST http://kong:8001/routes/auth-protected-routes/plugins \
-          -d name=jwt \
-          -d "config.secret=${JWT_SECRET}" \
-          -d 'config.algorithms[]=HS256'
-
-        # Кастомный jwt-check plugin
-        curl -i -X POST http://kong:8001/routes/auth-protected-routes/plugins \
+        # jwt-check plugin on protected auth routes
+        curl -s -X POST http://kong:8001/routes/auth-protected-routes/plugins \
           -d name=jwt-check
 
-        echo '✅ Kong setup complete'
+        # === CONSTRUCTOR SERVICE (backend) ===
+        curl -s -X POST http://kong:8001/services \
+          -d name=constructor-service \
+          -d url=http://backend:8082
+
+        curl -s -X POST http://kong:8001/services/constructor-service/routes \
+          -d name=constructor-schema-routes \
+          -d 'paths[]=/api/my' \
+          -d 'paths[]=/api/save' \
+          -d strip_path=false
+
+        curl -s -X POST http://kong:8001/services/constructor-service/routes \
+          -d name=constructor-dynamic-routes \
+          -d 'paths[]=~/api/\d%2B$$' \
+          -d 'paths[]=~/api/\d%2B/history$$' \
+          -d 'paths[]=~/api/\d%2B/version/\w%2B$$' \
+          -d 'paths[]=~/api/upload/\d%2B$$' \
+          -d strip_path=false
+
+        # Apply jwt-check plugin to constructor routes
+        for route in constructor-schema-routes constructor-dynamic-routes; do
+          curl -s -X POST http://kong:8001/routes/$$route/plugins \
+            -d name=jwt-check
+        done
+
+        echo 'Kong setup complete'
 
 volumes:
   postgres_data:
     driver: local
-
   kong_postgres_data:
     driver: local
+  chat_postgres_data:
+  chat_redis_data:
 
 networks:
   kong-net:
     driver: bridge
-
   internal-net:
     driver: bridge
     internal: true

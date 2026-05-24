@@ -17,7 +17,7 @@ interface NumberInputProps {
   onChange: (value: number) => void;
 }
 
-const NumberInput = ({ label, value, onChange }: NumberInputProps) => {
+const NumberInput = ({ value, onChange }: NumberInputProps) => {
   const [localValue, setLocalValue] = useState(String(value));
 
   useEffect(() => {

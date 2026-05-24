@@ -3,34 +3,52 @@ import { useNavigate, Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ full_name: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (formData.password.length < 6) {
-      setError('Пароль должен быть минимум 6 символов');
+    if (formData.password.length < 10) {
+      setError('Пароль должен быть минимум 10 символов');
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('registered-users') || '[]');
-    if (users.find((u: { email: string }) => u.email === formData.email)) {
-      setError('Пользователь с таким email уже существует');
-      return;
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: formData.full_name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.message || data?.error || 'Ошибка регистрации');
+        return;
+      }
+
+      const data = await res.json();
+
+      login('', data.id, data.full_name, data.email);
+      navigate('/login');
+    } catch {
+      setError('Ошибка соединения с сервером');
+    } finally {
+      setLoading(false);
     }
-
-    const newId = users.length > 0 ? Math.max(...users.map((u: { id: number }) => u.id)) + 1 : 1;
-    const newUser = { id: newId, name: formData.name, email: formData.email, password: formData.password };
-    users.push(newUser);
-    localStorage.setItem('registered-users', JSON.stringify(users));
-
-    login(newId, formData.name, formData.email);
-    navigate('/projects');
   };
 
   return (
@@ -53,8 +71,8 @@ export function Register() {
             <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Имя</label>
             <input
               type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              value={formData.full_name}
+              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               className="w-full px-4 py-3 bg-[#f5f5f7] rounded-xl text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
               placeholder="Введите ваше имя"
             />
@@ -76,15 +94,16 @@ export function Register() {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full px-4 py-3 bg-[#f5f5f7] rounded-xl text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#0071e3] transition-all duration-200"
-              placeholder="Минимум 6 символов"
+              placeholder="Минимум 10 символов"
             />
           </div>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           <button
             type="submit"
-            className="w-full px-6 py-3.5 bg-[#0071e3] text-white rounded-xl font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)]"
+            disabled={loading}
+            className="w-full px-6 py-3.5 bg-[#0071e3] text-white rounded-xl font-medium hover:bg-[#0077ED] transition-all duration-200 shadow-[0_4px_12px_rgb(0,113,227,0.3)] disabled:opacity-50"
           >
-            Зарегистрироваться
+            {loading ? 'Регистрация...' : 'Зарегистрироваться'}
           </button>
         </form>
 
