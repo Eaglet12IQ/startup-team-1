@@ -44,7 +44,11 @@ function renderBlocksToHtml(blocks) {
     }
 
     if (block.type === 'image') {
-      const src = (block.src || '').replace(/"/g, '&quot;')
+      let src = (block.src || '')
+      if (src && !src.startsWith('data:') && !src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('/')) {
+        src = '/api/uploads/' + src
+      }
+      src = src.replace(/"/g, '&quot;')
       const objectFit = block.objectFit || 'cover'
       return `<div style="${base}"><img src="${src}" alt="" style="width:100%;height:100%;object-fit:${objectFit};display:block;" /></div>`
     }
@@ -58,7 +62,7 @@ function renderBlocksToHtml(blocks) {
 <meta charset="utf-8">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #000; position: relative; font-family: "DejaVu Sans", sans-serif; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: "DejaVu Sans", sans-serif; }
 </style>
 </head>
 <body>
@@ -199,7 +203,7 @@ export async function buildImage(blocks = []) {
     mkdirSync(displayDir, { recursive: true })
     const initialHtml = blocks.length > 0
       ? renderBlocksToHtml(blocks)
-      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;font-family:"DejaVu Sans",sans-serif;}<\/style></head><body><p style="color:#444;font-size:24px">Ожидание контента...</p></body></html>`
+      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:"DejaVu Sans",sans-serif;}<\/style></head><body><p style="color:#86868b;font-size:24px">Ожидание контента...</p></body></html>`
     writeFileSync(join(displayDir, 'display.html'), initialHtml, 'utf8')
 
     // 5d. Docker-образы

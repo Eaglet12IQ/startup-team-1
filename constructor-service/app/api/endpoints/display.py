@@ -63,8 +63,29 @@ def _save_full_page(blocks_html: str) -> None:
         pass
 
 
+def _extract_blocks_html(full_page: str) -> str:
+    marker = '<div id="content">'
+    idx = full_page.find(marker)
+    if idx == -1:
+        return ""
+    start = idx + len(marker)
+    depth = 1
+    i = start
+    while i < len(full_page) and depth > 0:
+        if full_page[i] == '<':
+            if full_page[i:i+4] == '<div' or full_page[i:i+5] == '<div ':
+                depth += 1
+            elif full_page[i:i+6] == '</div>':
+                depth -= 1
+                if depth == 0:
+                    return full_page[start:i]
+        i += 1
+    return ""
+
+
 # Загружаем при старте
 _initial_page = _load_display_html()
+_current_html = _extract_blocks_html(_initial_page)
 
 PLACEHOLDER_HTML = (
     '<div style="width:100%;height:100%;display:flex;align-items:center;'
