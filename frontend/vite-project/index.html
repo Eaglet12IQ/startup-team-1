@@ -8,6 +8,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
     <title>Rusberry PI</title>
+    <script>
+      if (!crypto.randomUUID) {
+        crypto.randomUUID = function() {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+          });
+        };
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
