@@ -43,7 +43,7 @@ interface SavedState {
 export function Editor() {
   const navigate = useNavigate();
   const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
-  const { isAuthenticated, userId: authUserId } = useAuth();
+  const { isAuthenticated, userId: authUserId, accessToken } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -72,7 +72,9 @@ export function Editor() {
   const wsRef = useRef<WebSocket | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const accumulatedContentRef = useRef<string>(''); // Накопленный контент для парсинга
-  const wsUserId = PI_MODE ? 1 : (authUserId || 1);
+  const wsAuthParam = PI_MODE
+    ? `X-User-ID=1`
+    : (accessToken ? `token=${accessToken}` : `X-User-ID=${authUserId || 1}`);
   const chatId = parseInt(projectId || '1', 10); // Use projectId as chatId
   const CHAT_SERVICE_PORT = 8083; // From .env.example
   
@@ -527,7 +529,7 @@ export function Editor() {
   // Chat WebSocket functions
   const connectChatWebSocket = () => {
     // Direct connection to chat-service on port 8083
-    const wsUrl = `ws://localhost:${CHAT_SERVICE_PORT}/ws/chat/${chatId}?X-User-ID=${wsUserId}`;
+    const wsUrl = `ws://localhost:${CHAT_SERVICE_PORT}/ws/chat/${chatId}?${wsAuthParam}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
