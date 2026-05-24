@@ -12,7 +12,6 @@ interface PropertiesPanelProps {
 }
 
 interface NumberInputProps {
-  label: string;
   value: number;
   onChange: (value: number) => void;
 }
@@ -89,7 +88,6 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock, p
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Позиция X (%)</label>
           <NumberInput
-            label="X"
             value={selectedBlock.x}
             onChange={(val) => onUpdateBlock(selectedBlock.id, { x: val })}
           />
@@ -98,7 +96,6 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock, p
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Позиция Y (%)</label>
           <NumberInput
-            label="Y"
             value={selectedBlock.y}
             onChange={(val) => onUpdateBlock(selectedBlock.id, { y: val })}
           />
@@ -107,7 +104,6 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock, p
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Ширина (%)</label>
           <NumberInput
-            label="Ширина"
             value={selectedBlock.width}
             onChange={(val) => onUpdateBlock(selectedBlock.id, { width: val })}
           />
@@ -116,7 +112,6 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock, p
         <div className="space-y-1.5">
           <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Высота (%)</label>
           <NumberInput
-            label="Высота"
             value={selectedBlock.height}
             onChange={(val) => onUpdateBlock(selectedBlock.id, { height: val })}
           />
@@ -139,7 +134,6 @@ export const PropertiesPanel = ({ selectedBlock, onUpdateBlock, onDeleteBlock, p
             <label className="text-[11px] font-medium text-[#6e6e73] uppercase tracking-[0.05em]">Размер шрифта (%)</label>
             <div className="relative">
               <NumberInput
-                label="fontSize"
                 value={selectedBlock.fitText ? 0 : selectedBlock.fontSize}
                 onChange={(val) => !selectedBlock.fitText && onUpdateBlock(selectedBlock.id, { fontSize: val })}
               />

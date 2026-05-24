@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
-from typing import Annotated
+from typing import Annotated, List, Dict, Any
 
 from sqlalchemy.orm import Session
 
@@ -64,10 +64,7 @@ async def handle_user_message(
         await websocket.send_json({"type": "error", "detail": "Message content is required"})
         return
 
-    # Сохраняем сообщение пользователя
-    await add_message_to_db(db, chat_id, role="user", content=content)
-
-    # Запускаем генерацию через LLM Worker
+    # Запускаем генерацию через LLM Worker (сохранение сообщения пользователя происходит внутри)
     await start_llm_generation(websocket, chat_id, content, db)
 
 
@@ -83,7 +80,10 @@ async def start_llm_generation(
     chat = db.get(Chats, chat_id)
     history = chat.messages if chat and chat.messages else []
 
-    # Добавляем текущее сообщение пользователя
+    # Сохраняем сообщение пользователя с run_id в БД
+    await add_message_to_db(db, chat_id, role="user", content=user_message, run_id=run_id)
+
+    # Добавляем в историю для LLM (Worker получит полный контекст)
     history.append({
         "role": "user",
         "content": user_message,
@@ -91,15 +91,18 @@ async def start_llm_generation(
         "run_id": run_id
     })
 
-    # Сохраняем пустое сообщение ассистента
+    # Временно сохраняем пустое сообщение ассистента (будет заменено позже)
     await add_message_to_db(db, chat_id, role="assistant", content="", run_id=run_id)
 
     # Отправляем задачу
     await publish_llm_task(chat_id, run_id, history)
 
-    # Запускаем стриминг
+    # Запускаем стриминг, передавая run_messages для накопления
     output_stream_key = f"chat:{chat_id}:run:{run_id}"
-    asyncio.create_task(stream_from_redis_to_websocket(websocket, output_stream_key, chat_id, db))
+    run_messages: List[Dict[str, Any]] = []
+    asyncio.create_task(
+        stream_from_redis_to_websocket(websocket, output_stream_key, chat_id, db, run_id, run_messages)
+    )
 
 
 async def publish_llm_task(chat_id: int, run_id: str, full_history: list):
@@ -129,12 +132,21 @@ async def stream_from_redis_to_websocket(
     websocket: WebSocket,
     stream_key: str,
     chat_id: int,
-    db: Session
+    db: Session,
+    run_id: str,
+    run_messages: List[Dict[str, Any]]
 ):
     redis = get_redis()
     last_id = "$"
+    accumulated_content = ""
+    sequence = 0  # глобальный счётчик порядка событий
 
-    accumulated_content = ""   # для обновления финального сообщения в БД
+    # Данные для формирования AIMessage с tool_calls
+    tool_calls_info: List[Dict] = []
+    assistant_tool_calls_added = False
+    pending_tool_calls: Dict[int, Dict] = {}
+    tool_call_timestamps: Dict[int, str] = {}
+    content_sequence = -1
 
     while True:
         try:
@@ -151,31 +163,142 @@ async def stream_from_redis_to_websocket(
                 for entry_id, fields in entries:
                     event_type = fields.get("type")
                     content = fields.get("content", "")
+                    tool_name = fields.get("tool_name")
+                    tool_args = fields.get("tool_args")
                     is_done = fields.get("is_done") == "true"
 
-                    # Отправляем событие клиенту
-                    await websocket.send_json({
-                        "type": event_type or "token",
-                        "content": content,
-                        "tool_name": fields.get("tool_name"),
-                        "tool_args": fields.get("tool_args"),
-                        "run_id": fields.get("run_id"),
-                        "chunk_id": entry_id,
-                        "is_done": is_done
-                    })
+                    # --- Обработка вызова инструмента (начало) ---
+                    if event_type == "tool_call_start":
+                        parsed_args = {}
+                        if tool_args:
+                            try:
+                                parsed_args = json.loads(tool_args) if isinstance(tool_args, str) else tool_args
+                            except:
+                                parsed_args = {}
 
-                    # Накопление основного контента
-                    if event_type == "content":
+                        tool_call_id = fields.get("tool_call_id")
+                        if not tool_call_id:
+                            tool_call_id = f"call_{len(tool_calls_info) + 1}"
+
+                        tool_calls_info.append({
+                            "id": tool_call_id,
+                            "name": tool_name,
+                            "args": parsed_args,
+                            "sequence": sequence
+                        })
+                        tool_call_timestamps[len(tool_calls_info) - 1] = datetime.utcnow().isoformat()
+                        sequence += 1
+
+                        await websocket.send_json({
+                            "type": "tool_call_start",
+                            "tool_name": tool_name,
+                            "tool_args": tool_args,
+                            "tool_call_id": tool_call_id,
+                            "run_id": run_id,
+                            "chunk_id": entry_id,
+                        })
+
+                    # --- Обработка обновления аргументов инструмента ---
+                    elif event_type == "tool_call_args":
+                        if tool_calls_info:
+                            parsed_args = {}
+                            if tool_args:
+                                try:
+                                    parsed_args = json.loads(tool_args) if isinstance(tool_args, str) else tool_args
+                                except:
+                                    parsed_args = {}
+                            tool_calls_info[-1]["args"] = parsed_args
+
+                            await websocket.send_json({
+                                "type": "tool_call_args",
+                                "tool_name": tool_name,
+                                "tool_args": tool_args,
+                                "run_id": run_id,
+                                "chunk_id": entry_id,
+                            })
+
+                    # --- Обработка результата инструмента ---
+                    elif event_type == "tool_result":
+                        tool_call_id = fields.get("tool_call_id")
+                        if not tool_call_id and tool_calls_info:
+                            tool_call_id = tool_calls_info[-1]["id"]
+
+                        tool_message = {
+                            "role": "tool",
+                            "content": content,
+                            "tool_call_id": tool_call_id,
+                            "name": tool_name,
+                            "run_id": run_id,
+                            "timestamp": datetime.utcnow().isoformat()
+                        }
+                        run_messages.append(tool_message)
+
+                        await websocket.send_json({
+                            "type": "tool_result",
+                            "tool_name": tool_name,
+                            "tool_call_id": tool_call_id,
+                            "content": content,
+                            "run_id": run_id,
+                            "chunk_id": entry_id,
+                        })
+
+                    # --- Обработка токенов контента ---
+                    elif event_type == "content":
+                        if not accumulated_content and content_sequence == -1:
+                            content_sequence = sequence
                         accumulated_content += content
 
-                    # Обработка завершения
-                    if is_done:
-                        await websocket.send_json({"type": "done"})
+                        await websocket.send_json({
+                            "type": "content",
+                            "content": content,
+                            "run_id": run_id,
+                            "chunk_id": entry_id,
+                        })
 
-                        # Обновляем финальное сообщение ассистента в БД
-                        await update_assistant_message_in_db(
-                            db, chat_id, accumulated_content, fields.get("run_id")
-                        )
+                    # --- Обработка мыслей (reasoning) ---
+                    elif event_type == "reasoning":
+                        await websocket.send_json({
+                            "type": "reasoning",
+                            "content": content,
+                            "run_id": run_id,
+                            "chunk_id": entry_id,
+                        })
+
+                    # --- Завершение генерации ---
+                    if is_done:
+                        if tool_calls_info and not assistant_tool_calls_added:
+                            assistant_tool_calls_msg = {
+                                "role": "assistant",
+                                "content": accumulated_content,
+                                "tool_calls": tool_calls_info,
+                                "content_sequence": content_sequence,
+                                "run_id": run_id,
+                                "timestamp": datetime.utcnow().isoformat()
+                            }
+                            run_messages.insert(0, assistant_tool_calls_msg)
+                            assistant_tool_calls_added = True
+                        else:
+                            assistant_final_msg = {
+                                "role": "assistant",
+                                "content": accumulated_content,
+                                "tool_calls": tool_calls_info if tool_calls_info else None,
+                                "content_sequence": content_sequence,
+                                "run_id": run_id,
+                                "timestamp": datetime.utcnow().isoformat()
+                            }
+
+                            if assistant_tool_calls_added:
+                                for i, msg in enumerate(run_messages):
+                                    if msg.get("role") == "assistant" and msg.get("tool_calls"):
+                                        run_messages[i] = assistant_final_msg
+                                        break
+                            else:
+                                run_messages.append(assistant_final_msg)
+
+                        await websocket.send_json({"type": "done", "run_id": run_id})
+
+                        # Сохраняем всю цепочку run_messages в БД
+                        await save_run_messages_to_db(db, chat_id, run_id, run_messages, tool_call_timestamps)
                         return
 
                     last_id = entry_id
@@ -183,27 +306,58 @@ async def stream_from_redis_to_websocket(
         except asyncio.TimeoutError:
             continue
         except Exception as e:
-            logger.error(f"Stream reading error: {e}")
+            logger.error(f"Stream reading error: {e}", exc_info=True)
             await asyncio.sleep(1)
 
 
-async def update_assistant_message_in_db(db: Session, chat_id: int, final_content: str, run_id: str):
-    """Обновляет последнее сообщение ассистента полным текстом"""
+async def save_run_messages_to_db(
+    db: Session,
+    chat_id: int,
+    run_id: str,
+    run_messages: List[Dict[str, Any]],
+    tool_call_timestamps: Dict[int, str] = None
+):
+    """Заменяет временные сообщения с run_id на полную цепочку run_messages."""
     try:
         chat = db.get(Chats, chat_id)
-        if chat and chat.messages:
-            # Находим последнее сообщение ассистента с этим run_id
-            for msg in reversed(chat.messages):
-                if msg.get("run_id") == run_id and msg.get("role") == "assistant":
-                    msg["content"] = final_content
-                    msg["timestamp"] = datetime.utcnow().isoformat()
-                    break
+        if not chat:
+            return
 
-            db.commit()
-            db.refresh(chat)
-            logger.info(f"Обновлено финальное сообщение для run_id={run_id}")
+        # Сохраняем user сообщение с этим run_id ДО фильтрации
+        user_msg = next((msg for msg in (chat.messages or []) if msg.get("run_id") == run_id and msg.get("role") == "user"), None)
+
+        # Фильтруем старые сообщения: удаляем все с данным run_id
+        filtered_history = [
+            msg for msg in (chat.messages or [])
+            if msg.get("run_id") != run_id
+        ]
+
+        # Добавляем сохранённое user сообщение
+        if user_msg:
+            filtered_history.append(user_msg)
+
+        # Добавляем остальные сообщения run_messages (assistant + tool)
+        order = 0
+        for msg in run_messages:
+            msg["order"] = order
+            order += 1
+        filtered_history.extend(run_messages)
+
+        # Сортируем: сначала по timestamp (для разных runs), потом по order (для сообщений одного run)
+        def sort_key(msg):
+            msg_ts = msg.get("timestamp", "")
+            msg_order = msg.get("order", 999999)
+            return (msg_ts, msg_order)
+
+        filtered_history.sort(key=sort_key)
+
+        chat.messages = filtered_history
+        db.commit()
+        db.refresh(chat)
+        logger.info(f"История чата {chat_id} обновлена, run_id={run_id}, добавлено сообщений: {len(filtered_history)}")
     except Exception as e:
-        logger.error(f"Ошибка обновления сообщения в БД: {e}")
+        logger.error(f"Ошибка сохранения run_messages: {e}")
+        db.rollback()
 
 
 # ====================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (оставляем как было) ======================
@@ -212,10 +366,16 @@ async def send_full_chat_history(websocket: WebSocket, chat_id: int, db: Session
         chat = db.get(Chats, chat_id)
         messages = chat.messages if chat and chat.messages else []
 
+        # Фильтруем сообщения: убираем assistant сообщения с пустым content
+        filtered_messages = [
+            msg for msg in messages
+            if msg.get('role') != 'assistant' or (msg.get('role') == 'assistant' and msg.get('content') and msg.get('content').strip())
+        ]
+
         await websocket.send_json({
             "type": "chat_history",
             "chat_id": chat_id,
-            "messages": messages
+            "messages": filtered_messages
         })
     except Exception as e:
         logger.error(f"Error sending history: {e}")
