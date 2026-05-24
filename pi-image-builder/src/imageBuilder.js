@@ -62,11 +62,36 @@ function renderBlocksToHtml(blocks) {
 <meta charset="utf-8">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: "DejaVu Sans", sans-serif; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "DejaVu Sans", sans-serif; }
 </style>
 </head>
 <body>
-${elements}
+<div id="content">${elements}</div>
+<script>
+  var content = document.getElementById('content');
+  var lastHtml = content.innerHTML;
+  function connect() {
+    var es = new EventSource('/api/display/stream');
+    es.addEventListener('update', function(e) {
+      if (e.data) { content.innerHTML = e.data; lastHtml = e.data; }
+    });
+    es.onerror = function() {
+      es.close();
+      setTimeout(connect, 2000);
+    };
+  }
+  connect();
+  setInterval(function() {
+    fetch('/api/display/current')
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        if (html && html !== lastHtml) {
+          lastHtml = html;
+          content.innerHTML = html;
+        }
+      });
+  }, 3000);
+</script>
 </body>
 </html>`
 }
@@ -203,7 +228,7 @@ export async function buildImage(blocks = []) {
     mkdirSync(displayDir, { recursive: true })
     const initialHtml = blocks.length > 0
       ? renderBlocksToHtml(blocks)
-      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:"DejaVu Sans",sans-serif;}<\/style></head><body><p style="color:#86868b;font-size:24px">Ожидание контента...</p></body></html>`
+      : `<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"DejaVu Sans",sans-serif;}<\/style></head><body><div id="content"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#fff;"><p style="color:#86868b;font-size:24px">Ожидание контента...</p></div></div><script>var content=document.getElementById("content");var lastHtml=content.innerHTML;function connect(){var es=new EventSource("/api/display/stream");es.addEventListener("update",function(e){if(e.data){content.innerHTML=e.data;lastHtml=e.data}});es.onerror=function(){es.close();setTimeout(connect,2000)}}connect();setInterval(function(){fetch("/api/display/current").then(function(r){return r.text()}).then(function(html){if(html&&html!==lastHtml){lastHtml=html;content.innerHTML=html}})},3000)<\/script></body></html>`
     writeFileSync(join(displayDir, 'display.html'), initialHtml, 'utf8')
 
     // 5d. Docker-образы

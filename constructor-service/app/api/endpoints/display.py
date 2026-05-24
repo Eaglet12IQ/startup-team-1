@@ -12,7 +12,6 @@ router = APIRouter()
 DISPLAY_FILE = "/opt/pidisplay/display.html"
 
 _sse_clients: list[asyncio.Queue] = []
-_current_html: str = ""
 
 
 def _load_display_html() -> str:
@@ -26,46 +25,43 @@ def _load_display_html() -> str:
 
 
 def _save_full_page(blocks_html: str) -> None:
-    page = f"""<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<style>
-  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-  body {{ width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: "DejaVu Sans", sans-serif; }}
-  #content {{ width: 100%; height: 100%; position: relative; }}
-</style>
-</head>
-<body>
-<div id="content">{blocks_html}</div>
-<script>
-  var content = document.getElementById('content');
-  var lastHtml = content.innerHTML;
-  function connect() {{
-    var es = new EventSource('/api/display/stream');
-    es.addEventListener('update', function(e) {{
-      if (e.data) {{ content.innerHTML = e.data; lastHtml = e.data; }}
-    }});
-    es.onerror = function() {{
-      es.close();
-      setTimeout(connect, 2000);
-    }};
-  }}
-  connect();
-  setInterval(function() {{
-    fetch('/api/display/current')
-      .then(function(r) {{ return r.text(); }})
-      .then(function(html) {{
-        if (html && html !== lastHtml) {{
-          lastHtml = html;
-          content.innerHTML = html;
-        }}
-      }});
-  }}, 3000);
-</script>
-</body>
-</html>"""
+    page = (
+        '<!DOCTYPE html>\n'
+        '<html>\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1.0">\n'
+        '<style>\n'
+        '* { margin: 0; padding: 0; box-sizing: border-box; }\n'
+        'body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative;'
+        ' font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "DejaVu Sans", sans-serif; }\n'
+        '#content { width: 100%; height: 100%; position: relative; }\n'
+        '</style>\n</head>\n<body>\n'
+        '<div id="content">' + blocks_html + '</div>\n'
+        '<script>\n'
+        'var content = document.getElementById("content");\n'
+        'var lastHtml = content.innerHTML;\n'
+        'function connect() {\n'
+        '  var es = new EventSource("/api/display/stream");\n'
+        '  es.addEventListener("update", function(e) {\n'
+        '    if (e.data) { content.innerHTML = e.data; lastHtml = e.data; }\n'
+        '  });\n'
+        '  es.onerror = function() {\n'
+        '    es.close();\n'
+        '    setTimeout(connect, 2000);\n'
+        '  };\n'
+        '}\n'
+        'connect();\n'
+        'setInterval(function() {\n'
+        '  fetch("/api/display/current")\n'
+        '    .then(function(r) { return r.text(); })\n'
+        '    .then(function(html) {\n'
+        '      if (html && html !== lastHtml) {\n'
+        '        lastHtml = html;\n'
+        '        content.innerHTML = html;\n'
+        '      }\n'
+        '    });\n'
+        '}, 3000);\n'
+        '</script>\n</body>\n</html>'
+    )
     try:
         os.makedirs(os.path.dirname(DISPLAY_FILE), exist_ok=True)
         with open(DISPLAY_FILE, "w", encoding="utf-8") as f:
@@ -94,9 +90,8 @@ def _extract_blocks_html(full_page: str) -> str:
     return ""
 
 
-# Загружаем при старте
 _initial_page = _load_display_html()
-_current_html = _extract_blocks_html(_initial_page)
+_current_html: str = _extract_blocks_html(_initial_page)
 
 PLACEHOLDER_HTML = (
     '<div style="width:100%;height:100%;display:flex;align-items:center;'
@@ -112,7 +107,7 @@ DEFAULT_PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: "DejaVu Sans", sans-serif; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "DejaVu Sans", sans-serif; }
   #content { width: 100%; height: 100%; position: relative; }
 </style>
 </head>
@@ -233,8 +228,6 @@ async def stream_display():
     queue: asyncio.Queue = asyncio.Queue()
     _sse_clients.append(queue)
 
-    # Читаем свежее состояние из файла (могло быть записано до старта процесса)
-    saved = _load_display_html()
     initial_blocks = _current_html if _current_html else PLACEHOLDER_HTML
 
     async def event_generator():
