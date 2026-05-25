@@ -238,7 +238,7 @@ export const Canvas = ({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, 
       onClick={handleCanvasClick}
       onMouseUp={handleCanvasPointerUp}
       onTouchEnd={handleCanvasPointerUp}
-      style={{ containerType: 'size' }}
+      style={{ containerType: 'size', fontFamily: '"Roboto", "DejaVu Sans", sans-serif' }}
     >
       {blocks.map((block, index) => {
         const isSelected = block.id === selectedBlockId;

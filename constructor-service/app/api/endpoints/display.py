@@ -32,7 +32,7 @@ def _save_full_page(blocks_html: str) -> None:
         '<style>\n'
         '* { margin: 0; padding: 0; box-sizing: border-box; }\n'
         'body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative;'
-        ' font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "DejaVu Sans", sans-serif; }\n'
+        ' font-family: "Roboto", "DejaVu Sans", sans-serif; }\n'
         '#content { width: 100%; height: 100%; position: relative; }\n'
         '</style>\n</head>\n<body>\n'
         '<div id="content">' + blocks_html + '</div>\n'
@@ -107,7 +107,7 @@ DEFAULT_PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "DejaVu Sans", sans-serif; }
+  body { width: 100vw; height: 100vh; overflow: hidden; background: #fff; position: relative; font-family: "Roboto", "DejaVu Sans", sans-serif; }
   #content { width: 100%; height: 100%; position: relative; }
 </style>
 </head>
