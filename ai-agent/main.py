@@ -56,8 +56,26 @@ def try_deep_parse(data):
     return data
 
 
+_tokenizer = None
+
+def _get_tokenizer():
+    global _tokenizer
+    if _tokenizer is not None:
+        return _tokenizer
+    try:
+        _tokenizer = AutoTokenizer.from_pretrained(
+            "Qwen/Qwen2.5-32B-Instruct",
+            trust_remote_code=True,
+            local_files_only=True
+        )
+    except Exception:
+        _tokenizer = False
+    return _tokenizer
+
 def count_tokens(messages: list) -> int:
-    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-32B-Instruct", trust_remote_code=True)
+    tokenizer = _get_tokenizer()
+    if not tokenizer:
+        return sum(len(str(getattr(m, 'content', ''))) // 4 for m in messages) + 80
     total_tokens = 0
     for msg in messages:
         content = getattr(msg, 'content', None)
