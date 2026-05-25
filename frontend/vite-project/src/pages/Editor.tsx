@@ -76,8 +76,7 @@ export function Editor() {
   const wsAuthParam = PI_MODE
     ? `X-User-ID=1`
     : `X-User-ID=${authUserId || 1}`;
-  const chatId = parseInt(projectId || '1', 10); // Use projectId as chatId
-  const CHAT_SERVICE_PORT = 8083; // From .env.example
+  const chatId = parseInt(projectId || '1', 10);
   
   blocksRef.current = blocks;
   
@@ -529,8 +528,8 @@ export function Editor() {
 
   // Chat WebSocket functions
   const connectChatWebSocket = () => {
-    // Direct connection to chat-service on port 8083
-    const wsUrl = `ws://localhost:${CHAT_SERVICE_PORT}/ws/chat/${chatId}?${wsAuthParam}`;
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/chat/ws/chat/${chatId}?${wsAuthParam}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
