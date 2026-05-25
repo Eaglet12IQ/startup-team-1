@@ -71,6 +71,11 @@ export async function saveSchema(payload: unknown[], schemaName: string, schemaI
   if (!res.ok) throw new Error(`Failed to save schema: ${res.status}`);
 }
 
+export async function deleteSchema(schemaId: number): Promise<void> {
+  const res = await fetchWithAuth(`${API_BASE}/api/${schemaId}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Failed to delete schema: ${res.status}`);
+}
+
 export async function getSchemaHistory(schemaId: number): Promise<SchemaHistoryEntry[]> {
   const res = await fetchWithAuth(`${API_BASE}/api/${schemaId}/history`);
   if (!res.ok) throw new Error(`Failed to fetch history: ${res.status}`);

@@ -221,6 +221,46 @@ async def get_schema_version(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка получения версии: {str(e)}")
     
+@router.delete("/{schema_id}")
+async def delete_schema(
+    schema_id: int = FastPath(..., description="ID схемы"),
+    user_id: str = Header(..., alias="X-User-ID"),
+    repo: git.Repo = Depends(get_repo)
+):
+    try:
+        user_id_int = int(user_id)
+
+        filename = f"{schema_id}.json"
+        if ".." in filename or filename.startswith("/"):
+            raise HTTPException(status_code=400, detail="Недопустимый путь к файлу")
+
+        file_path = Path(filename)
+        full_path = REPO_DIR / file_path
+
+        if not full_path.exists():
+            raise HTTPException(status_code=404, detail=f"Схема с ID {schema_id} не найдена")
+
+        with open(full_path, "r", encoding="utf-8") as f:
+            file_content = json.load(f)
+
+        saved_user_id = file_content.get("user_id")
+        if saved_user_id is None or saved_user_id != user_id_int:
+            raise HTTPException(status_code=403, detail="Доступ запрещён: вы не являетесь владельцем этой схемы")
+
+        repo.index.remove([str(file_path)])
+        full_path.unlink(missing_ok=True)
+        repo.index.commit(f"Delete schema: {file_path}")
+
+        return {"status": "success"}
+
+    except ValueError:
+        raise HTTPException(status_code=400, detail="X-User-ID должен быть числом")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка удаления схемы: {str(e)}")
+
+
 @router.get("/{schema_id}")
 async def get_schema(
     schema_id: int = FastPath(..., description="ID схемы"),

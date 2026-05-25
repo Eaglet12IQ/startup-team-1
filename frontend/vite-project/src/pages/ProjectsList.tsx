@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
-import { getMySchemas, saveSchema, type BackendSchema } from '../services/api';
+import { getMySchemas, saveSchema, deleteSchema, type BackendSchema } from '../services/api';
 
 interface Project {
   id: number;
@@ -18,6 +18,7 @@ export function ProjectsList() {
   const [isCreating, setIsCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -61,6 +62,20 @@ export function ProjectsList() {
 
   const handleOpenProject = (id: number) => {
     navigate(`/editor/${id}`);
+  };
+
+  const handleDeleteProject = async () => {
+    if (deleteConfirmId === null) return;
+    setDeleting(true);
+    try {
+      await deleteSchema(deleteConfirmId);
+      setDeleteConfirmId(null);
+      await loadProjects();
+    } catch {
+      alert('Не удалось удалить проект');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -212,10 +227,11 @@ export function ProjectsList() {
                 Отмена
               </button>
               <button
-                onClick={() => setDeleteConfirmId(null)}
-                className="w-full sm:w-auto px-5 py-2.5 bg-[#ff3b30] text-white rounded-full font-medium hover:bg-[#ff453a] transition-all duration-200 text-sm"
+                onClick={handleDeleteProject}
+                disabled={deleting}
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#ff3b30] text-white rounded-full font-medium hover:bg-[#ff453a] transition-all duration-200 text-sm disabled:opacity-50"
               >
-                Удалить
+                {deleting ? 'Удаление…' : 'Удалить'}
               </button>
             </div>
           </div>
