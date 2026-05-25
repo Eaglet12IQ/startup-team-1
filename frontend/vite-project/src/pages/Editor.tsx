@@ -761,7 +761,7 @@ export function Editor() {
       </div>
 
       {/* === MAIN AREA (toolbar + canvas) === */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className={`flex-1 flex flex-col min-h-0 transition-[margin] duration-200 mb-[16px] mr-[10px] ${!PI_MODE && showChat ? 'lg:mr-80' : ''}`}>
         {/* === DESKTOP TOOLBAR === */}
         <div className="hidden lg:flex justify-between items-center px-4 pt-4 pb-2">
           <button
@@ -824,6 +824,18 @@ export function Editor() {
           </div>
           <span className="text-xs text-[#86868b] truncate shrink-0 max-w-[100px]">{schemaName}</span>
           <div className="flex-1" />
+          {!PI_MODE && !showChat && (
+            <button
+              onClick={() => setShowChat(true)}
+              className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[#0071e3] to-[#a855f7] text-white flex items-center justify-center"
+              title="AI Ассистент"
+              aria-label="Открыть AI чат"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1.5a.75.75 0 0 1 .722.547l1.116 3.906A4.5 4.5 0 0 0 17.047 9.16l3.906 1.117a.75.75 0 0 1 0 1.444l-3.906 1.117a4.5 4.5 0 0 0-3.209 3.207L12.722 19.95a.75.75 0 0 1-1.444 0l-1.116-3.906a4.5 4.5 0 0 0-3.209-3.207L3.047 11.72a.75.75 0 0 1 0-1.444l3.906-1.117A4.5 4.5 0 0 0 10.16 5.953L11.278 2.047A.75.75 0 0 1 12 1.5Z" />
+              </svg>
+            </button>
+          )}
           <button onClick={handleSaveToBackend} disabled={saving} className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${saved ? 'bg-[#34c759] text-white' : 'bg-[#0071e3] text-white'} disabled:opacity-50`}>
             {saved ? '✓' : 'Сохранить'}
           </button>
@@ -1000,78 +1012,103 @@ export function Editor() {
         </div>
       )}
 
-      {/* Toggle arrow — visible only outside Pi mode */}
-      {!PI_MODE && (
+      {/* AI Chat FAB — desktop only, visible when chat is hidden */}
+      {!PI_MODE && !showChat && (
         <button
-          onClick={() => setShowChat(!showChat)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white border border-[#d2d2d7] rounded-l-lg shadow-md p-2 hover:bg-[#f5f5f7] transition-all duration-200"
-          style={{ right: showChat ? '320px' : '0' }}
-          title={showChat ? 'Скрыть чат' : 'Открыть чат'}
+          onClick={() => setShowChat(true)}
+          className="hidden lg:flex absolute bottom-6 right-6 z-30 rounded-full bg-gradient-to-br from-[#0071e3] to-[#a855f7] text-white shadow-[0_8px_24px_rgb(0,113,227,0.35)] hover:shadow-[0_12px_32px_rgb(168,85,247,0.45)] hover:scale-105 items-center justify-center transition-all duration-200"
+          style={{ width: '52px', height: '52px' }}
+          title="AI Ассистент"
+          aria-label="Открыть AI чат"
         >
-          <svg
-          className={`w-5 h-5 text-[#6e6e73] transition-transform duration-200 ${showChat ? '' : 'rotate-180'}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1.5a.75.75 0 0 1 .722.547l1.116 3.906A4.5 4.5 0 0 0 17.047 9.16l3.906 1.117a.75.75 0 0 1 0 1.444l-3.906 1.117a4.5 4.5 0 0 0-3.209 3.207L12.722 19.95a.75.75 0 0 1-1.444 0l-1.116-3.906a4.5 4.5 0 0 0-3.209-3.207L3.047 11.72a.75.75 0 0 1 0-1.444l3.906-1.117A4.5 4.5 0 0 0 10.16 5.953L11.278 2.047A.75.75 0 0 1 12 1.5Z" />
+          </svg>
+        </button>
       )}
+
 
       {/* AI Chat Panel */}
       {!PI_MODE && showChat && (
-        <div className="absolute right-0 top-0 bottom-0 w-80 flex flex-col border-l border-[#d2d2d7] bg-white shadow-lg z-20">
-          <div className="p-4 border-b border-[#d2d2d7] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className={`w-2.5 h-2.5 rounded-full ${chatConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-sm font-medium text-[#1d1d1f]">AI Ассистент</span>
+        <div className="fixed lg:absolute inset-0 lg:inset-auto lg:right-0 lg:top-0 lg:bottom-0 w-full lg:w-80 flex flex-col border-l-0 lg:border-l border-[#e5e5ea] bg-white z-30">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 lg:px-5 py-3 border-b border-[#f0f0f3] shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0071e3] to-[#a855f7] flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1.5a.75.75 0 0 1 .722.547l1.116 3.906A4.5 4.5 0 0 0 17.047 9.16l3.906 1.117a.75.75 0 0 1 0 1.444l-3.906 1.117a4.5 4.5 0 0 0-3.209 3.207L12.722 19.95a.75.75 0 0 1-1.444 0l-1.116-3.906a4.5 4.5 0 0 0-3.209-3.207L3.047 11.72a.75.75 0 0 1 0-1.444l3.906-1.117A4.5 4.5 0 0 0 10.16 5.953L11.278 2.047A.75.75 0 0 1 12 1.5Z" />
+                </svg>
+              </div>
+              <div className="flex flex-col min-w-0">
+                <h3 className="text-[14px] font-semibold text-[#1d1d1f] tracking-tight leading-tight">AI Ассистент</h3>
+                <span className="flex items-center gap-1.5 text-[11px] text-[#86868b] leading-tight mt-0.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${chatConnected ? 'bg-[#34c759]' : 'bg-[#ff453a]'}`} />
+                  {chatConnected ? 'Онлайн' : 'Не подключён'}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 shrink-0">
               <button
                 onClick={() => {
                   if (wsRef.current) {
                     wsRef.current.send(JSON.stringify({ type: 'clear_history' }));
                   }
                 }}
-                className="p-1 hover:bg-[#f5f5f7] rounded-lg transition-colors"
+                className="p-1.5 text-[#86868b] hover:text-[#1d1d1f] hover:bg-[#f5f5f7] rounded-lg transition-colors"
                 title="Очистить историю"
+                aria-label="Очистить историю"
               >
-                <svg className="w-4 h-4 text-[#6e6e73]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setShowChat(false)}
+                className="p-1.5 -mr-1 text-[#86868b] hover:text-[#1d1d1f] hover:bg-[#f5f5f7] rounded-lg transition-colors"
+                title="Закрыть"
+                aria-label="Закрыть чат"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-5">
             {chatMessages.length === 0 ? (
-              <div className="text-center text-[#6e6e73] py-8">
-                <p className="text-sm">Задайте вопрос AI</p>
-                <p className="text-xs mt-1">Помогу с созданием схем</p>
+              <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center mb-3">
+                  <svg className="w-6 h-6 text-[#86868b]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <p className="text-[14px] font-medium text-[#1d1d1f] mb-1">Начните диалог</p>
+                <p className="text-[12px] text-[#86868b] leading-relaxed">Помогу создать схему для табло</p>
               </div>
             ) : (
-              <>
+              <div className="space-y-3">
                 {chatMessages.map((msg, idx) => (
                   <div
                     key={idx}
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                      className={`max-w-[85%] px-3.5 py-2 text-[14px] leading-[1.45] ${
                         msg.role === 'user'
-                          ? 'bg-[#0071e3] text-white'
-                          : 'bg-[#f5f5f7] text-[#1d1d1f]'
+                          ? 'bg-[#0071e3] text-white rounded-[18px] rounded-tr-[6px]'
+                          : 'bg-[#f5f5f7] text-[#1d1d1f] rounded-[18px] rounded-tl-[6px]'
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                       {msg.aiBlocks && msg.aiBlocks.length > 0 && (
                         <button
                           onClick={() => handleApplyAiSchema(msg.aiBlocks!)}
-                          className="mt-2 px-3 py-1.5 bg-[#0071e3] text-white text-xs font-medium rounded-lg hover:bg-[#0077ED] transition-all duration-200 flex items-center gap-1.5"
+                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 text-[#0071e3] text-[12px] font-medium rounded-full hover:bg-white transition-colors"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                           Применить схему
                         </button>
@@ -1081,45 +1118,47 @@ export function Editor() {
                 ))}
                 {chatLoading && !currentStatus && (
                   <div className="flex justify-start">
-                    <div className="bg-[#f5f5f7] rounded-2xl px-3 py-2">
+                    <div className="bg-[#f5f5f7] rounded-[18px] rounded-tl-[6px] px-3.5 py-3">
                       <div className="flex gap-1">
-                        <span className="w-1.5 h-1.5 bg-[#6e6e73] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 bg-[#6e6e73] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 bg-[#6e6e73] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <span className="w-1.5 h-1.5 bg-[#86868b] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-[#86868b] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-[#86868b] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
                   </div>
                 )}
                 {currentStatus && (
                   <div className="flex justify-start">
-                    <div className="bg-[#fff3cd] rounded-2xl px-3 py-2 text-sm text-[#856404] border border-[#ffc107]">
-                      <p>{currentStatus}</p>
+                    <div className="bg-[#fff8e6] text-[#8a6500] border border-[#ffe082] rounded-[18px] rounded-tl-[6px] px-3.5 py-2 text-[13px] leading-[1.4]">
+                      {currentStatus}
                     </div>
                   </div>
                 )}
                 <div ref={chatEndRef} />
-              </>
+              </div>
             )}
           </div>
 
-          <div className="p-3 border-t border-[#d2d2d7]">
-            <div className="flex items-center gap-2">
+          {/* Input */}
+          <div className="p-3 border-t border-[#f0f0f3] shrink-0">
+            <div className="flex items-center gap-1 bg-[#f5f5f7] rounded-[22px] pl-4 pr-1.5 py-1 focus-within:ring-2 focus-within:ring-[#0071e3]/30 transition">
               <input
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyPress={handleChatKeyPress}
-                placeholder="Введите сообщение..."
+                placeholder="Сообщение…"
                 disabled={chatLoading || !chatConnected}
-                className="flex-1 bg-[#f5f5f7] rounded-full px-3 py-2 text-sm text-[#1d1d1f] placeholder-[#6e6e73] focus:outline-none focus:ring-1 focus:ring-[#0071e3] disabled:opacity-50"
+                className="flex-1 min-w-0 bg-transparent text-[14px] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none disabled:opacity-50 py-1.5"
               />
               <button
                 onClick={sendChatMessage}
                 disabled={chatLoading || !chatInput.trim() || !chatConnected}
-                className="p-2 bg-[#0071e3] text-white rounded-full hover:bg-[#0077ED] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="shrink-0 w-8 h-8 rounded-full bg-[#0071e3] text-white flex items-center justify-center hover:bg-[#0077ED] transition-colors disabled:bg-[#d2d2d7] disabled:cursor-not-allowed"
+                aria-label="Отправить"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" />
                 </svg>
               </button>
             </div>
