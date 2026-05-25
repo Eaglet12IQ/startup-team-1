@@ -281,7 +281,7 @@ export function Editor() {
         }
       }));
 
-      const res = await fetch('http://localhost:3000/build-image', {
+      const res = await fetch('/build-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocks: blocksWithBase64 }),

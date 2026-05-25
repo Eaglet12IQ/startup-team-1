@@ -9,8 +9,8 @@ COPY frontend/vite-project/package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy shared modules inside the project for module resolution
-COPY shared ./shared
+# Copy shared modules at the correct relative path
+COPY shared /shared
 
 # Copy source code
 COPY frontend/vite-project .
