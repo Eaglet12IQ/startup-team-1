@@ -66,6 +66,7 @@ export function Editor() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [chatConnected, setChatConnected] = useState(false);
+  const PI_MODE = import.meta.env.VITE_PI_MODE === 'true';
   const [showChat, setShowChat] = useState(true);
   const [currentStatus, setCurrentStatus] = useState<string | null>(null); // Текущий статус генерации
   const [currentBlockId, setCurrentBlockId] = useState<string | null>(null); // Текущий блок который создается
@@ -1001,14 +1002,15 @@ export function Editor() {
         </div>
       )}
 
-      {/* Toggle arrow — always visible */}
-      <button
-        onClick={() => setShowChat(!showChat)}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white border border-[#d2d2d7] rounded-l-lg shadow-md p-2 hover:bg-[#f5f5f7] transition-all duration-200"
-        style={{ right: showChat ? '320px' : '0' }}
-        title={showChat ? 'Скрыть чат' : 'Открыть чат'}
-      >
-        <svg
+      {/* Toggle arrow — visible only outside Pi mode */}
+      {!PI_MODE && (
+        <button
+          onClick={() => setShowChat(!showChat)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white border border-[#d2d2d7] rounded-l-lg shadow-md p-2 hover:bg-[#f5f5f7] transition-all duration-200"
+          style={{ right: showChat ? '320px' : '0' }}
+          title={showChat ? 'Скрыть чат' : 'Открыть чат'}
+        >
+          <svg
           className={`w-5 h-5 text-[#6e6e73] transition-transform duration-200 ${showChat ? '' : 'rotate-180'}`}
           fill="none"
           stroke="currentColor"
@@ -1017,9 +1019,10 @@ export function Editor() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
+      )}
 
-      {/* AI Chat Panel - absolute positioned to not affect main layout */}
-      {showChat && (
+      {/* AI Chat Panel */}
+      {!PI_MODE && showChat && (
         <div className="absolute right-0 top-0 bottom-0 w-80 flex flex-col border-l border-[#d2d2d7] bg-white shadow-lg z-20">
           <div className="p-4 border-b border-[#d2d2d7] flex items-center justify-between">
             <div className="flex items-center gap-2">
