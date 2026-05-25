@@ -9,8 +9,11 @@ COPY frontend/vite-project/package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy shared modules at the correct relative path
-COPY shared /shared
+# Copy shared modules next to the project (same level as vite.config.ts)
+COPY shared ./shared
+
+# Symlink node_modules so shared/ can resolve react
+RUN ln -s /app/node_modules /app/shared/node_modules
 
 # Copy source code
 COPY frontend/vite-project .
