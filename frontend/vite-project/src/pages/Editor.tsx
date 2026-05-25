@@ -66,7 +66,6 @@ export function Editor() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [chatConnected, setChatConnected] = useState(false);
-  const PI_MODE = import.meta.env.VITE_PI_MODE === 'true';
   const [showChat, setShowChat] = useState(true);
   const [currentStatus, setCurrentStatus] = useState<string | null>(null); // Текущий статус генерации
   const [currentBlockId, setCurrentBlockId] = useState<string | null>(null); // Текущий блок который создается
