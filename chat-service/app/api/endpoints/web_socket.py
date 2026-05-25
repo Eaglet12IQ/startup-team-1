@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
+from starlette.websockets import WebSocketState
 from typing import Annotated, List, Dict, Any
 
 from sqlalchemy.orm import Session
@@ -26,11 +27,22 @@ async def chat_websocket(
     x_user_id: Annotated[int | None, Query(alias="X-User-ID")] = None,
     db: Session = Depends(get_db),
 ):
-    if not x_user_id or chat_id != x_user_id:
-        await websocket.close(code=4001 if not x_user_id else 4002, reason="Invalid X-User-ID")
+    if not x_user_id:
+        await websocket.close(code=4001, reason="Missing X-User-ID")
+        return
+
+    chat = db.get(Chats, chat_id)
+    if chat is not None and chat.user_id != x_user_id:
+        await websocket.close(code=4003, reason="Not chat owner")
         return
 
     await websocket.accept()
+
+    if chat is None:
+        chat = Chats(chat_id=chat_id, user_id=x_user_id, messages=[])
+        db.add(chat)
+        db.commit()
+
     logger.info(f"WebSocket connected → user={x_user_id}, chat={chat_id}")
 
     try:
@@ -128,6 +140,17 @@ async def publish_llm_task(chat_id: int, run_id: str, full_history: list):
 
 
 # ====================== СТРИМИНГ ИЗ REDIS ======================
+async def safe_send(websocket: WebSocket, payload: dict) -> bool:
+    """Шлёт payload в WS, тихо игнорируя ошибки если клиент уже отвалился."""
+    if websocket.client_state != WebSocketState.CONNECTED:
+        return False
+    try:
+        await websocket.send_json(payload)
+        return True
+    except (WebSocketDisconnect, RuntimeError):
+        return False
+
+
 async def stream_from_redis_to_websocket(
     websocket: WebSocket,
     stream_key: str,
@@ -189,7 +212,7 @@ async def stream_from_redis_to_websocket(
                         tool_call_timestamps[len(tool_calls_info) - 1] = datetime.utcnow().isoformat()
                         sequence += 1
 
-                        await websocket.send_json({
+                        await safe_send(websocket, {
                             "type": "tool_call_start",
                             "tool_name": tool_name,
                             "tool_args": tool_args,
@@ -209,7 +232,7 @@ async def stream_from_redis_to_websocket(
                                     parsed_args = {}
                             tool_calls_info[-1]["args"] = parsed_args
 
-                            await websocket.send_json({
+                            await safe_send(websocket, {
                                 "type": "tool_call_args",
                                 "tool_name": tool_name,
                                 "tool_args": tool_args,
@@ -233,7 +256,7 @@ async def stream_from_redis_to_websocket(
                         }
                         run_messages.append(tool_message)
 
-                        await websocket.send_json({
+                        await safe_send(websocket, {
                             "type": "tool_result",
                             "tool_name": tool_name,
                             "tool_call_id": tool_call_id,
@@ -248,7 +271,7 @@ async def stream_from_redis_to_websocket(
                             content_sequence = sequence
                         accumulated_content += content
 
-                        await websocket.send_json({
+                        await safe_send(websocket, {
                             "type": "content",
                             "content": content,
                             "run_id": run_id,
@@ -257,7 +280,7 @@ async def stream_from_redis_to_websocket(
 
                     # --- Обработка мыслей (reasoning) ---
                     elif event_type == "reasoning":
-                        await websocket.send_json({
+                        await safe_send(websocket, {
                             "type": "reasoning",
                             "content": content,
                             "run_id": run_id,
@@ -295,7 +318,7 @@ async def stream_from_redis_to_websocket(
                             else:
                                 run_messages.append(assistant_final_msg)
 
-                        await websocket.send_json({"type": "done", "run_id": run_id})
+                        await safe_send(websocket, {"type": "done", "run_id": run_id})
 
                         # Сохраняем всю цепочку run_messages в БД
                         await save_run_messages_to_db(db, chat_id, run_id, run_messages, tool_call_timestamps)
@@ -305,6 +328,9 @@ async def stream_from_redis_to_websocket(
 
         except asyncio.TimeoutError:
             continue
+        except (WebSocketDisconnect, RuntimeError) as e:
+            logger.info(f"WebSocket closed during stream (run_id={run_id}): {e}")
+            return
         except Exception as e:
             logger.error(f"Stream reading error: {e}", exc_info=True)
             await asyncio.sleep(1)
@@ -382,13 +408,12 @@ async def send_full_chat_history(websocket: WebSocket, chat_id: int, db: Session
         await websocket.send_json({"type": "chat_history", "chat_id": chat_id, "messages": []})
 
 
-async def add_message_to_db(db: Session, user_id: int, role: str, content: str, run_id: str = None):
+async def add_message_to_db(db: Session, chat_id: int, role: str, content: str, run_id: str = None):
     try:
-        chat = db.get(Chats, user_id)
+        chat = db.get(Chats, chat_id)
         if not chat:
-            chat = Chats(user_id=user_id, messages=[])
-            db.add(chat)
-            db.flush()
+            logger.warning(f"add_message_to_db: chat {chat_id} not found, skipping")
+            return
 
         new_message = {
             "role": role,

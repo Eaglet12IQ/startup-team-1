@@ -73,6 +73,7 @@ export function Editor() {
   const wsRef = useRef<WebSocket | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const accumulatedContentRef = useRef<string>(''); // Накопленный контент для парсинга
+  const reasoningIndexRef = useRef<number | null>(null); // Индекс активного reasoning-сообщения
   const wsAuthParam = PI_MODE
     ? `X-User-ID=1`
     : `X-User-ID=${authUserId || 1}`;
@@ -598,14 +599,27 @@ export function Editor() {
           break;
 
         case 'reasoning':
-          // Показываем мысли/рассуждения как отдельное сообщение (по желанию можно скрыть)
           if (data.content) {
-            const reasoningMessage: Message = {
-              role: 'assistant',
-              content: `🧠 ${data.content}`,
-              timestamp: new Date().toISOString(),
-            };
-            setChatMessages((prev) => [...prev, reasoningMessage]);
+            const chunk = data.content;
+            setChatMessages((prev) => {
+              if (reasoningIndexRef.current !== null && prev[reasoningIndexRef.current]?.content?.startsWith('🧠')) {
+                const next = [...prev];
+                next[reasoningIndexRef.current] = {
+                  ...next[reasoningIndexRef.current],
+                  content: next[reasoningIndexRef.current].content + chunk,
+                };
+                return next;
+              }
+              reasoningIndexRef.current = prev.length;
+              return [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `🧠 ${chunk}`,
+                  timestamp: new Date().toISOString(),
+                },
+              ];
+            });
           }
           break;
 
@@ -614,6 +628,7 @@ export function Editor() {
           setCurrentStatus(null);
           setCurrentBlockId(null);
           accumulatedContentRef.current = '';
+          reasoningIndexRef.current = null;
           setGenerationComplete(false);
           break;
 
@@ -647,6 +662,7 @@ export function Editor() {
           setCurrentBlockId(null);
           setCurrentStatus(null);
           accumulatedContentRef.current = '';
+          reasoningIndexRef.current = null;
           setChatLoading(false);
           break;
 
@@ -686,6 +702,7 @@ export function Editor() {
     setChatMessages((prev) => [...prev, message]);
     setChatInput('');
     setChatLoading(true);
+    reasoningIndexRef.current = null;
 
     wsRef.current.send(
       JSON.stringify({
