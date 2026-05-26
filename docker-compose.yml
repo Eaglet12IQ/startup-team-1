@@ -39,6 +39,10 @@ services:
     container_name: frontend
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt/live/188.126.58.2/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
+      - /etc/letsencrypt/live/188.126.58.2/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
     depends_on:
       - chat-service
       - backend
