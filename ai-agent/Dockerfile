@@ -18,9 +18,6 @@ COPY main.py .
 # Создаём директорию для возможных кэшей (tokenizer и т.д.)
 RUN mkdir -p /root/.cache/huggingface
 
-# Предзагружаем токенизатор для избежания скачивания на рантайме
-RUN python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained('Qwen/Qwen2.5-32B-Instruct', trust_remote_code=True)"
-
 ENV PYTHONUNBUFFERED=1
 
 CMD ["python", "main.py"]
