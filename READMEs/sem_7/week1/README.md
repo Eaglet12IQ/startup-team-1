@@ -12,3 +12,16 @@
 ---
 ## Практическая неделя 1
 ## Тема практического занятия: Товарный знак и брендирование
+
+### Название
+PiConstruct - конструктор информационных табло
+
+### УТП
+
+
+### Brand board
+Спецификация светлой темы
+![Ссылка на файл](attachments/design-system/piconstruct-design-system-light.pdf)
+Спецификация темной темы
+![Ссылка на файл](attachments/design-system/piconstruct-design-system-dark.pdf)
+
