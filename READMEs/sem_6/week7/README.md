@@ -14,4 +14,4 @@
 ## Создание MVP
 
 ### Диаграмма принципов функционирования системы
-![Diagrams PiConstruct](Diagrams%20PiConstruct.jpg)
+![Diagrams PiConstruct](attachments/Diagrams%20PiConstruct.jpg)
