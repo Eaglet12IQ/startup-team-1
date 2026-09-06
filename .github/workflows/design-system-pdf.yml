@@ -1,0 +1,76 @@
+name: Rebuild design-system PDFs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'READMEs/sem_7/week1/attachments/design-system/**'
+      - '.github/workflows/design-system-pdf.yml'
+  workflow_dispatch:
+
+# чтобы бот мог запушить пересобранные PDF обратно в ветку
+permissions:
+  contents: write
+
+concurrency:
+  group: design-system-pdf
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright + Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Install pymupdf
+        run: pip install pymupdf
+
+      - name: Render dark and light PDFs
+        working-directory: READMEs/sem_7/week1/attachments/design-system
+        run: |
+          node render.js piconstruct-design-system.html piconstruct-design-system-dark.pdf 1200px
+          sed 's/<html lang="ru">/<html lang="ru" class="theme-light">/' piconstruct-design-system.html > .render-light.tmp.html
+          node render.js .render-light.tmp.html piconstruct-design-system-light.pdf 1200px
+          rm .render-light.tmp.html
+
+      - name: Set PDF metadata
+        working-directory: READMEs/sem_7/week1/attachments/design-system
+        run: |
+          python - <<'EOF'
+          import fitz
+          for name, mode in [('piconstruct-design-system-dark.pdf', 'Dark'),
+                             ('piconstruct-design-system-light.pdf', 'Light')]:
+              doc = fitz.open(name)
+              doc.set_metadata({'title': f'PiConstruct Design System ({mode} Mode Spec)',
+                                'author': 'PiConstruct Team',
+                                'creator': 'Z.ai', 'producer': 'Z.ai'})
+              doc.saveIncr()
+              doc.close()
+          print('metadata OK')
+          EOF
+
+      - name: Commit rebuilt PDFs
+        working-directory: READMEs/sem_7/week1/attachments/design-system
+        run: |
+          git add piconstruct-design-system-dark.pdf piconstruct-design-system-light.pdf
+          if git diff --cached --quiet; then
+            echo "PDFs unchanged, nothing to commit"
+          else
+            git -c user.name="github-actions[bot]" \
+                -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                commit -m "chore(design-system): rebuild PDFs [skip ci]"
+            git push
+          fi
