@@ -27,4 +27,4 @@ PiConstruct - конструктор информационных табло
 
 | Тёмная тема | Светлая тема |
 | --- | --- |
-| [![Тёмная тема](attachments/design-system/piconstruct-design-system-dark.png)](attachments/design-system/piconstruct-design-system-dark.pdf) | [![Светлая тема](attachments/design-system/piconstruct-design-system-light.png)](attachments/design-system/piconstruct-design-system-light.png) |
+| [![Тёмная тема](attachments/design-system/piconstruct-design-system-dark.png?v=2)](attachments/design-system/piconstruct-design-system-dark.pdf) | [![Светлая тема](attachments/design-system/piconstruct-design-system-light.png?v=2)](attachments/design-system/piconstruct-design-system-light.png) |
