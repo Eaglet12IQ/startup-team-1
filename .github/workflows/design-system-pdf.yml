@@ -62,10 +62,24 @@ jobs:
           print('metadata OK')
           EOF
 
-      - name: Commit rebuilt PDFs
+      - name: Render PNG previews from PDFs
         working-directory: READMEs/sem_7/week1/attachments/design-system
         run: |
-          git add piconstruct-design-system-dark.pdf piconstruct-design-system-light.pdf
+          python - <<'EOF'
+          import fitz
+          for name in ('piconstruct-design-system-dark',
+                       'piconstruct-design-system-light'):
+              doc = fitz.open(name + '.pdf')
+              pix = doc[0].get_pixmap(matrix=fitz.Matrix(2, 2))
+              pix.save(name + '.png')
+              print(f'{name}.png: {pix.width}x{pix.height}')
+              doc.close()
+          EOF
+
+      - name: Commit rebuilt PDFs and PNGs
+        working-directory: READMEs/sem_7/week1/attachments/design-system
+        run: |
+          git add piconstruct-design-system-*.pdf piconstruct-design-system-*.png
           if git diff --cached --quiet; then
             echo "PDFs unchanged, nothing to commit"
           else
