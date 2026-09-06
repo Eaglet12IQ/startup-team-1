@@ -10,23 +10,34 @@
 | Валянский Андрей     | Разработчик 💻 |
 
 ---
-## Недели
+
+## Семестр 6
+
+### Недели
 
 | Неделя | Ссылка                              | Статус |
 | ------ | ----------------------------------- | ------ |
-| 1      | [Перейти](READMEs/week1/README.md)  | ✅      |
-| 2      | [Перейти](READMEs/week2/README.md)  | ✅      |
-| 3      | [Перейти](READMEs/week3/README.md)  | ✅      |
-| 4      | [Перейти](READMEs/week4/README.md)  | ✅      |
-| 5      | [Перейти](READMEs/week5/README.md)  | ✅      |
-| 6      | [Перейти](READMEs/week6/README.md)  | ✅      |
-| 7      | [Перейти](READMEs/week7/README.md)  | ✅      |
-| 8      | [Перейти](READMEs/week8/README.md)  | ✅      |
-| 9      | [Перейти](READMEs/week9/README.md)  | ✅      |
-| 10     | [Перейти](READMEs/week10/README.md) | ✅      |
-| 11     | [Перейти](READMEs/week11/README.md) | ✅      |
-| 12     | [Перейти](READMEs/week12/README.md) | ✅      |
-| 13     | [Перейти](READMEs/week13/README.md) | ✅      |
-| 14     | [Перейти](READMEs/week14/README.md) | ✅      |
-| 15     | [Перейти](READMEs/week15/README.md) | ✅      |
-| 16     | [Перейти](READMEs/week16/README.md) | ✅      |
+| 1      | [Перейти](READMEs/sem_6/week1/README.md)  | ✅      |
+| 2      | [Перейти](READMEs/sem_6/week2/README.md)  | ✅      |
+| 3      | [Перейти](READMEs/sem_6/week3/README.md)  | ✅      |
+| 4      | [Перейти](READMEs/sem_6/week4/README.md)  | ✅      |
+| 5      | [Перейти](READMEs/sem_6/week5/README.md)  | ✅      |
+| 6      | [Перейти](READMEs/sem_6/week6/README.md)  | ✅      |
+| 7      | [Перейти](READMEs/sem_6/week7/README.md)  | ✅      |
+| 8      | [Перейти](READMEs/sem_6/week8/README.md)  | ✅      |
+| 9      | [Перейти](READMEs/sem_6/week9/README.md)  | ✅      |
+| 10     | [Перейти](READMEs/sem_6/week10/README.md) | ✅      |
+| 11     | [Перейти](READMEs/sem_6/week11/README.md) | ✅      |
+| 12     | [Перейти](READMEs/sem_6/week12/README.md) | ✅      |
+| 13     | [Перейти](READMEs/sem_6/week13/README.md) | ✅      |
+| 14     | [Перейти](READMEs/sem_6/week14/README.md) | ✅      |
+| 15     | [Перейти](READMEs/sem_6/week15/README.md) | ✅      |
+| 16     | [Перейти](READMEs/sem_6/week16/README.md) | ✅      |
+
+## Семестр 7
+
+### Недели
+
+| Неделя | Ссылка                                   | Статус |
+| ------ | ---------------------------------------- | ------ |
+| 1      | [Перейти](READMEs/sem_7/week1/README.md) | ⌛      |
