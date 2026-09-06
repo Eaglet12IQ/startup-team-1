@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>PiConstruct — Design System v1.0</title>
+<style>
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:400; font-display:swap; src:url('fonts/rubik-cyrillic-400.woff2') format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:400; font-display:swap; src:url('fonts/rubik-latin-400.woff2') format('woff2'); }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:500; font-display:swap; src:url('fonts/rubik-cyrillic-500.woff2') format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:500; font-display:swap; src:url('fonts/rubik-latin-500.woff2') format('woff2'); }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:600; font-display:swap; src:url('fonts/rubik-cyrillic-600.woff2') format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:600; font-display:swap; src:url('fonts/rubik-latin-600.woff2') format('woff2'); }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:700; font-display:swap; src:url('fonts/rubik-cyrillic-700.woff2') format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:700; font-display:swap; src:url('fonts/rubik-latin-700.woff2') format('woff2'); }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:800; font-display:swap; src:url('fonts/rubik-cyrillic-800.woff2') format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+  @font-face{ font-family:'Rubik'; font-style:normal; font-weight:800; font-display:swap; src:url('fonts/rubik-latin-800.woff2') format('woff2'); }
+</style>
+<style>
+  :root{
+    --bg:#0F1115; --surface:#16181D; --elev:#1E2027; --overlay:#272A32;
+    --border:#23272E; --hairline:#191C22;
+    --text:#FFFFFF; --text2:#C9CFD8; --muted:#7A899F;
+    --accent:#2BDD93; --accent-hover:#58E4AA; --accent-active:#1DB978; --accent-dim:#123024;
+    --accent2:#2CABDD; --accent2-dim:#0F2A35;
+    --warn:#DDA22C; --warn-dim:#392D13;
+    --danger:#DD382C; --danger-hover:#E3594F; --danger-dim:#391613;
+    --grad:linear-gradient(90deg,#2BDD93 0%,#2CABDD 100%);
+    /* интерактивные (текст/бордер) версии акцентов; поле ввода */
+    --accent-text:#2BDD93; --accent2-text:#2CABDD; --warn-text:#DDA22C; --danger-text:#DD382C;
+    --field:#16181D;
+  }
+  /* ── светлая тема: те же роли, светлота инвертирована, тон Ink/Gray сохранён ── */
+  .theme-light{
+    --bg:#F2F3F5; --surface:#FFFFFF; --elev:#FFFFFF; --overlay:#EEEFF2;
+    --border:#D7D9E0; --hairline:#E5E7EB;
+    --text:#16181D; --text2:#4A4F59; --muted:#768293;
+    --accent-text:#189561; --accent2-text:#1B7FA7; --warn-text:#956C18; --danger-text:#A7241B;
+    --accent-dim:#EBFAF4; --accent2-dim:#EBF6FA; --warn-dim:#FAF5EB; --danger-dim:#FAECEB;
+    --field:#F2F3F5;
+  }
+  @page{ margin:0; }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); }
+  body{ font-family:'Rubik',-apple-system,'Segoe UI',sans-serif; color:var(--text2);
+        -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  .poster{ width:1200px; position:relative; background:var(--bg); padding:56px 60px 48px; }
+
+  /* ── header ─────────────────────────────────────────── */
+  .head{ background:var(--elev); border:1px solid var(--border); border-radius:20px;
+         padding:32px 40px; display:flex; align-items:center; gap:28px; }
+  .logo-badge{ flex:0 0 auto; display:flex; align-items:center; }
+  .logo-on-light{ display:none; }
+  .theme-light .logo-on-dark{ display:none; }
+  .theme-light .logo-on-light{ display:block; }
+  .head-mid{ flex:1; min-width:0; }
+  .head-title-row{ display:flex; align-items:center; gap:16px; }
+  .head-title{ font-size:40px; font-weight:800; color:var(--text); letter-spacing:-0.02em; line-height:1.1; }
+  .head-title .pi{ color:var(--accent); }
+  .head-desc{ margin-top:10px; font-size:16px; line-height:1.55; color:var(--muted); max-width:760px; }
+  .spec-chip::after{ content:attr(data-dark); }
+  .theme-light .spec-chip::after{ content:attr(data-light); }
+  .spec-chip{ flex:0 0 auto; font-size:14px; font-weight:600; color:var(--accent2-text);
+              background:var(--accent2-dim); border:1px solid rgba(44,171,221,.35);
+              border-radius:999px; padding:10px 20px; white-space:nowrap; }
+
+  /* ── sections ───────────────────────────────────────── */
+  .section{ margin-top:56px; }
+  .sec-title{ font-size:38px; font-weight:800; color:var(--text); letter-spacing:-0.02em; margin:0; }
+  .sec-intro{ font-size:16px; line-height:1.55; color:var(--muted); margin:10px 0 0; }
+  .sec-rule{ border:0; border-top:1px solid var(--hairline); margin:20px 0 26px; }
+  .sub-label{ font-family:'Rubik',sans-serif; font-size:14px; font-weight:600; letter-spacing:0.1em;
+              color:var(--muted); text-transform:uppercase; margin:0 0 18px; }
+
+  /* ── color palette ──────────────────────────────────── */
+  .sw-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:22px 24px; }
+  .sw-chip{ height:76px; border-radius:12px; border:1px solid var(--border); background:var(--c-dark); }
+  .theme-light .sw-chip{ background:var(--c-light); }
+  .sw-name{ margin-top:12px; font-size:15px; font-weight:600; color:var(--text); }
+  .sw-hex{ margin-top:3px; font-family:'Rubik',sans-serif; font-size:13px; color:var(--muted); }
+  .thx::after{ content:attr(data-dark); }
+  .theme-light .thx::after{ content:attr(data-light); }
+  .sw-hex::after{ content:attr(data-dark); }
+  .theme-light .sw-hex::after{ content:attr(data-light); }
+  .palette-note{ margin-top:26px; font-size:13.5px; line-height:1.6; color:var(--muted);
+                 border-left:2px solid var(--border); padding-left:16px; }
+  .palette-note b{ color:var(--text2); font-weight:600; }
+
+  /* ── typography ─────────────────────────────────────── */
+  .type-row{ display:flex; align-items:baseline; gap:36px; padding:20px 0; border-bottom:1px solid var(--hairline); }
+  .type-row:last-of-type{ border-bottom:0; }
+  .type-meta{ flex:0 0 250px; }
+  .type-name{ font-size:15px; font-weight:600; color:var(--text); }
+  .type-spec{ margin-top:3px; font-size:13px; color:var(--muted); }
+  .type-sample{ flex:1; min-width:0; color:var(--text); }
+  .font-stack{ display:flex; gap:24px; margin-top:26px; }
+  .font-card{ flex:1; background:var(--elev); border:1px solid var(--border); border-radius:14px; padding:20px 24px; }
+  .font-aa{ font-size:34px; line-height:1; color:var(--text); }
+  .font-name{ margin-top:10px; font-size:14px; font-weight:600; color:var(--text); }
+  .font-role{ margin-top:3px; font-size:12.5px; line-height:1.5; color:var(--muted); }
+
+  /* ── sandbox ────────────────────────────────────────── */
+  .sb-card{ background:var(--elev); border:1px solid var(--border); border-radius:18px;
+            padding:30px 36px; margin-top:24px; }
+  .sb-title{ font-family:'Rubik',sans-serif; font-size:15px; font-weight:600; letter-spacing:0.08em;
+             color:var(--text2); text-transform:uppercase; margin:0 0 22px; }
+  .sb-title .n{ color:var(--muted); }
+  .demo-note{ margin-top:20px; line-height:1.65; font-family:'Rubik',sans-serif; font-size:12px; color:var(--muted); }
+
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px;
+        border-radius:999px; font-size:15px; font-weight:600; padding:13px 30px; border:0; }
+  .btn-primary{ background:var(--accent); color:#16181D; box-shadow:0 0 0 3px rgba(43,221,147,.16); }
+  .btn-secondary{ background:transparent; color:var(--accent-text); border:1.5px solid var(--accent-text); }
+  .btn-ghost{ background:var(--overlay); color:var(--text2); }
+  .btn-danger{ background:var(--danger); color:#FFFFFF; }
+  .btn-disabled{ background:transparent; color:var(--muted); border:1.5px solid var(--border); }
+  .btn-row{ display:flex; flex-wrap:wrap; gap:16px; align-items:center; }
+
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:28px 36px; }
+  .field-label{ display:block; font-size:13.5px; font-weight:500; color:var(--text2); margin-bottom:8px; }
+  .input{ width:100%; box-sizing:border-box; background:var(--field); border:1.5px solid var(--border);
+          border-radius:12px; padding:13px 16px; font-size:15px; color:var(--text); font-family:'Rubik',sans-serif; }
+  .input::placeholder{ color:var(--muted); }
+  .input-focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(43,221,147,.22); }
+  .input-error{ border-color:var(--danger); box-shadow:0 0 0 3px rgba(221,56,44,.18); }
+  .err-msg{ margin-top:8px; font-size:13px; color:var(--danger-text); }
+  .field-row{ display:flex; flex-wrap:wrap; gap:28px; align-items:center; margin-top:26px;
+              padding-top:22px; border-top:1px solid var(--hairline); }
+  .select{ background:var(--field); border:1.5px solid var(--border); border-radius:12px;
+           padding:12px 16px; font-size:15px; color:var(--text2); min-width:220px; }
+  .check{ display:flex; align-items:center; gap:10px; font-size:14.5px; color:var(--text2); }
+  .check .box{ width:20px; height:20px; border-radius:6px; background:var(--accent); color:#16181D;
+               display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; }
+  .color-field{ display:flex; align-items:center; gap:10px; }
+  .color-swatch{ width:38px; height:38px; border-radius:10px; background:var(--accent); border:1px solid var(--border); }
+  .color-hex{ font-family:'Rubik',sans-serif; font-size:14px; color:var(--text2); }
+
+  .cards-grid{ display:flex; gap:24px; align-items:stretch; flex-wrap:wrap; }
+  .pcard{ flex:0 0 250px; background:var(--surface); border:1px solid var(--border);
+          border-radius:16px; padding:14px; }
+  .pcard-thumb{ height:128px; border-radius:10px; background:var(--grad); }
+  .pcard-title{ margin-top:12px; font-size:15.5px; font-weight:600; color:var(--text); }
+  .pcard-user{ display:flex; align-items:center; gap:8px; margin-top:9px; }
+  .ava-dot{ width:22px; height:22px; border-radius:50%; background:var(--grad); }
+  .pcard-user span{ font-size:13px; color:var(--muted); }
+  .skel{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; flex:1; }
+  .skel-bar{ height:12px; border-radius:6px; background:var(--overlay); }
+  .skel-rect{ height:74px; border-radius:10px; background:var(--overlay); }
+  .skel-ava{ width:36px; height:36px; border-radius:50%; background:var(--overlay); flex:0 0 auto; }
+  .skel-row{ display:flex; gap:12px; align-items:center; margin-top:14px; }
+  .skel-list{ background:var(--surface); border:1px solid var(--border); border-radius:16px;
+              padding:16px; flex:0 0 300px; }
+  .avatar-block{ margin-left:6px; }
+  .ava-row{ display:flex; align-items:flex-end; gap:14px; }
+  .ava-l{ font-family:'Rubik',sans-serif; font-size:11px; color:var(--muted); margin-top:6px; }
+  .spinner{ width:26px; height:26px; border-radius:50%; border:3px solid var(--accent);
+            border-top-color:transparent; animation:spin 1s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+
+  .chat-wrap{ max-width:640px; }
+  .bubble{ max-width:78%; border-radius:18px; padding:14px 18px; font-size:15px; line-height:1.5; }
+  .bubble-user{ margin-left:auto; background:var(--accent); color:#16181D; font-weight:500;
+                border-bottom-right-radius:6px; }
+  .bubble-ai{ margin-right:auto; background:var(--elev); border:1px solid var(--border);
+              color:var(--text2); border-bottom-left-radius:6px; }
+  .attach{ display:flex; align-items:center; gap:12px; background:var(--field); border:1px solid var(--border);
+           border-radius:12px; padding:10px 12px; margin-top:12px; max-width:340px; }
+  .attach-thumb{ width:44px; height:44px; border-radius:9px; background:var(--grad); flex:0 0 auto; }
+  .attach-name{ font-size:13.5px; font-weight:600; color:var(--text); }
+  .attach-size{ font-family:'Rubik',sans-serif; font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .apply-pill{ display:inline-block; margin-top:12px; background:var(--accent-dim); color:var(--accent-text);
+               border:1px solid rgba(43,221,147,.4); border-radius:999px; padding:8px 18px;
+               font-size:13.5px; font-weight:600; }
+  .typing{ display:flex; gap:6px; padding:6px 0 0 6px; }
+  .typing i{ width:7px; height:7px; border-radius:50%; background:var(--muted); }
+
+  .nav-grid{ display:flex; gap:44px; flex-wrap:wrap; }
+  .nav-block-label{ font-family:'Rubik',sans-serif; font-size:12px; font-weight:600;
+                    letter-spacing:0.1em; color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
+  .tabs{ display:flex; gap:26px; }
+  .tab{ font-size:16px; font-weight:600; color:var(--muted); padding-bottom:8px; }
+  .tab-active{ color:var(--text); box-shadow:inset 0 -3px 0 var(--accent); }
+  .pills{ display:flex; gap:12px; flex-wrap:wrap; }
+  .pill{ border-radius:999px; padding:7px 16px; font-size:13.5px; font-weight:600; }
+  .pill-green{ background:var(--accent-dim); color:var(--accent-text); border:1px solid rgba(43,221,147,.35); }
+  .pill-cyan{ background:var(--accent2-dim); color:var(--accent2-text); border:1px solid rgba(44,171,221,.35); }
+  .pill-warn{ background:var(--warn-dim); color:var(--warn-text); border:1px solid rgba(221,162,44,.35); }
+  .mobnav{ width:393px; background:var(--surface); border:1px solid var(--border); border-radius:14px;
+           display:flex; padding:12px 8px; }
+  .mobnav-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
+                font-size:12.5px; color:var(--muted); }
+  .mobnav-item.active{ color:var(--accent-text); }
+  .version-row{ display:flex; align-items:center; gap:16px; background:var(--surface);
+                border:1px solid var(--border); border-radius:14px; padding:14px 18px; margin-top:26px; }
+  .version-thumb{ width:56px; height:56px; border-radius:12px; background:var(--grad); flex:0 0 auto; }
+  .version-name{ font-size:16px; font-weight:600; color:var(--text); }
+  .version-meta{ font-size:13px; color:var(--muted); margin-top:3px; }
+  .btn-restore{ margin-left:auto; background:transparent; border:1.5px solid var(--accent-text); color:var(--accent-text);
+                border-radius:10px; padding:9px 20px; font-size:14px; font-weight:600; }
+
+  .foot-theme::after{ content:attr(data-dark); }
+  .theme-light .foot-theme::after{ content:attr(data-light); }
+  .theme-toggle{ position:fixed; right:20px; bottom:20px; z-index:50; border:1px solid var(--border);
+                 background:var(--elev); color:var(--text2); border-radius:999px; padding:10px 18px;
+                 font:600 13px 'Rubik',-apple-system,sans-serif; cursor:pointer; }
+  @media print{ .theme-toggle{ display:none; } }
+  .foot{ margin-top:56px; border-top:1px solid var(--hairline); padding-top:20px;
+         display:flex; justify-content:space-between; font-family:'Rubik',sans-serif;
+         font-size:12px; letter-spacing:0.08em; color:var(--muted); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="head">
+    <div class="logo-badge">
+      <svg class="logo-on-dark" width="96" height="76" viewBox="36 46 122 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PiConstruct (тёмная тема)"><path d="M123.16 51.9H55.08C48.5409 51.9 43.24 57.201 43.24 63.74V105.18C43.24 111.719 48.5409 117.02 55.08 117.02H123.16C129.699 117.02 135 111.719 135 105.18V63.74C135 57.201 129.699 51.9 123.16 51.9Z" stroke="#FFFFFF" stroke-width="7.4"/>
+        <path d="M98.37 64.48H60.63C58.3822 64.48 56.56 66.3022 56.56 68.55C56.56 70.7978 58.3822 72.62 60.63 72.62H98.37C100.618 72.62 102.44 70.7978 102.44 68.55C102.44 66.3022 100.618 64.48 98.37 64.48Z" fill="#FFFFFF"/>
+        <path d="M82.09 79.28H60.63C58.3822 79.28 56.56 81.1022 56.56 83.35C56.56 85.5978 58.3822 87.42 60.63 87.42H82.09C84.3378 87.42 86.16 85.5978 86.16 83.35C86.16 81.1022 84.3378 79.28 82.09 79.28Z" fill="#2BDD93"/>
+        <path d="M90.97 94.08H60.63C58.3822 94.08 56.56 95.9022 56.56 98.15C56.56 100.398 58.3822 102.22 60.63 102.22H90.97C93.2178 102.22 95.04 100.398 95.04 98.15C95.04 95.9022 93.2178 94.08 90.97 94.08Z" fill="#C9CFD8"/>
+        <path d="M139.44 72.62H115.76C108.404 72.62 102.44 78.5836 102.44 85.94V136.26C102.44 143.616 108.404 149.58 115.76 149.58H139.44C146.796 149.58 152.76 143.616 152.76 136.26V85.94C152.76 78.5836 146.796 72.62 139.44 72.62Z" style="fill:var(--elev)" stroke="#FFFFFF" stroke-width="6.66"/>
+        <path d="M137.96 80.02H117.24C113.153 80.02 109.84 83.3331 109.84 87.42V134.78C109.84 138.867 113.153 142.18 117.24 142.18H137.96C142.047 142.18 145.36 138.867 145.36 134.78V87.42C145.36 83.3331 142.047 80.02 137.96 80.02Z" fill="#FFFFFF"/>
+        <path d="M136.48 90.38H118.72C117.085 90.38 115.76 91.7052 115.76 93.34C115.76 94.9748 117.085 96.3 118.72 96.3H136.48C138.115 96.3 139.44 94.9748 139.44 93.34C139.44 91.7052 138.115 90.38 136.48 90.38Z" fill="#2BDD93"/>
+        <path d="M127.6 100.74H118.72C117.085 100.74 115.76 102.065 115.76 103.7C115.76 105.335 117.085 106.66 118.72 106.66H127.6C129.235 106.66 130.56 105.335 130.56 103.7C130.56 102.065 129.235 100.74 127.6 100.74Z" fill="#2BDD93"/></svg>
+      <svg class="logo-on-light" width="96" height="76" viewBox="36 46 122 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PiConstruct">
+        <path d="M123.16 51.9H55.08C48.5409 51.9 43.24 57.201 43.24 63.74V105.18C43.24 111.719 48.5409 117.02 55.08 117.02H123.16C129.699 117.02 135 111.719 135 105.18V63.74C135 57.201 129.699 51.9 123.16 51.9Z" stroke="#16181D" stroke-width="7.4"/>
+        <path d="M98.37 64.48H60.63C58.3822 64.48 56.56 66.3022 56.56 68.55C56.56 70.7978 58.3822 72.62 60.63 72.62H98.37C100.618 72.62 102.44 70.7978 102.44 68.55C102.44 66.3022 100.618 64.48 98.37 64.48Z" fill="#16181D"/>
+        <path d="M82.09 79.28H60.63C58.3822 79.28 56.56 81.1022 56.56 83.35C56.56 85.5978 58.3822 87.42 60.63 87.42H82.09C84.3378 87.42 86.16 85.5978 86.16 83.35C86.16 81.1022 84.3378 79.28 82.09 79.28Z" fill="#2BDD93"/>
+        <path d="M90.97 94.08H60.63C58.3822 94.08 56.56 95.9022 56.56 98.15C56.56 100.398 58.3822 102.22 60.63 102.22H90.97C93.2178 102.22 95.04 100.398 95.04 98.15C95.04 95.9022 93.2178 94.08 90.97 94.08Z" fill="#C9CFD8"/>
+        <path d="M139.44 72.62H115.76C108.404 72.62 102.44 78.5836 102.44 85.94V136.26C102.44 143.616 108.404 149.58 115.76 149.58H139.44C146.796 149.58 152.76 143.616 152.76 136.26V85.94C152.76 78.5836 146.796 72.62 139.44 72.62Z" fill="white" stroke="#16181D" stroke-width="6.66"/>
+        <path d="M137.96 80.02H117.24C113.153 80.02 109.84 83.3331 109.84 87.42V134.78C109.84 138.867 113.153 142.18 117.24 142.18H137.96C142.047 142.18 145.36 138.867 145.36 134.78V87.42C145.36 83.3331 142.047 80.02 137.96 80.02Z" fill="#16181D"/>
+        <path d="M136.48 90.38H118.72C117.085 90.38 115.76 91.7052 115.76 93.34C115.76 94.9748 117.085 96.3 118.72 96.3H136.48C138.115 96.3 139.44 94.9748 139.44 93.34C139.44 91.7052 138.115 90.38 136.48 90.38Z" fill="#2BDD93"/>
+        <path d="M127.6 100.74H118.72C117.085 100.74 115.76 102.065 115.76 103.7C115.76 105.335 117.085 106.66 118.72 106.66H127.6C129.235 106.66 130.56 105.335 130.56 103.7C130.56 102.065 129.235 100.74 127.6 100.74Z" fill="#2BDD93"/>
+      </svg>
+    </div>
+    <div class="head-mid">
+      <div class="head-title-row">
+        <div class="head-title"><span class="pi">Pi</span>Construct</div>
+      </div>
+      <div class="head-desc">Дизайн-система PiConstruct — конструктора слайдов, который собирает готовый
+        образ для Raspberry Pi прямо из браузера. Палитра построена на четырёх цветах логотипа;
+        недостающие роли выведены из них программно в HSL.</div>
+    </div>
+    <div class="spec-chip" data-dark="Спецификация тёмной темы" data-light="Спецификация светлой темы"></div>
+  </div>
+
+  <!-- ═══ COLOR PALETTE ═══ -->
+  <div class="section">
+    <h2 class="sec-title">Цветовая палитра</h2>
+    <hr class="sec-rule">
+    <div class="sub-label">Основная шкала</div>
+    <div class="sw-grid">
+      <div><div class="sw-chip" style="--c-dark:#0F1115; --c-light:#F2F3F5"></div><div class="sw-name">Фон</div><div class="sw-hex" data-dark="#0F1115" data-light="#F2F3F5"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#16181D; --c-light:#FFFFFF"></div><div class="sw-name">Поверхность</div><div class="sw-hex" data-dark="#16181D" data-light="#FFFFFF"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#1E2027; --c-light:#FFFFFF"></div><div class="sw-name">Приподнятая поверхность</div><div class="sw-hex" data-dark="#1E2027" data-light="#FFFFFF"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#2BDD93; --c-light:#2BDD93"></div><div class="sw-name">Акцент основной</div><div class="sw-hex" data-dark="#2BDD93" data-light="#2BDD93"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#2CABDD; --c-light:#2CABDD"></div><div class="sw-name">Акцент вторичный</div><div class="sw-hex" data-dark="#2CABDD" data-light="#2CABDD"></div></div>
+      <div><div class="sw-chip" style="--c-dark:linear-gradient(90deg,#2BDD93 0%,#2CABDD 100%); --c-light:linear-gradient(90deg,#2BDD93 0%,#2CABDD 100%)"></div><div class="sw-name">Градиент акцентов</div><div class="sw-hex" data-dark="155° → 197°" data-light="155° → 197°"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#FFFFFF; --c-light:#16181D"></div><div class="sw-name">Текст основной</div><div class="sw-hex" data-dark="#FFFFFF" data-light="#16181D"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#C9CFD8; --c-light:#4A4F59"></div><div class="sw-name">Текст вторичный</div><div class="sw-hex" data-dark="#C9CFD8" data-light="#4A4F59"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#7A899F; --c-light:#768293"></div><div class="sw-name">Текст приглушённый</div><div class="sw-hex" data-dark="#7A899F" data-light="#768293"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#DDA22C; --c-light:#DDA22C"></div><div class="sw-name">Предупреждение</div><div class="sw-hex" data-dark="#DDA22C" data-light="#DDA22C"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#DD382C; --c-light:#DD382C"></div><div class="sw-name">Ошибка</div><div class="sw-hex" data-dark="#DD382C" data-light="#DD382C"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#23272E; --c-light:#D7D9E0"></div><div class="sw-name">Граница</div><div class="sw-hex" data-dark="#23272E" data-light="#D7D9E0"></div></div>
+    </div>
+    <div class="sub-label" style="margin-top:34px;">Расширенная шкала</div>
+    <div class="sw-grid">
+      <div><div class="sw-chip" style="--c-dark:#58E4AA; --c-light:#58E4AA"></div><div class="sw-name">Акцент при наведении</div><div class="sw-hex" data-dark="#58E4AA" data-light="#58E4AA"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#1DB978; --c-light:#1DB978"></div><div class="sw-name">Акцент при нажатии</div><div class="sw-hex" data-dark="#1DB978" data-light="#1DB978"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#123024; --c-light:#EBFAF4"></div><div class="sw-name">Акцент приглушённый</div><div class="sw-hex" data-dark="#123024" data-light="#EBFAF4"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#E3594F; --c-light:#E3594F"></div><div class="sw-name">Ошибка при наведении</div><div class="sw-hex" data-dark="#E3594F" data-light="#E3594F"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#191C22; --c-light:#E5E7EB"></div><div class="sw-name">Разделитель</div><div class="sw-hex" data-dark="#191C22" data-light="#E5E7EB"></div></div>
+      <div><div class="sw-chip" style="--c-dark:#272A32; --c-light:#EEEFF2"></div><div class="sw-name">Оверлей</div><div class="sw-hex" data-dark="#272A32" data-light="#EEEFF2"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ TYPOGRAPHY ═══ -->
+  <div class="section">
+    <h2 class="sec-title">Типографика</h2>
+    <hr class="sec-rule">
+    <div class="type-row">
+      <div class="type-meta"><div class="type-name">Заголовок 1</div><div class="type-spec">32px · Жирный</div></div>
+      <div class="type-sample" style="font-size:32px; font-weight:700; letter-spacing:-0.01em;">Собери слайд для Raspberry&nbsp;Pi</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-name">Заголовок 2</div><div class="type-spec">24px · Полужирный</div></div>
+      <div class="type-sample" style="font-size:24px; font-weight:600;">Генерация схем через ИИ</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-name">Заголовок 3</div><div class="type-spec">18px · Полужирный</div></div>
+      <div class="type-sample" style="font-size:18px; font-weight:600;">Блоки, свойства и сборка образа</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-name">Основной текст</div><div class="type-spec">15px · Обычный</div></div>
+      <div class="type-sample" style="font-size:15px; font-weight:400; color:var(--text2);">PiConstruct — конструктор слайдов, который собирает готовый образ для Raspberry Pi прямо из браузера.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-name">Метка</div><div class="type-spec">13px · Средний</div></div>
+      <div class="type-sample" style="font-size:13px; font-weight:500; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2);">Панель свойств</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><div class="type-name">Подпись</div><div class="type-spec">12px · Обычный</div></div>
+      <div class="type-sample" style="font-size:12px; font-weight:400; color:var(--muted);">Схема сохранена 2 минуты назад</div>
+    </div>
+    <div class="font-stack">
+      <div class="font-card">
+        <div class="font-aa">Aa</div>
+        <div class="font-name">Rubik</div>
+        <div class="font-role">Единственный шрифт дизайн-системы: интерфейс, панели редактора, чат, hex-коды и метки. Начертания 400–800, поддержка кириллицы.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ COMPONENT SANDBOX ═══ -->
+  <div class="section">
+    <h2 class="sec-title">Компоненты</h2>
+    <hr class="sec-rule" style="margin-bottom:8px;">
+
+    <!-- 01 buttons -->
+    <div class="sb-card">
+      <div class="sb-title"><span class="n">01 ·</span> Кнопки и состояния</div>
+      <div class="btn-row">
+        <button class="btn btn-primary">Собрать образ</button>
+        <button class="btn btn-secondary">Импорт JSON</button>
+        <button class="btn btn-ghost">Отмена</button>
+        <button class="btn btn-danger">Удалить проект</button>
+        <button class="btn btn-disabled">Отправка…</button>
+      </div>
+      <div class="demo-note">Основная кнопка — заливка Accent (#2BDD93), текст Ink (#16181D), полностью скруглённая форма (radius 9999), высота 46 px, кольцо-гало 3 px rgba(43,221,147,.16); наведение — Accent Hover (#58E4AA), нажатие — Accent Active (#1DB978). Вторичная кнопка — прозрачный фон, бордер 1,5 px Accent, текст Accent. Третичная — заливка Surface Overlay, текст Secondary. Деструктивная — заливка Danger (#DD382C), белый текст; наведение — Danger Hover (#E3594F). Неактивная — прозрачный фон, бордер Hairline, текст Muted, без кольца-гало.</div>
+    </div>
+
+    <!-- 02 form fields -->
+    <div class="sb-card">
+      <div class="sb-title"><span class="n">02 ·</span> Поля ввода и валидация</div>
+      <div class="form-grid">
+        <div>
+          <label class="field-label">Название проекта</label>
+          <div class="input input-focus">Кофейня на углу</div>
+        </div>
+        <div>
+          <label class="field-label">Email</label>
+          <div class="input input-error">invalid-email</div>
+          <div class="err-msg">Введите корректный e-mail.</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="check"><span class="box">✓</span> Уместить текст в блок</div>
+        <div class="select">Начертание: Medium&nbsp;&nbsp;▾</div>
+        <div class="color-field"><span class="color-swatch"></span><span class="color-hex">#2BDD93</span></div>
+      </div>
+      <div class="demo-note">Поле ввода — заливка Surface <span class="thx" data-dark="#16181D" data-light="#FFFFFF"></span>, бордер 1,5 px <span class="thx" data-dark="#23272E" data-light="#D7D9E0"></span>, скругление 12 px, отступы 13×16 px; текст Primary, плейсхолдер Muted. Фокус — бордер Accent и внешнее кольцо 3 px rgba(43,221,147,.22). Ошибка валидации — бордер Danger (#DD382C) и кольцо rgba(221,56,44,.18); сообщение об ошибке — 13 px, цвет Danger Hover (#E3594F). Чекбокс — 20×20 px, скругление 6 px, заливка Accent, галка Ink. Селект повторяет геометрию поля ввода. Пиппер цвета — свотч 38×38 px и hex-значение.</div>
+    </div>
+
+    <!-- 03 cards, avatars & skeletons -->
+    <div class="sb-card">
+      <div class="sb-title"><span class="n">03 ·</span> Карточки, аватары, скелетоны и загрузка</div>
+      <div class="cards-grid">
+        <div class="pcard">
+          <div class="pcard-thumb"></div>
+          <div class="pcard-title">Меню кофейни</div>
+          <div class="pcard-user"><span class="ava-dot"></span><span>AI Designer</span></div>
+        </div>
+        <div class="skel">
+          <div class="skel-rect"></div>
+          <div class="skel-row"><div class="skel-ava"></div><div style="flex:1;"><div class="skel-bar" style="width:70%;"></div><div class="skel-bar" style="width:45%; margin-top:10px;"></div></div></div>
+        </div>
+        <div class="skel-list">
+          <div class="skel-bar" style="width:55%;"></div>
+          <div class="skel-bar" style="width:85%; margin-top:12px;"></div>
+          <div class="skel-bar" style="width:65%; margin-top:12px;"></div>
+          <div class="skel-bar" style="width:75%; margin-top:12px;"></div>
+        </div>
+        <div class="avatar-block">
+          <div class="nav-block-label" style="margin-bottom:18px;">Шкала аватаров</div>
+          <div class="ava-row">
+            <div><div class="ava-dot" style="width:28px; height:28px;"></div><div class="ava-l">28</div></div>
+            <div><div class="ava-dot" style="width:40px; height:40px;"></div><div class="ava-l">40</div></div>
+            <div><div class="ava-dot" style="width:56px; height:56px;"></div><div class="ava-l">56</div></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; margin-top:22px;">
+            <span class="spinner"></span><span style="font-size:14px; color:var(--text2);">Сборка образа…</span>
+          </div>
+        </div>
+      </div>
+      <div class="demo-note">Карточка проекта — заливка Surface, скругление 16 px, бордер Line, отступы 14 px; превью 16:9 со скруглением 10 px залито брендовым градиентом 90° (#2BDD93 → #2CABDD); название — 15,5 px SemiBold, Primary; автор — аватар 22 px и подпись 13 px Muted. Скелетоны — заглушки Surface Overlay на подложке Surface: прямоугольник 74 px под превью, полосы высотой 12 px (скругление 6 px) под строки текста, круг 36 px под аватар. Шкала аватаров — круги 28/40/56 px с брендовым градиентом. Спиннер — кольцо 26 px с дугой Accent и прозрачным сектором, оборот 1 s; рядом статус «Сборка образа…» 14 px Secondary.</div>
+    </div>
+
+    <!-- 04 ai chat bubbles -->
+    <div class="sb-card">
+      <div class="sb-title"><span class="n">04 ·</span> Сообщения чата с ИИ</div>
+      <div class="chat-wrap">
+        <div class="bubble bubble-user">Сделай заголовок крупнее и добавь фото кофейни</div>
+        <div class="bubble bubble-ai" style="margin-top:16px;">Готово: увеличил заголовок до 64px и вставил изображение
+          в правый блок.
+          <div class="attach"><span class="attach-thumb"></span><span><span class="attach-name">coffee-menu.json</span><div class="attach-size">12 КБ · схема слайда</div></span></div>
+          <span class="apply-pill">Применить схему</span>
+        </div>
+        <div class="typing" style="margin-top:14px;"><i></i><i></i><i></i></div>
+      </div>
+      <div class="demo-note">Сообщение пользователя выравнивается вправо: заливка Accent, текст Ink, скругление 18 px, у правого нижнего угла — 6 px. Ответ ИИ — влево: заливка Elevated <span class="thx" data-dark="#1E2027" data-light="#FFFFFF"></span>, бордер Line, текст Secondary, скругление 18 px, у левого нижнего угла — 6 px. Вложение — карточка файла внутри ответа: миниатюра 44×44 px с градиентом, имя файла 13,5 px SemiBold Primary, размер — 11,5 px Mono Muted. Действие «Применить схему» — пилюля на подложке Accent Dim с бордером rgba(43,221,147,.4), текст Accent. Индикатор набора — три точки 7 px цвета Muted с поочерёдной анимацией и задержкой 150 мс.</div>
+    </div>
+
+    <!-- 05 nav, tabs & version row -->
+    <div class="sb-card">
+      <div class="sb-title"><span class="n">05 ·</span> Навигация, вкладки, бейджи и версии</div>
+      <div class="nav-grid">
+        <div>
+          <div class="nav-block-label">Вкладки</div>
+          <div class="tabs"><span class="tab tab-active">Проекты</span><span class="tab">Шаблоны</span></div>
+        </div>
+        <div>
+          <div class="nav-block-label">Бейджи</div>
+          <div class="pills"><span class="pill pill-green">Стабильная</span><span class="pill pill-cyan">Бета</span><span class="pill pill-warn">Сборка</span></div>
+        </div>
+      </div>
+      <div class="nav-block-label" style="margin-top:30px;">Мобильная навигация (393 px)</div>
+      <div class="mobnav">
+        <div class="mobnav-item active">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Проекты
+        </div>
+        <div class="mobnav-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          Редактор
+        </div>
+        <div class="mobnav-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-5.5 8-5.5s6.5 1.5 8 5.5"/></svg>
+          Профиль
+        </div>
+      </div>
+      <div class="nav-block-label" style="margin-top:30px;">История версий</div>
+      <div class="version-row" style="margin-top:0;">
+        <span class="version-thumb"></span>
+        <span><span class="version-name">Версия 4 · Собрана</span><div class="version-meta">Схема ИИ · 2 часа назад</div></span>
+        <span class="btn-restore">Восстановить</span>
+      </div>
+      <div class="demo-note">Вкладки: активная — текст Primary с подчёркиванием 3 px Accent; неактивная — Muted. Бейджи — пилюли 13,5 px SemiBold на приглушённых подложках с бордером в тон: «Стабильная» — Accent Dim / Accent, «Бета» — Cyan Dim / Cyan, «Сборка» — Warning Dim / Warning. Мобильная навигация (393 px) — панель Surface со скруглением 14 px; активный пункт Accent, остальные Muted; иконки 22 px с обводкой 2 px. Строка истории версий: карточка Surface со скруглением 14 px, миниатюра 56×56 px с градиентом, название 16 px SemiBold Primary, метаданные 13 px Muted; справа кнопка «Восстановить» — бордер 1,5 px Accent, текст Accent, скругление 10 px.</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>PiConstruct · Дизайн-система v1.0</span>
+    <span class="foot-theme"></span>
+  </div>
+
+</div>
+
+<button class="theme-toggle" id="themeToggle" type="button">Светлая тема</button>
+<script>
+(function(){
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function apply(t){
+    root.classList.toggle('theme-light', t === 'light');
+    btn.textContent = (t === 'light') ? 'Тёмная тема' : 'Светлая тема';
+  }
+  var q = new URLSearchParams(location.search).get('theme');
+  if (q === 'light' || q === 'dark') {
+    apply(q);
+  } else {
+    btn.textContent = root.classList.contains('theme-light') ? 'Тёмная тема' : 'Светлая тема';
+  }
+  btn.addEventListener('click', function(){
+    apply(root.classList.contains('theme-light') ? 'dark' : 'light');
+  });
+})();
+</script>
+</body>
+</html>

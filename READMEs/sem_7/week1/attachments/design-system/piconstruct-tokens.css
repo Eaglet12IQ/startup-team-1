@@ -1,0 +1,90 @@
+/* ─────────────────────────────────────────────────────────────
+   PiConstruct Design System v1.0 — design tokens (Tailwind CSS v4)
+   Подключение: в src/index.css вместо/после `@import "tailwindcss";`
+   добавить  `@import "../design-system/piconstruct-tokens.css";`
+   (путь скорректировать под расположение файла).
+
+   Происхождение цветов — см. piconstruct-design-system.pdf:
+   логотип: Ink #16181D, Green #2BDD93, Gray #C9CFD8, White #FFFFFF.
+   ───────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Поверхности (нейтрали в тоне Ink 222°) */
+  --color-background: #0F1115;        /* фон приложения */
+  --color-surface: #16181D;           /* карточки, инпуты (= Ink из логотипа) */
+  --color-elevated: #1E2027;          /* панели, модалки, бабблы ассистента */
+  --color-overlay: #272A32;           /* hover-заливки, скелетоны */
+
+  /* Границы */
+  --color-line: #23272E;              /* основной бордер */
+  --color-hairline: #191C22;          /* разделители, disabled-бордер */
+
+  /* Текст */
+  --color-primary: #FFFFFF;           /* основной текст (= White из логотипа) */
+  --color-secondary: #C9CFD8;         /* вторичный текст (= Gray из логотипа) */
+  --color-muted: #7A899F;             /* подписи, плейсхолдеры, метаданные */
+
+  /* Акцент (брендовый зелёный логотипа + состояния) */
+  --color-accent: #2BDD93;
+  --color-accent-hover: #58E4AA;
+  --color-accent-active: #1DB978;
+  --color-accent-dim: #123024;        /* подложки бейджей, пилюль */
+
+  /* Вторичный акцент (придуман: S/L как у зелёного, тон 197°) */
+  --color-cyan: #2CABDD;
+  --color-cyan-dim: #0F2A35;
+
+  /* Семантика (S/L как у зелёного, сдвиг тона) */
+  --color-warning: #DDA22C;           /* тон 40° */
+  --color-warning-dim: #392D13;
+  --color-danger: #DD382C;            /* тон 4° */
+  --color-danger-hover: #E3594F;
+  --color-danger-dim: #391613;
+  /* Success отдельного токена нет — используется --color-accent */
+
+  /* Градиент бренда (55%→100% слайдов, превью, аватары) */
+  --background-brand-gradient: linear-gradient(90deg, #2BDD93 0%, #2CABDD 100%);
+
+  /* Шрифты — Rubik един для всего: интерфейс, hex-коды, метки */
+  --font-ui: "Rubik", -apple-system, "Segoe UI", sans-serif;
+  --font-code: "Rubik", sans-serif;
+
+  /* Радиусы (в коде уже используются tailwind-классы lg/xl/2xl/full) */
+  --radius-card: 16px;      /* rounded-2xl: карточки, модалки, панели */
+  --radius-control: 12px;   /* rounded-xl: кнопки, инпуты */
+  --radius-bubble: 18px;    /* чат-пузыри + 6px к «хвостику» */
+
+  /* Тени */
+  --shadow-card: 0 8px 30px rgb(0 0 0 / 0.08);
+  --shadow-card-hover: 0 12px 40px rgb(0 0 0 / 0.12);
+  --shadow-modal: 0 20px 60px rgb(0 0 0 / 0.30);
+  --shadow-accent: 0 0 0 3px rgb(43 221 147 / 0.16);   /* primary-CTA halo (без blur — иначе в PDF-рендере растрируется прямоугольником) */
+  --shadow-focus: 0 0 0 3px rgb(43 221 147 / 0.22);    /* focus-ring инпутов */
+}
+
+/* ── Светлая тема — переопределение тех же ролей (класс .theme-light на <html>) ──
+   Тон Ink (222°) и Gray (216°) сохранён, светлота инвертирована;
+   акценты для текста/бордеров затемнены, подложки-Dim стали светлыми тинтами. */
+.theme-light{
+  --color-background:#F2F3F5;
+  --color-surface:#FFFFFF;
+  --color-elevated:#FFFFFF;      /* возвышение — тенью, не заливкой */
+  --color-overlay:#EEEFF2;
+  --color-line:#D7D9E0;
+  --color-hairline:#E5E7EB;
+  --color-primary:#16181D;       /* = Ink из логотипа */
+  --color-secondary:#4A4F59;
+  --color-muted:#768293;
+  --color-accent:#2BDD93;        /* заливки — тот же брендовый зелёный, текст Ink */
+  --color-accent-text:#189561;   /* зелёный текст/бордер на светлом */
+  --color-accent-dim:#EBFAF4;
+  --color-cyan:#2CABDD;
+  --color-cyan-text:#1B7FA7;
+  --color-cyan-dim:#EBF6FA;
+  --color-warning:#DDA22C;
+  --color-warning-text:#956C18;
+  --color-warning-dim:#FAF5EB;
+  --color-danger:#DD382C;
+  --color-danger-text:#A7241B;
+  --color-danger-dim:#FAECEB;
+}
