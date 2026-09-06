@@ -16,8 +16,10 @@ const path = require('path');
   const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
   await page.goto('file://' + path.resolve(input), { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
+  // Высота кратна 4 CSS px (= целому числу pt): дробный MediaBox даёт при
+  // растеризации белую строку внизу PNG — хвост округления page.pdf.
   const height = await page.evaluate(() =>
-    Math.ceil(document.documentElement.scrollHeight));
+    Math.max(4, Math.floor(document.documentElement.scrollHeight / 4) * 4));
   await page.pdf({
     path: output,
     width,
