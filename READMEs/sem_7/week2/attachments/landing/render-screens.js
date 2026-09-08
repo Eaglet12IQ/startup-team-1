@@ -2,6 +2,7 @@
 // Сам поднимает статик-сервер на 127.0.0.1:8123 из каталога лендинга и рендерит
 // Playwright-ом с явным кадром по scrollWidth/scrollHeight.
 // Использование: node render-screens.js   (локально: NODE_PATH=/opt/homebrew/lib/node_modules)
+// Запускается из CI (.github/workflows/landing-screens.yml) и вручную локально.
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const path = require('path');
