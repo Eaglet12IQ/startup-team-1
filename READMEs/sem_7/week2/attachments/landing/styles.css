@@ -155,6 +155,11 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Клип именно на html: overflow на body по спецификации пропагируется
+     на viewport, а сам body перестаёт обрезать — свечение hero (inset -20%)
+     раздувает scrollWidth на 20% ширины и даёт пустую полосу справа
+     на fullPage-скриншотах */
+  overflow-x: clip;
 }
 
 body {
