@@ -73,6 +73,66 @@
     revealed.forEach(function (el) { el.classList.add("visible"); });
   }
 
+  /* ── FAQ: плавное раскрытие карточек ──
+     Нативное мгновенное переключение <details> заменяем анимацией высоты:
+     перехватываем клик по summary (preventDefault), сами открываем/закрываем
+     details и анимируем высоту и нижний паддинг тела. Без JS детали
+     работают как обычные <details>. */
+  var FAQ_DURATION = 300;
+  var FAQ_EASING = "cubic-bezier(0.4, 0, 0.2, 1)";
+
+  document.querySelectorAll(".faq-item").forEach(function (item) {
+    var summary = item.querySelector("summary");
+    var body = item.querySelector(".faq-body");
+    if (!summary || !body) return;
+
+    summary.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (item.dataset.animating) return;
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        item.open = !item.open;
+        return;
+      }
+
+      var opening = !item.open;
+      if (opening) item.open = true; // контент в DOM, иначе не измерить
+      var pad = parseFloat(getComputedStyle(body).paddingBottom);
+      var fullH = body.offsetHeight; // вся высота с паддингом: box-sizing border-box
+
+      item.dataset.animating = "1";
+      if (!opening) item.classList.add("is-closing");
+
+      body.style.overflow = "hidden";
+      body.style.height = opening ? "0px" : fullH + "px";
+      body.style.paddingBottom = opening ? "0px" : pad + "px";
+      void body.offsetHeight; // фиксируем стартовые значения до перехода
+      body.style.transition =
+        "height " + FAQ_DURATION + "ms " + FAQ_EASING + ", padding-bottom " + FAQ_DURATION + "ms " + FAQ_EASING;
+      body.style.height = opening ? fullH + "px" : "0px";
+      body.style.paddingBottom = opening ? pad + "px" : "0px";
+
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        if (!opening) item.open = false;
+        delete item.dataset.animating;
+        item.classList.remove("is-closing");
+        body.style.height = "";
+        body.style.overflow = "";
+        body.style.paddingBottom = "";
+        body.style.transition = "";
+      }
+      body.addEventListener("transitionend", function onEnd(ev) {
+        if (ev.target !== body || ev.propertyName !== "height") return;
+        body.removeEventListener("transitionend", onEnd);
+        finish();
+      });
+      setTimeout(finish, FAQ_DURATION + 80); // transitionend может не прийти
+    });
+  });
+
   /* ── Форма заявки: собираем письмо и открываем почтовый клиент ── */
   var APPLY_EMAIL = "hello@piconstruct.ru"; // TODO(команда): заменить на реальный адрес
   var form = document.getElementById("apply-form");

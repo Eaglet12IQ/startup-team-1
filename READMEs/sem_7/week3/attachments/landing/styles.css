@@ -281,7 +281,7 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   height: 68px;
 }
 .logo { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
-/* иконка вырезана из логотипа с плотным viewBox — без внутренних полей */
+/* иконка вырезана из логотипа: viewBox учитывает обводку телефона (stroke 6.66) */
 .logo img { height: 38px; width: auto; display: block; }
 .logo-text {
   font-size: 22px;
@@ -291,7 +291,9 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   color: var(--text-primary);
   white-space: nowrap;
 }
-.logo-text b { color: var(--accent-text); font-weight: 800; }
+/* «Pi» — именно акцент (#2BDD93 в обеих темах), как в SVG-логотипе:
+   --accent-text в светлой теме затемнён для мелкого текста и здесь не подходит */
+.logo-text b { color: var(--accent); font-weight: 800; }
 .logo .logo-dark-img { display: block; }
 .logo .logo-light-img { display: none; }
 [data-theme="light"] .logo .logo-dark-img { display: none; }
@@ -501,6 +503,18 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
 .section-head h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); font-weight: 700; }
 .section-head .lead { font-size: 1.1rem; margin-bottom: 0; }
 
+/* ── Появление при скролле ──
+   Блок намеренно стоит ДО правил .card: у элементов .card.reveal список
+   transition из .card (ниже по файлу, та же специфичность) побеждает —
+   иначе hover-обводка и тень карточек теряют анимацию. Не-карточные блоки
+   появляются по списку ниже. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+
 /* ── Карточки (общая база) ── */
 .card {
   background: var(--surface);
@@ -510,7 +524,8 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   transition:
     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s ease; /* opacity — чтобы работало появление .reveal */
 }
 .card:hover {
   transform: translateY(-4px);
@@ -656,6 +671,9 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   transition: transform 0.25s ease;
 }
 .faq-item[open] summary .chev { transform: rotate(180deg); }
+/* при сворачивании script.js держит [open] до конца анимации высоты —
+   стрелку возвращаем сразу по классу (правило ниже, та же специфичность) */
+.faq-item.is-closing summary .chev { transform: none; }
 .faq-item .faq-body { padding: 0 24px 22px; font-size: 15px; }
 .faq-item .faq-body p { margin-bottom: 0; }
 
@@ -746,19 +764,13 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
 }
 .footer-bottom p { margin: 0; }
 
-/* ── Появление при скролле ── */
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.reveal.visible { opacity: 1; transform: none; }
-
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .float-card { animation: none; }
+  .card { transition: none; }
   .card:hover { transform: none; }
+  .float-card { animation: none; }
 }
 
 /* ── Адаптив ── */
