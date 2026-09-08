@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PiConstruct — конструктор информационных табло на Raspberry Pi</title>
+  <meta name="description" content="Соберите цифровое табло для кафе или магазина в визуальном редакторе и запустите его на Raspberry Pi 5. Одна покупка — без подписок. Контент обновляется с телефона за 30 секунд по локальному Wi-Fi.">
+  <meta property="og:title" content="PiConstruct — конструктор информационных табло">
+  <meta property="og:description" content="Цифровое табло для малого бизнеса: разовая покупка, работает без интернета, обновление с телефона за 30 секунд.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/img/editor-hero.webp">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ── Шапка ── -->
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="#top" aria-label="PiConstruct — на главную">
+        <img class="logo-dark-img" src="assets/logo/piconstruct-logo-dark.svg" alt="Логотип PiConstruct" width="298" height="100">
+        <img class="logo-light-img" src="assets/logo/piconstruct-logo-light.svg" alt="Логотип PiConstruct" width="298" height="100">
+      </a>
+
+      <nav class="site-nav" id="site-nav" aria-label="Основная навигация">
+        <a href="#problem">Проблема</a>
+        <a href="#how">Как это работает</a>
+        <a href="#features">Возможности</a>
+        <a href="#pricing">Тарифы</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Переключить тему">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></svg>
+        </button>
+        <a class="btn btn-primary btn-sm header-cta" href="#apply">Оставить заявку</a>
+        <button class="burger" id="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-nav">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ── 1. Hero ── -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container">
+        <span class="badge">Без подписки · Навсегда ваш</span>
+        <h1 id="hero-title">Цифровое табло для вашего бизнеса <span class="grad">без подписок</span> и посредников</h1>
+        <p class="lead">PiConstruct — конструктор информационных табло: соберите сцену в визуальном редакторе, скачайте готовый образ и запустите его на Raspberry&nbsp;Pi&nbsp;5. Контент обновляется с телефона за 30&nbsp;секунд по локальному Wi-Fi.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary btn-lg" href="#apply">Оставить заявку</a>
+          <a class="btn btn-secondary btn-lg" href="#how">Как это работает</a>
+        </div>
+        <p class="hero-note">Работает офлайн · Разовая покупка Pro — 2 499 ₽ · Обновление по Wi-Fi</p>
+
+        <div class="hero-shot reveal">
+          <div class="browser" role="img" aria-label="Визуальный редактор PiConstruct со сценой табло">
+            <div class="browser-bar" aria-hidden="true">
+              <div class="browser-dots"><span></span><span></span><span></span></div>
+              <div class="browser-url">piconstruct.local / редактор сцены</div>
+            </div>
+            <div class="browser-body">
+              <img src="assets/img/editor-hero.webp" alt="Интерфейс визуального редактора PiConstruct: канвас с меню шаурмечной, палитра блоков и панель свойств" width="1920" height="1080">
+            </div>
+          </div>
+          <div class="float-card" aria-hidden="true">
+            <div class="fc-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+            </div>
+            <div><b>Обновлено с телефона</b><span>Меню изменено за 30 секунд</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2. Проблема ── -->
+    <section id="problem" aria-labelledby="problem-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Проблема</span>
+          <h2 id="problem-title">Знакомая ситуация?</h2>
+          <p class="lead">Владельцы кафе, баров и пекарен тратят время и деньги на информирование гостей — а готовые решения не рассчитаны на малый бизнес.</p>
+        </div>
+        <div class="problems-grid">
+          <article class="card problem-card reveal">
+            <div class="icon-tile icon-warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="12" rx="2"/><path d="M9 14h6M9 17h4"/></svg>
+            </div>
+            <h3>Печатные материалы устаревают</h3>
+            <p>Каждая смена цен или новая акция — это повторная печать: лишние расходы и потерянные дни, пока гости видят устаревшую информацию.</p>
+          </article>
+          <article class="card problem-card reveal">
+            <div class="icon-tile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+            <h3>Подписочные сервисы дорожают</h3>
+            <p>Облачные digital-signage платформы берут абонентскую плату за каждое устройство и привязывают бизнес к своей инфраструктуре навсегда.</p>
+          </article>
+          <article class="card problem-card reveal">
+            <div class="icon-tile icon-cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 2l20 20"/><path d="M8.5 16.4a5 5 0 0 1 7 0"/><path d="M5 12.9a10 10 0 0 1 5.2-2.7M19 12.9a10 10 0 0 0-3-2.2"/><path d="M2 8.8a15 15 0 0 1 4.2-2.4M22 8.8a15 15 0 0 0-9-2.8"/></svg>
+            </div>
+            <h3>Нужны интернет и айтишник</h3>
+            <p>Многие решения не работают без постоянного подключения к облаку, а их настройка требует специалиста, которого в маленькой точке нет.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. Как это работает ── -->
+    <section id="how" aria-labelledby="how-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Как это работает</span>
+          <h2 id="how-title">От идеи до работающего табло — четыре шага</h2>
+          <p class="lead">Никакой магии: веб-конструктор, готовый образ и обычная SD-карта. Всё уже работает и проверено на реальном железе.</p>
+        </div>
+        <div class="steps">
+          <article class="card step reveal">
+            <span class="step-num" aria-hidden="true">1</span>
+            <h3>Соберите сцену</h3>
+            <p>Визуальный редактор в браузере: текст, изображения и слайды. Без кода и дизайнеров — как в конструкторе презентаций.</p>
+          </article>
+          <article class="card step reveal">
+            <span class="step-num" aria-hidden="true">2</span>
+            <h3>Скачайте образ</h3>
+            <p>Сервис собирает готовый .img-образ вашей сцены для Raspberry Pi 5 — со всем контентом внутри.</p>
+          </article>
+          <article class="card step reveal">
+            <span class="step-num" aria-hidden="true">3</span>
+            <h3>Прошейте SD-карту</h3>
+            <p>Одна прошивка через Raspberry Pi Imager — и табло готово. Подключите монитор и включите питание.</p>
+          </article>
+          <article class="card step reveal">
+            <span class="step-num" aria-hidden="true">4</span>
+            <h3>Обновляйте с телефона</h3>
+            <p>Подключитесь к Wi-Fi сети табло и меняйте контент с телефона за 30 секунд. Интернет таблу не нужен.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4. Возможности ── -->
+    <section id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Возможности</span>
+          <h2 id="features-title">Всё для информационных табло — и ничего лишнего</h2>
+        </div>
+        <div class="features-grid">
+          <article class="card feature-card reveal">
+            <div class="icon-tile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+            </div>
+            <h3>Визуальный редактор</h3>
+            <p>Блочная сборка сцен: заголовки, цены, картинки, слайд-шоу. Живой предпросмотр — что видите, то и на табло.</p>
+          </article>
+          <article class="card feature-card reveal">
+            <div class="icon-tile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M9 2h6"/></svg>
+            </div>
+            <h3>Обновление за 30 секунд</h3>
+            <p>Правки со смартфона по локальному Wi-Fi табло. Смена меню перед обеденным наплывом — без ноутбука.</p>
+          </article>
+          <article class="card feature-card reveal">
+            <div class="icon-tile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-1-8.9A6 6 0 1 0 6 16.7"/><path d="m8 19 8-8M16 19l2-2"/></svg>
+            </div>
+            <h3>Работает без интернета</h3>
+            <p>Весь контент хранится локально на устройстве. Никаких облаков: падение сети в помещении не страшно.</p>
+          </article>
+          <article class="card feature-card reveal">
+            <div class="icon-tile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><path d="M7 15h3"/></svg>
+            </div>
+            <h3>Разовая покупка</h3>
+            <p>Pro-образ за 2 499 ₽ — разовый платёж. Ни monthly-списаний, ни привязки к чужой инфраструктуре.</p>
+          </article>
+          <article class="card feature-card reveal">
+            <div class="icon-tile icon-cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4L12 3Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></svg>
+            </div>
+            <h3>AI-помощник <span class="badge badge-cyan">Бета</span></h3>
+            <p>Опишите сцену словами — «меню кофе с ценами и фото» — и AI соберёт её за вас. Подписка AI+ — 499 ₽/мес.</p>
+          </article>
+          <article class="card feature-card reveal">
+            <div class="icon-tile icon-warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/><path d="M12 10v4M10 12h4"/></svg>
+            </div>
+            <h3>Шаблоны для общепита</h3>
+            <p>Готовые макеты меню, бизнес-ланчей и акций. История версий проекта: любую правку можно откатить.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. Тарифы ── -->
+    <section id="pricing" aria-labelledby="pricing-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Тарифы</span>
+          <h2 id="pricing-title">Честные цены: платите один раз</h2>
+          <p class="lead">Попробуйте конструктор бесплатно — образ для Raspberry Pi покупается один раз и остаётся вашим навсегда.</p>
+        </div>
+        <div class="pricing-grid">
+          <article class="card price-card reveal">
+            <h3>Free</h3>
+            <p class="price-desc">Попробовать конструктор</p>
+            <div class="price">0 ₽</div>
+            <p class="price-terms">бесплатно и без карты</p>
+            <ul class="price-features">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Визуальный редактор сцен</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>1 проект с историей версий</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Шаблоны для общепита</li>
+              <li class="na"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Экспорт .img-образа для Pi</li>
+            </ul>
+            <a class="btn btn-ghost" href="#apply">Начать бесплатно</a>
+          </article>
+
+          <article class="card price-card is-featured reveal">
+            <span class="badge">Разовая покупка</span>
+            <h3>Pro</h3>
+            <p class="price-desc">Работающее табло без подписки</p>
+            <div class="price">2 499 ₽ <small>/ навсегда</small></div>
+            <p class="price-terms">один платёж · без абонентской платы</p>
+            <ul class="price-features">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Всё из тарифа Free</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Генерация .img-образа для Raspberry Pi 5</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Обновление контента с телефона по Wi-Fi</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Работа полностью офлайн</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Неограниченно проектов и правок</li>
+            </ul>
+            <a class="btn btn-primary" href="#apply">Оставить заявку</a>
+          </article>
+
+          <article class="card price-card reveal">
+            <span class="badge badge-cyan">Бета</span>
+            <h3>AI+</h3>
+            <p class="price-desc">Сборка сцен с AI-помощником</p>
+            <div class="price">499 ₽ <small>/ месяц</small></div>
+            <p class="price-terms">подписка · отмена в любой момент</p>
+            <ul class="price-features">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Генерация сцены по текстовому описанию</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Подсказки и правки прямо в редакторе</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Требуется тариф Pro</li>
+            </ul>
+            <a class="btn btn-secondary" href="#apply">Подключить AI+</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 6. FAQ ── -->
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">FAQ</span>
+          <h2 id="faq-title">Частые вопросы</h2>
+        </div>
+        <div class="faq-list">
+          <details class="card faq-item reveal">
+            <summary>Нужен ли интернет для работы табло?
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="faq-body"><p>Нет. После прошивки табло полностью автономно: контент хранится на SD-карте, а для обновления достаточно подключиться к локальной Wi-Fi сети самого устройства. Облачные сервисы не участвуют.</p></div>
+          </details>
+          <details class="card faq-item reveal">
+            <summary>Какое оборудование потребуется?
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="faq-body"><p>Raspberry Pi 5 и любой монитор или телевизор с HDMI. SD-карта — от 8 ГБ. Всё остальное — конструктор и образ — мы предоставляем.</p></div>
+          </details>
+          <details class="card faq-item reveal">
+            <summary>Как обновлять контент на табло?
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="faq-body"><p>Подключитесь с телефона к Wi-Fi сети табло, откройте страницу управления, внесите правки — новые цены или акции появятся на экране примерно через 30 секунд. Прошивать заново ничего не нужно.</p></div>
+          </details>
+          <details class="card faq-item reveal">
+            <summary>Почему это разовая покупка, а не подписка?
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="faq-body"><p>Образ — ваш: он работает локально и не зависит от наших серверов. Мы не тратим деньги на облака за вас — поэтому и не берём абонентскую плату. Подписка есть только у опционального AI-помощника.</p></div>
+          </details>
+          <details class="card faq-item reveal">
+            <summary>Можно ли попробовать до покупки?
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="faq-body"><p>Да, тариф Free бесплатен: соберите сцену в редакторе и посмотрите, как это работает. Понадобится только регистрация. А если захотите табло «под ключ» — оставьте заявку ниже, поможем с прошивкой и запуском.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7. Заявка (CTA) ── -->
+    <section id="apply" aria-labelledby="apply-title">
+      <div class="container">
+        <div class="apply-wrap">
+          <div class="apply-info reveal">
+            <span class="kicker">Заявка</span>
+            <h2 id="apply-title">Запустите своё табло за один вечер</h2>
+            <p>Оставьте заявку — расскажем подробнее, покажем демо и поможем собрать первый .img-образ под ваш бизнес.</p>
+            <ul class="apply-list">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Бесплатная консультация: посчитаем, что нужно именно вам</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Демо конструктора и готовых сцен для общепита</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg>Помощь с прошивкой SD-карты и первым запуском</li>
+            </ul>
+            <div class="apply-contacts">
+              <!-- TODO(команда): заменить на реальные контакты -->
+              <a class="btn btn-secondary" href="https://t.me/piconstruct" target="_blank" rel="noopener">Написать в Telegram</a>
+              <span class="or">или</span>
+              <a href="mailto:hello@piconstruct.ru">hello@piconstruct.ru</a>
+            </div>
+          </div>
+
+          <form class="card apply-form reveal" id="apply-form" aria-label="Форма заявки">
+            <h3>Оставить заявку</h3>
+            <div class="field">
+              <label for="f-name">Ваше имя</label>
+              <input id="f-name" name="name" type="text" placeholder="Как к вам обращаться" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="f-contact">Email или Telegram</label>
+              <input id="f-contact" name="contact" type="text" placeholder="you@mail.ru или @username" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label for="f-msg">Комментарий <span class="label-optional">— необязательно</span></label>
+              <textarea id="f-msg" name="message" placeholder="Например: кафе на 2 точки, хотим меню на двух табло"></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">Отправить заявку</button>
+            <p class="form-note">Кнопка откроет почтовый клиент с готовым письмом — останется нажать «Отправить». Отвечаем в течение рабочего дня.</p>
+            <p class="form-status" id="form-status" role="status">Почтовый клиент открыт — письмо осталось отправить. Спасибо за заявку!</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Футер ── -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <a class="logo" href="#top" aria-label="PiConstruct — наверх">
+          <img class="logo-dark-img" src="assets/logo/piconstruct-logo-dark.svg" alt="Логотип PiConstruct" width="240" height="81">
+          <img class="logo-light-img" src="assets/logo/piconstruct-logo-light.svg" alt="Логотип PiConstruct" width="240" height="81">
+        </a>
+        <nav class="footer-nav" aria-label="Навигация в подвале">
+          <a href="#how">Как это работает</a>
+          <a href="#features">Возможности</a>
+          <a href="#pricing">Тарифы</a>
+          <a href="#faq">FAQ</a>
+          <a href="#apply">Заявка</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 PiConstruct — конструктор информационных табло</p>
+        <p>Команда №1: Овчаренко К. · Миняев Т. · Паркаев И. · Савельев С. · Валянский А.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
