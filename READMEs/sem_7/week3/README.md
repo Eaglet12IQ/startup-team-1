@@ -41,11 +41,11 @@
 
 | Десктоп, тёмная тема | Десктоп, светлая тема |
 | --- | --- |
-| [![Десктоп, тёмная тема](attachments/landing/screenshots/desktop-dark.png?v=1)](attachments/landing/screenshots/desktop-dark.png) | [![Десктоп, светлая тема](attachments/landing/screenshots/desktop-light.png?v=1)](attachments/landing/screenshots/desktop-light.png) |
+| [![Десктоп, тёмная тема](attachments/landing/screenshots/desktop-dark.png?v=2)](attachments/landing/screenshots/desktop-dark.png) | [![Десктоп, светлая тема](attachments/landing/screenshots/desktop-light.png?v=2)](attachments/landing/screenshots/desktop-light.png) |
 
 | Мобилка, тёмная тема | Мобилка, светлая тема |
 | --- | --- |
-| [![Мобилка, тёмная тема](attachments/landing/screenshots/mobile-dark.png?v=1)](attachments/landing/screenshots/mobile-dark.png) | [![Мобилка, светлая тема](attachments/landing/screenshots/mobile-light.png?v=1)](attachments/landing/screenshots/mobile-light.png) |
+| [![Мобилка, тёмная тема](attachments/landing/screenshots/mobile-dark.png?v=2)](attachments/landing/screenshots/mobile-dark.png) | [![Мобилка, светлая тема](attachments/landing/screenshots/mobile-light.png?v=2)](attachments/landing/screenshots/mobile-light.png) |
 
 ### Как открыть локально
 

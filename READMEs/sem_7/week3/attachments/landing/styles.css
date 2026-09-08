@@ -280,8 +280,18 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   gap: 24px;
   height: 68px;
 }
-.logo { display: inline-flex; align-items: center; flex-shrink: 0; }
-.logo img { height: 34px; width: auto; }
+.logo { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+/* иконка вырезана из логотипа с плотным viewBox — без внутренних полей */
+.logo img { height: 38px; width: auto; display: block; }
+.logo-text {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.logo-text b { color: var(--accent-text); font-weight: 800; }
 .logo .logo-dark-img { display: block; }
 .logo .logo-light-img { display: none; }
 [data-theme="light"] .logo .logo-dark-img { display: none; }
@@ -713,6 +723,8 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   border-top: 1px solid var(--hairline);
   padding-block: 40px 36px;
 }
+.site-footer .logo img { height: 32px; }
+.site-footer .logo-text { font-size: 19px; }
 .footer-top {
   display: flex;
   align-items: center;
