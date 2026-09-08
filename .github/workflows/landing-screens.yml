@@ -1,0 +1,53 @@
+name: Rebuild landing screenshots
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'READMEs/sem_7/week2/attachments/landing/**'
+      - '.github/workflows/landing-screens.yml'
+  workflow_dispatch:
+
+# чтобы бот мог запушить пересобранные PNG обратно в ветку
+permissions:
+  contents: write
+
+concurrency:
+  group: landing-screens
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright + Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Render screenshots
+        working-directory: READMEs/sem_7/week2/attachments/landing
+        run: node render-screens.js
+
+      - name: Commit rebuilt screenshots
+        working-directory: READMEs/sem_7/week2/attachments/landing
+        run: |
+          git add screenshots/*.png
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged, nothing to commit"
+          else
+            git -c user.name="github-actions[bot]" \
+                -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                commit -m "chore(landing): rebuild screenshots [skip ci]"
+            git push
+          fi

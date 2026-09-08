@@ -41,3 +41,5 @@
 | --- | --- |
 | [![Мобилка, тёмная тема](attachments/landing/screenshots/mobile-dark.png)](attachments/landing/screenshots/mobile-dark.png) | [![Мобилка, светлая тема](attachments/landing/screenshots/mobile-light.png)](attachments/landing/screenshots/mobile-light.png) |
 
+Скриншоты пересобираются автоматически: GitHub Action [`landing-screens.yml`](../../../.github/workflows/landing-screens.yml) при изменении файлов лендинга рендерит их Playwright-ом (`render-screens.js` в каталоге лендинга сам поднимает статик-сервер) и коммитит обратно с `[skip ci]`.
+
