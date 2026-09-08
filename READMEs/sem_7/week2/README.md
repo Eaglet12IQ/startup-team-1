@@ -17,7 +17,7 @@
 
 Одностраничный продающий сайт (лендинг) PiConstruct — **статическая страница без зависимостей и сборки**: `index.html` + `styles.css` + `script.js`. Лежит в [`attachments/landing/`](attachments/landing/index.html), открывается любым статик-хостингом (GitHub Pages, Vercel, Netlify) или просто открытием `index.html` в браузере.
 
-![Static Badge](https://img.shields.io/badge/%D0%9B%D0%B5%D0%BD%D0%B4%D0%B8%D0%BD%D0%B3-green)
+[![Лендинг](https://img.shields.io/badge/%D0%9B%D0%B5%D0%BD%D0%B4%D0%B8%D0%BD%D0%B3-green)](https://piconstruct.monconnect.xyz/)
 
 ### Структура лендинга (9 блоков)
 
