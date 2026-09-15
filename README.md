@@ -41,4 +41,6 @@
 | Неделя | Ссылка                                   | Статус |
 | ------ | ---------------------------------------- | ------ |
 | 1      | [Перейти](READMEs/sem_7/week1/README.md) | ✅      |
-| 2      | [Перейти](READMEs/sem_7/week2/README.md) | ⌛      |
+| 2      | [Перейти](READMEs/sem_7/week2/README.md) | ✅      |
+| 3      | [Перейти](READMEs/sem_7/week2/README.md) | ✅      |
+| 4      | [Перейти](READMEs/sem_7/week4/README.md) | ⌛      |
