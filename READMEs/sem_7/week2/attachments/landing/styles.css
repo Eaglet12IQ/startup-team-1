@@ -728,17 +728,24 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
 }
 .field textarea { min-height: 96px; resize: vertical; }
 
-/* Чекбокс согласия на обработку ПДн */
-.consent-label {
+/* Чекбокс согласия на обработку ПДн.
+   Селектор «.form-consent .consent-label», а не просто «.consent-label»:
+   общие правила .field label выше по файлу (display: block, вес 600,
+   цвет primary, отступ снизу) специфичнее одиночного класса и без этого
+   перебивают вёрстку строки — текст переносится под чекбокс. */
+.form-consent { margin-bottom: 20px; }
+.form-consent .consent-label {
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  margin: 0;
   font-size: 13.5px;
+  font-weight: 400;
   line-height: 1.5;
   color: var(--text-secondary);
   cursor: pointer;
 }
-.consent-label input[type="checkbox"] {
+.form-consent .consent-label input[type="checkbox"] {
   flex-shrink: 0;
   width: 17px;
   height: 17px;
@@ -746,7 +753,7 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   accent-color: var(--accent);
   cursor: pointer;
 }
-.consent-label a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
+.form-consent .consent-label a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
 .label-optional { color: var(--text-muted); font-weight: 400; }
 .form-note { font-size: 12.5px; color: var(--text-muted); margin: 12px 0 0; }
 .form-status {
@@ -760,6 +767,42 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   font-weight: 500;
 }
 .form-status.visible { display: block; }
+
+/* ── Cookie-баннер ──
+   Показывается, пока посетитель не сделал выбор (cookie-consent.js):
+   аналитика (Метрика) подключается только после согласия. */
+.cookie-banner {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 200; /* выше sticky-шапки (z-index: 100) */
+  max-width: 400px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--elevated);
+  box-shadow: var(--shadow-modal);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cookie-banner[hidden] { display: none; }
+.cookie-banner.is-visible { opacity: 1; transform: none; }
+.cookie-banner__title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.cookie-banner__text {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.cookie-banner__text a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
+.cookie-banner__actions { display: flex; gap: 10px; }
+.cookie-banner__actions .btn { flex: 1; padding: 10px 16px; font-size: 14px; }
 
 /* ── Футер ── */
 .site-footer {
@@ -826,6 +869,7 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   .card { transition: none; }
   .card:hover { transform: none; }
   .float-card { animation: none; }
+  .cookie-banner { transition: none; }
 }
 
 /* ── Адаптив ── */
@@ -867,6 +911,7 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   .float-card { left: 10px; bottom: 14px; padding: 10px 14px; }
   .browser-url { display: none; }
   .apply-form { padding: 26px 22px; }
+  .cookie-banner { left: 14px; right: 14px; bottom: 14px; max-width: none; }
   .footer-nav { margin-left: 0; }
   .footer-top { flex-direction: column; align-items: flex-start; gap: 16px; }
 }

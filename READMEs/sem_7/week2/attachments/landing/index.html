@@ -1,19 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- Yandex.Metrika counter -->
-  <script type="text/javascript">
-      (function(m,e,t,r,i,k,a){
-          m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-          m[i].l=1*new Date();
-          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=112920547', 'ym');
-
-      ym(112920547, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
-  </script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/112920547" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-  <!-- /Yandex.Metrika counter -->
+  <!-- Счётчик Яндекс.Метрики подключается отложенно — после согласия
+       в cookie-баннере (см. cookie-consent.js); сам код счётчика не менялся. -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PiConstruct — конструктор информационных табло на Raspberry Pi</title>
@@ -384,10 +373,21 @@
       </div>
       <!-- Уведомление об аналитике: требование условий Яндекс.Метрики
            (информирование посетителей + упоминание блокировщика) -->
-      <p class="metrics-note">Мы используем <a href="https://yandex.ru/legal/metrica_termsofuse/" target="_blank" rel="noopener">Яндекс Метрику</a>: она собирает данные о посещениях (cookie, данные устройства). Запретить сбор можно <a href="https://chromewebstore.google.com/detail/deeoianfnpelklfchpfcmfjpphmfcjgm" target="_blank" rel="noopener">расширением «Блокировщик Яндекс.Метрики»</a>.</p>
+      <p class="metrics-note">Мы используем <a href="https://yandex.ru/legal/metrica_termsofuse/" target="_blank" rel="noopener">Яндекс Метрику</a>: она собирает данные о посещениях (cookie, данные устройства) и подключается только после согласия в баннере cookie. Запретить сбор можно <a href="https://chromewebstore.google.com/detail/deeoianfnpelklfchpfcmfjpphmfcjgm" target="_blank" rel="noopener">расширением «Блокировщик Яндекс.Метрики»</a>.</p>
     </div>
   </footer>
 
+  <!-- ── Cookie-баннер: Метрика подключается только после согласия ── -->
+  <div class="cookie-banner" id="cookie-banner" role="region" aria-label="Cookie и аналитика" hidden>
+    <p class="cookie-banner__title">Cookie и аналитика</p>
+    <p class="cookie-banner__text">Мы используем cookie и Яндекс Метрику для обезличенной статистики посещений — счётчик загрузится только после вашего согласия. Подробности — в <a href="privacy.html">политике обработки данных</a>.</p>
+    <div class="cookie-banner__actions">
+      <button type="button" class="btn btn-ghost js-cookie-decline">Отклонить</button>
+      <button type="button" class="btn btn-primary js-cookie-accept">Принять</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script src="cookie-consent.js"></script>
 </body>
 </html>

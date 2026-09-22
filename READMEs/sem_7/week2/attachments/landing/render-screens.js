@@ -45,7 +45,15 @@ async function waitForServer() {
         deviceScaleFactor: s.dsf,
       });
       const page = await ctx.newPage();
-      await page.addInitScript((t) => localStorage.setItem('piconstruct-theme', t), s.theme);
+      // тема фиксируется; согласие на cookie — «granted», чтобы баннер
+      // (который показывается только без выбора) не попал в скриншоты
+      await page.addInitScript(
+        (t) => {
+          localStorage.setItem('piconstruct-theme', t);
+          localStorage.setItem('piconstruct-cookie-consent', 'granted');
+        },
+        s.theme,
+      );
       await page.goto(BASE, { waitUntil: 'load' });
       await page.evaluate(() => document.fonts.ready);
       // заморозка анимаций: reveal-блоки видимы, плавающие карточки и переходы отключены
