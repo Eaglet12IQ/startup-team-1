@@ -145,12 +145,14 @@
       var name = String(data.get("name") || "").trim();
       var contact = String(data.get("contact") || "").trim();
       var message = String(data.get("message") || "").trim();
+      var consent = data.get("consent") === "on" ? "да" : "нет";
 
       var subject = "Заявка с лендинга PiConstruct — " + name;
       var body =
         "Имя: " + name + "\n" +
         "Контакт: " + contact + "\n" +
         (message ? "Комментарий: " + message + "\n" : "") +
+        "Согласие на обработку персональных данных: " + consent + "\n" +
         "\n— отправлено с лендинга PiConstruct";
 
       window.location.href =

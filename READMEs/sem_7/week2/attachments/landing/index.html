@@ -22,7 +22,7 @@
   <meta property="og:description" content="Цифровое табло для малого бизнеса: разовая покупка, работает без интернета, обновление с телефона за 30 секунд.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/img/editor-hero.webp">
-  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.png">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -345,6 +345,12 @@
               <label for="f-msg">Комментарий <span class="label-optional">— необязательно</span></label>
               <textarea id="f-msg" name="message" class="ym-disable-keys" placeholder="Например: кафе на 2 точки, хотим меню на двух табло"></textarea>
             </div>
+            <div class="field form-consent">
+              <label class="consent-label">
+                <input id="f-consent" name="consent" type="checkbox" class="ym-disable-keys" required>
+                <span>Отправляя заявку, соглашаюсь с <a href="privacy.html">политикой обработки персональных данных</a></span>
+              </label>
+            </div>
             <button class="btn btn-primary btn-block" type="submit">Отправить заявку</button>
             <p class="form-note">Кнопка откроет почтовый клиент с готовым письмом — останется нажать «Отправить». Отвечаем в течение рабочего дня.</p>
             <p class="form-status" id="form-status" role="status">Почтовый клиент открыт — письмо осталось отправить. Спасибо за заявку!</p>
@@ -369,6 +375,7 @@
           <a href="#pricing">Тарифы</a>
           <a href="#faq">FAQ</a>
           <a href="#apply">Заявка</a>
+          <a href="privacy.html">Политика ПДн</a>
         </nav>
       </div>
       <div class="footer-bottom">

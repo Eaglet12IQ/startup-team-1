@@ -727,6 +727,26 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
   box-shadow: var(--shadow-focus);
 }
 .field textarea { min-height: 96px; resize: vertical; }
+
+/* Чекбокс согласия на обработку ПДн */
+.consent-label {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.consent-label input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.consent-label a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
 .label-optional { color: var(--text-muted); font-weight: 400; }
 .form-note { font-size: 12.5px; color: var(--text-muted); margin: 12px 0 0; }
 .form-status {
@@ -779,6 +799,25 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
 }
 .metrics-note a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
 .metrics-note a:hover { color: var(--text-secondary); }
+
+/* ── Контентная страница (политика обработки ПДн) ── */
+.page-main { padding-block: 64px 96px; }
+.page-article { max-width: 760px; margin-inline: auto; }
+.page-article h1 { font-size: clamp(1.8rem, 3.4vw, 2.4rem); margin-bottom: 10px; }
+.page-meta { font-size: 13.5px; color: var(--text-muted); margin-bottom: 44px; }
+.page-article h2 { font-size: 1.2rem; font-weight: 600; margin: 36px 0 12px; }
+.page-article p { font-size: 15.5px; }
+.page-article ul { padding-left: 22px; margin: 0 0 16px; display: grid; gap: 8px; }
+.page-article li { font-size: 15.5px; }
+.page-article code {
+  font-family: inherit;
+  font-size: 0.9em;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--overlay);
+  color: var(--text-primary);
+}
+.page-article a { text-decoration: underline; text-underline-offset: 2px; }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
