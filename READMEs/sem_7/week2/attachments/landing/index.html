@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript">
+      (function(m,e,t,r,i,k,a){
+          m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();
+          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=112920547', 'ym');
+
+      ym(112920547, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/112920547" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PiConstruct — конструктор информационных табло на Raspberry Pi</title>
@@ -322,15 +335,15 @@
             <h3>Оставить заявку</h3>
             <div class="field">
               <label for="f-name">Ваше имя</label>
-              <input id="f-name" name="name" type="text" placeholder="Как к вам обращаться" autocomplete="name" required>
+              <input id="f-name" name="name" type="text" class="ym-disable-keys" placeholder="Как к вам обращаться" autocomplete="name" required>
             </div>
             <div class="field">
               <label for="f-contact">Email или Telegram</label>
-              <input id="f-contact" name="contact" type="text" placeholder="you@mail.ru или @username" autocomplete="email" required>
+              <input id="f-contact" name="contact" type="text" class="ym-disable-keys" placeholder="you@mail.ru или @username" autocomplete="email" required>
             </div>
             <div class="field">
               <label for="f-msg">Комментарий <span class="label-optional">— необязательно</span></label>
-              <textarea id="f-msg" name="message" placeholder="Например: кафе на 2 точки, хотим меню на двух табло"></textarea>
+              <textarea id="f-msg" name="message" class="ym-disable-keys" placeholder="Например: кафе на 2 точки, хотим меню на двух табло"></textarea>
             </div>
             <button class="btn btn-primary btn-block" type="submit">Отправить заявку</button>
             <p class="form-note">Кнопка откроет почтовый клиент с готовым письмом — останется нажать «Отправить». Отвечаем в течение рабочего дня.</p>
@@ -362,6 +375,9 @@
         <p>© 2026 PiConstruct — конструктор информационных табло</p>
         <!-- ── <p>Команда №1: Овчаренко К. · Миняев Т. · Паркаев И. · Савельев С. · Валянский А.</p> ── -->
       </div>
+      <!-- Уведомление об аналитике: требование условий Яндекс.Метрики
+           (информирование посетителей + упоминание блокировщика) -->
+      <p class="metrics-note">Мы используем <a href="https://yandex.ru/legal/metrica_termsofuse/" target="_blank" rel="noopener">Яндекс Метрику</a>: она собирает данные о посещениях (cookie, данные устройства). Запретить сбор можно <a href="https://chromewebstore.google.com/detail/deeoianfnpelklfchpfcmfjpphmfcjgm" target="_blank" rel="noopener">расширением «Блокировщик Яндекс.Метрики»</a>.</p>
     </div>
   </footer>
 

@@ -769,6 +769,17 @@ section { padding-block: 96px; scroll-margin-top: 80px; }
 }
 .footer-bottom p { margin: 0; }
 
+/* Уведомление об аналитике (Яндекс Метрика) — приглушённой строкой под футером */
+.metrics-note {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  max-width: 760px;
+}
+.metrics-note a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
+.metrics-note a:hover { color: var(--text-secondary); }
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
