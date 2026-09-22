@@ -43,4 +43,9 @@
 | --- | --- |
 | [![Мобилка, тёмная тема](attachments/landing/screenshots/mobile-dark.png)](attachments/landing/screenshots/mobile-dark.png) | [![Мобилка, светлая тема](attachments/landing/screenshots/mobile-light.png)](attachments/landing/screenshots/mobile-light.png) |
 
+### Живая статистика
+
+Сайт подключён к Яндекс Метрике (счётчик 112920547), статистика обновляется автоматически:
+
+[![Яндекс.Метрика — сегодня: просмотры, визиты, посетители](https://mc.yandex.ru/informer/112920547/3_1_FFFFFFFF_FFFFFF_0_visits)](https://metrika.yandex.ru/stat/?id=112920547&from=informer)
 
