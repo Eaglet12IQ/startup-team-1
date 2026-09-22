@@ -45,9 +45,7 @@
 
 ### Живая статистика
 
-Сайт подключён к Яндекс Метрике (счётчик 112920547), статистика обновляется автоматически:
+Сайт подключён к Яндекс Метрике (счётчик 112920547).
 
-[![Яндекс.Метрика — сегодня: просмотры, визиты, посетители](https://mc.yandex.ru/informer/112920547/3_1_FFFFFFFF_FFFFFF_0_visits)](https://metrika.yandex.ru/dashboard?id=112920547)
-
-Полная статистика: [metrika.yandex.ru/dashboard?id=112920547](https://metrika.yandex.ru/dashboard?id=112920547)
+Статистика: [metrika.yandex.ru/dashboard?id=112920547](https://metrika.yandex.ru/dashboard?id=112920547)
 
