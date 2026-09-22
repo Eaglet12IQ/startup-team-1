@@ -1,0 +1,63 @@
+name: Deploy landing to Pages
+
+# Синхронизирует лендинг из этого репо с корнем parkaev/piconstruct.github.io
+# (user-site: Pages раздаёт его напрямую, CNAME piconstruct.monconnect.xyz).
+# Пушит только исходники сайта: index.html, styles.css, script.js, assets/.
+# screenshots/, render-screens.js и .DS_Store в деплой не попадают.
+#
+# Требуется секрет LANDING_DEPLOY_TOKEN — PAT с доступом на запись в
+# parkaev/piconstruct.github.io (fine-grained: Contents Read/Write только
+# на этот репо). Пока секрета нет, шаг пропускается с предупреждением.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'READMEs/sem_7/week2/attachments/landing/**'
+      - '.github/workflows/landing-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: landing-deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_TOKEN: ${{ secrets.LANDING_DEPLOY_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync landing to piconstruct.github.io
+        if: env.HAS_TOKEN == 'true'
+        env:
+          TOKEN: ${{ secrets.LANDING_DEPLOY_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/parkaev/piconstruct.github.io.git" /tmp/pages
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='CNAME' \
+            --exclude='screenshots' \
+            --exclude='render-screens.js' \
+            --exclude='.DS_Store' \
+            READMEs/sem_7/week2/attachments/landing/ /tmp/pages/
+          cd /tmp/pages
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Pages repo already up to date"
+          else
+            git -c user.name="github-actions[bot]" \
+                -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                commit -m "deploy: landing @ ${GITHUB_SHA::7} [skip ci]"
+            git push
+          fi
+
+      - name: Token not configured
+        if: env.HAS_TOKEN != 'true'
+        run: |
+          echo "::warning::Секрет LANDING_DEPLOY_TOKEN не задан — деплой пропущен."
+          echo "Нужен PAT с Contents Read/Write на parkaev/piconstruct.github.io;"
+          echo "добавьте его в Settings > Secrets > Actions этого репозитория."
