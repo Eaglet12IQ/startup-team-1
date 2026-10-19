@@ -45,4 +45,5 @@
 | 3      | [Перейти](READMEs/sem_7/week2-3/README.md) | ✅      |
 | 4      | [Перейти](READMEs/sem_7/week4/README.md)   | ✅      |
 | 5      | [Перейти](READMEs/sem_7/week5/README.md)   | ✅      |
-| 6      | [Перейти](READMEs/sem_7/week6/README.md)   | ⌛      |
+| 6      | [Перейти](READMEs/sem_7/week6/README.md)   | ✅      |
+| 7      | [Перейти](READMEs/sem_7/week7/README.md)   | ⌛      |
