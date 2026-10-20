@@ -23,7 +23,5 @@
 ![Слайд9](attachments/Слайд9.PNG)
 ![Слайд10](attachments/Слайд10.PNG)
 ![Слайд11](attachments/Слайд11.PNG)
-![Слайд12](attachments/Слайд12.PNG)
-![Слайд13](attachments/Слайд13.PNG)
 
 ![Ссылка на файл](attachments/PiConstruct_PitchDeck.pdf)
