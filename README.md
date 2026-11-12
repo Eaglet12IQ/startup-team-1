@@ -33,7 +33,7 @@ cp .env.example .env
 docker compose up --build -d
 
 # 3. Запустить фронтенд в dev-режиме
-cd frontend/vite-project && npm install && npm run dev
+cd frontend && npm install && npm run dev
 # открыть http://localhost:5173
 ```
 

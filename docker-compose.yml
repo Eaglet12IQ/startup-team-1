@@ -35,7 +35,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: frontend/vite-project/Dockerfile
+      dockerfile: frontend/Dockerfile
     container_name: frontend
     ports:
       - "80:80"

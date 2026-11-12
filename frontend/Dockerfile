@@ -1,32 +1,43 @@
-FROM --platform=linux/amd64 node:20-alpine AS builder
+# Единый Dockerfile фронтенда для обоих режимов:
+#   прод (VITE_PI_MODE=false, по умолчанию)  — nginx.prod.conf   (kong, SSL)
+#   pi   (VITE_PI_MODE=true)                 — nginx.pi-test.conf (pidisplay-backend:8082)
+# ВАЖНО: путь и имя аргумента зашиты в pi-image-builder/src/imageBuilder.js
+# (--build-arg VITE_PI_MODE=true -f /app/source/frontend/Dockerfile) — не переименовывать.
+
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# shared
-COPY shared/ ./shared/
+# Общие модули блоков (разрешаются через алиас @shared)
+COPY shared ./shared
 
-# frontend/package.json (содержит tailwindcss и др.)
-COPY frontend/package.json frontend/package-lock.json* ./frontend/
+# Зависимости из единственного package.json + lockfile
+COPY frontend/package*.json ./
+RUN npm ci
 
-# frontend/vite-project/package.json
-COPY frontend/vite-project/package.json frontend/vite-project/package-lock.json* ./frontend/vite-project/
-
-# Ставим зависимости обоих package.json
-RUN cd frontend && npm install --include=dev
-RUN cd frontend/vite-project && npm install --include=dev
-
-# node_modules из frontend/ доступны vite через поиск вверх по дереву
-# shared видит node_modules через симлинк
-RUN ln -s /app/frontend/vite-project/node_modules /app/shared/node_modules
-
-# Копируем исходники
-COPY frontend/vite-project/ ./frontend/vite-project/
+# Исходники приложения
+# react для shared/ резолвится стандартным walk-up до /app/node_modules
+COPY frontend/ .
 
 ARG VITE_PI_MODE=false
 ENV VITE_PI_MODE=$VITE_PI_MODE
 
-RUN cd frontend/vite-project && npx vite build
+RUN npm run build
 
 FROM nginx:alpine
-COPY --from=builder /app/frontend/vite-project/dist /usr/share/nginx/html
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+ARG VITE_PI_MODE=false
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY frontend/nginx.pi-test.conf /etc/nginx/conf.d/pi-test.conf
+COPY frontend/nginx.prod.conf /etc/nginx/conf.d/prod.conf
+# Включаем ровно одну конфигурацию в зависимости от режима
+RUN if [ "$VITE_PI_MODE" = "true" ]; then \
+      mv /etc/nginx/conf.d/pi-test.conf /etc/nginx/conf.d/default.conf && rm /etc/nginx/conf.d/prod.conf; \
+    else \
+      mv /etc/nginx/conf.d/prod.conf /etc/nginx/conf.d/default.conf && rm /etc/nginx/conf.d/pi-test.conf; \
+    fi
+
+EXPOSE 80 443
+
+CMD ["nginx", "-g", "daemon off;"]

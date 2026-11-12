@@ -6,7 +6,7 @@ import { existsSync } from 'fs'
 
 const sharedPath = existsSync(path.resolve(__dirname, 'shared'))
     ? path.resolve(__dirname, 'shared')
-    : path.resolve(__dirname, '../../shared')
+    : path.resolve(__dirname, '../shared')
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],

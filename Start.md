@@ -23,7 +23,7 @@ docker compose up --build -d
 ### 2. Запустить фронтенд
 
 ```bash
-cd frontend/vite-project && npm run dev
+cd frontend && npm run dev
 ```
 
 Открыть `http://localhost:5173`
