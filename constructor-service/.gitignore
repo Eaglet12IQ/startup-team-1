@@ -2,3 +2,7 @@
 venv
 __pycache__
 .pytest_cache
+
+# runtime data (mount points from docker-compose.yml)
+/schemas/
+/uploads/

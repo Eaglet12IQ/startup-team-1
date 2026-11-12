@@ -10,3 +10,5 @@
 pidisplay.img
 /logs
 /.idea/
+.env
+.env.*.local

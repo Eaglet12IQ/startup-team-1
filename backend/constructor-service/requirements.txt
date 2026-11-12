@@ -1,6 +1,0 @@
-sqlalchemy
-fastapi
-uvicorn
-python-dotenv
-gitpython
-python-multipart
