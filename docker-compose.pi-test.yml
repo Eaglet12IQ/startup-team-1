@@ -1,5 +1,3 @@
-version: "3.8"
-
 # Локальный тест Pi-режима.
 # Эмулирует что будет на Pi: бэкенд + фронтенд с VITE_PI_MODE=true
 # Без хотспота — просто открываешь браузер.
@@ -17,14 +15,14 @@ services:
       dockerfile: Dockerfile
     container_name: pidisplay-backend
     ports:
-      - "8082:8082"
+      - "${CONSTRUCTOR_SERVICE_PORT:-8082}:${CONSTRUCTOR_SERVICE_PORT:-8082}"
     volumes:
       - pidisplay-test-data:/opt/pidisplay
       - ./constructor-service/schemas:/app/schemas
       - ./constructor-service/uploads:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
-      - SERVICE_PORT=8082
+      - SERVICE_PORT=${CONSTRUCTOR_SERVICE_PORT:-8082}
     restart: unless-stopped
 
   pidisplay-frontend:

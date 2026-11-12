@@ -1,7 +1,9 @@
 from pathlib import Path
 import git
 
-REPO_DIR = Path("schemas")
+from app.core.config import SCHEMAS_DIR
+
+REPO_DIR = SCHEMAS_DIR
 
 def get_repo() -> git.Repo:
     REPO_DIR.mkdir(exist_ok=True)

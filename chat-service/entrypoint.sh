@@ -6,4 +6,4 @@ alembic upgrade head
 
 # Запускаем FastAPI
 echo "Starting FastAPI..."
-exec uvicorn app.main:app --host 0.0.0.0 --port ${SERVICE_PORT}
+exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVICE_PORT:-8083}"

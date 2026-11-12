@@ -2,6 +2,7 @@
 /pi-image-builder/images/*.img
 /.obsidian/workspace.json
 node_modules/
+__pycache__/
 /.obsidian/app.json
 /.obsidian/appearance.json
 /.obsidian/community-plugins.json

@@ -1,11 +1,9 @@
 import asyncio
 import json
-import os
 import uuid
 from datetime import datetime
 
 import redis.asyncio as redis
-from dotenv import load_dotenv
 
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, END
@@ -17,24 +15,7 @@ from transformers import AutoTokenizer
 from functools import partial
 # from langchain_mcp_adapters.client import MultiServerMCPClient
 
-load_dotenv()
-
-# ====================== КОНФИГУРАЦИЯ ======================
-redis_host = os.getenv("REDIS_HOST")     
-redis_port = os.getenv("REDIS_PORT")
-
-REDIS_URL = f"redis://{redis_host}:{redis_port}"
-
-MAIN_SYSTEM_PROMPT = os.getenv("MAIN_SYSTEM_PROMPT")
-LLM_URL = os.getenv("LLM_URL")
-MODEL_NAME = os.getenv("MODEL_NAME")
-LLM_API_KEY = os.getenv("LLM_API_KEY")
-
-# MCP_SERVERS_CONFIG = {
-#     "system": {"url": os.getenv("MCP_SYSTEM_URL"), "transport": "streamable_http"},
-#     "obsidian": {"url": os.getenv("MCP_OBSIDIAN_URL"), "transport": "streamable_http"},
-#     "web_search": {"url": os.getenv("MCP_WEB_SEARCH_URL"), "transport": "streamable_http"}
-# }
+from config import LLM_API_KEY, LLM_URL, MAIN_SYSTEM_PROMPT, MODEL_NAME, REDIS_URL
 
 # ====================== LLM КЛИЕНТ ======================
 llm_client = AsyncOpenAI(base_url=LLM_URL, api_key=LLM_API_KEY, timeout=120.0)

@@ -4,9 +4,11 @@ from pathlib import Path
 from fastapi import APIRouter, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 
+from app.core.config import UPLOADS_DIR
+
 router = APIRouter()
 
-UPLOAD_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "uploads"
+UPLOAD_ROOT = UPLOADS_DIR
 
 
 @router.post("/upload/{schema_id}")

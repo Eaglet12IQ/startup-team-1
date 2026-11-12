@@ -7,9 +7,9 @@ from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
 
-router = APIRouter()
+from app.core.config import DISPLAY_FILE
 
-DISPLAY_FILE = "/opt/pidisplay/display.html"
+router = APIRouter()
 
 _sse_clients: list[asyncio.Queue] = []
 

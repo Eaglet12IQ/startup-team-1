@@ -5,13 +5,14 @@ services:
       dockerfile: Dockerfile
     container_name: pidisplay-backend
     ports:
-      - "8082:8082"
+      - "${CONSTRUCTOR_SERVICE_PORT:-8082}:${CONSTRUCTOR_SERVICE_PORT:-8082}"
     volumes:
       - ./constructor-service/schemas:/app/schemas
       - ./constructor-service/uploads:/app/uploads
+      - pidisplay_display:/opt/pidisplay
     environment:
       - PYTHONUNBUFFERED=1
-      - SERVICE_PORT=8082
+      - SERVICE_PORT=${CONSTRUCTOR_SERVICE_PORT:-8082}
     restart: unless-stopped
     networks:
       - kong-net
@@ -329,6 +330,7 @@ volumes:
     driver: local
   chat_postgres_data:
   chat_redis_data:
+  pidisplay_display:
 
 networks:
   kong-net:

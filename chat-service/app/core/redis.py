@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.core.config import REDIS_HOST, REDIS_PORT
+
 # Настройка логгера
 logger = logging.getLogger(__name__)
 
@@ -24,17 +26,11 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 Приложение остановлено")
 
 
-import os
-
 async def init_redis() -> Redis:
     """Инициализация Redis при старте приложения"""
     global redis_client
-    
-    # Получаем хост Redis из переменной окружения (удобно для dev и prod)
-    redis_host = os.getenv("REDIS_HOST")     
-    redis_port = os.getenv("REDIS_PORT")
-    
-    redis_url = f"redis://{redis_host}:{redis_port}"
+
+    redis_url = f"redis://{REDIS_HOST}:{REDIS_PORT}"
     
     logger.info(f"Подключение к Redis по адресу: {redis_url}")
 
