@@ -1,0 +1,22 @@
+# Normalize line endings: LF everywhere (Docker builds, shell scripts).
+* text=auto eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets — never normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.img binary
+*.zip binary
+*.gz binary
