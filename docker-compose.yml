@@ -221,7 +221,8 @@ services:
       KONG_PLUGINS: "bundled,jwt-check"
       KONG_PROXY_LISTEN: 0.0.0.0:8000
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
-      JWT_SECRET: secret
+      JWT_SECRET: ${JWT_SECRET}
+      KONG_NGINX_MAIN_ENV: JWT_SECRET
     ports:
       - "8000:8000"
       - "8001:8001"

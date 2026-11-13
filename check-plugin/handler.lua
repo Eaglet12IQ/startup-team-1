@@ -14,7 +14,11 @@ function JwtCheckHandler:access(conf)
     local token = string.gsub(auth_header, "^Bearer%s+", "")
     kong.log.inspect("Raw access token:", token)
 
-    local jwt_secret = os.getenv("JWT_SECRET") or "secret"
+    local jwt_secret = os.getenv("JWT_SECRET")
+    if not jwt_secret or jwt_secret == "" then
+        kong.response.exit(500, { message = "no JWT_SECRET in env" })
+    end
+
     local jwt_obj = jwt:verify(jwt_secret, token)
     if not jwt_obj["verified"] then
         kong.response.exit(401, { message = "Invalid JWT token" })
