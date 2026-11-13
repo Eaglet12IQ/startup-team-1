@@ -281,10 +281,11 @@ services:
           -d 'paths[]=/api/v1/auth' \
           -d strip_path=false
 
-        # Protected auth route (with jwt-check)
+        # Protected auth routes (with jwt-check)
         curl -s -X POST http://kong:8001/services/auth-service/routes \
           -d name=auth-protected-routes \
           -d 'paths[]=/api/v1/refresh' \
+          -d 'paths[]=/api/v1/logout' \
           -d strip_path=false
 
         # jwt-check plugin on protected auth routes

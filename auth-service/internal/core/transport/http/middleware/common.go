@@ -122,14 +122,17 @@ func Trace() Middleware {
 			log.Debug(
 				"<<< done HTTP request",
 				zap.Int("status_code", rw.GetStatusCodeOrPanic()),
-				zap.Duration("latency", time.Now().Sub(before)),
+				zap.Duration("latency", time.Since(before)),
 			)
 		})
 	}
 }
 
 func isPublicRoute(r *http.Request) bool {
-	if r.Method == http.MethodPost && (r.URL.Path == concatenatePath(prefix, "register") || r.URL.Path == concatenatePath(prefix, "auth") || r.URL.Path == concatenatePath(prefix, "refresh")) {
+	if r.Method == http.MethodPost && (r.URL.Path == concatenatePath(prefix, "register") ||
+		r.URL.Path == concatenatePath(prefix, "auth") ||
+		r.URL.Path == concatenatePath(prefix, "refresh") ||
+		r.URL.Path == concatenatePath(prefix, "logout")) {
 		return true
 	}
 

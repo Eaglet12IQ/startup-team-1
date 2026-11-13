@@ -41,10 +41,11 @@ func main() {
 
 	logger.Debug("initializing feature", zap.String("feature", "users"))
 
-	jwtExample := core_token.NewJWTService(core_token.NewConfigMust(), nil)
+	refreshSessionsRepository := users_postgres_repository.NewRefreshSessionsRepository(pool)
+	jwtService := core_token.NewJWTService(core_token.NewConfigMust(), refreshSessionsRepository)
 
 	usersRepository := users_postgres_repository.NewUsersRepository(pool)
-	usersService := users_service.NewUsersService(usersRepository, jwtExample)
+	usersService := users_service.NewUsersService(usersRepository, jwtService)
 	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(usersService)
 
 	logger.Debug("initializing HTTP server")
@@ -53,7 +54,7 @@ func main() {
 		logger,
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
-		core_http_middleware.Auth(*jwtExample),
+		core_http_middleware.Auth(*jwtService),
 		core_http_middleware.Panic(),
 		core_http_middleware.Trace(),
 	)

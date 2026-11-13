@@ -15,6 +15,7 @@ type UsersService interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 	LoginUser(ctx context.Context, user domain.User) (string, string, error)
 	RefreshAccessToken(ctx context.Context, refreshToken string) (string, string, error)
+	LogoutUser(ctx context.Context, refreshToken string) error
 }
 
 func NewUsersHTTPHandler(usersService UsersService) *UsersHTTPHandler {
@@ -37,6 +38,11 @@ func (h *UsersHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/refresh",
 			Handler: h.RefreshAccessToken,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/logout",
+			Handler: h.LogoutUser,
 		},
 	}
 }
