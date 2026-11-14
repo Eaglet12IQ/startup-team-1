@@ -13,7 +13,7 @@ type UsersHTTPHandler struct {
 
 type UsersService interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
-	LoginUser(ctx context.Context, user domain.User) (string, string, error)
+	LoginUser(ctx context.Context, user domain.User) (string, string, domain.User, error)
 	RefreshAccessToken(ctx context.Context, refreshToken string) (string, string, error)
 	LogoutUser(ctx context.Context, refreshToken string) error
 }
