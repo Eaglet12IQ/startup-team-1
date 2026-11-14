@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
-import { useAuth } from '../context/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({ full_name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,9 +38,6 @@ export function Register() {
         return;
       }
 
-      const data = await res.json();
-
-      login('', data.id, data.full_name, data.email);
       navigate('/login');
     } catch {
       setError('Ошибка соединения с сервером');

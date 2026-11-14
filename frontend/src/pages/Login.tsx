@@ -33,14 +33,7 @@ export function Login() {
 
       const data = await res.json();
 
-      const parts = data.access.split('.');
-      let userId = 0;
-      if (parts.length === 3) {
-        const payload = JSON.parse(atob(parts[1]));
-        userId = payload.user_id || 0;
-      }
-
-      login(data.access, userId, '', formData.email);
+      login(data.access, data.user.id, data.user.full_name, data.user.email);
       navigate('/projects');
     } catch {
       setError('Ошибка соединения с сервером');
