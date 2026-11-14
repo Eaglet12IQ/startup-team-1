@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py .
+COPY main.py config.py .
 
 # Создаём директорию для возможных кэшей (tokenizer и т.д.)
 RUN mkdir -p /root/.cache/huggingface
