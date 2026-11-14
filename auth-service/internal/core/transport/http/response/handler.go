@@ -1,6 +1,7 @@
 package core_http_response
 
 import (
+	core_domain "auth-service/internal/core/domain"
 	core_errors "auth-service/internal/core/errors"
 	core_logger "auth-service/internal/core/logger"
 	"encoding/json"
@@ -69,7 +70,7 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	h.errorResponse(statusCode, err, msg)
 }
 
-func (h *HTTPResponseHandler) TokensResponse(rw http.ResponseWriter, access, refresh string, statusCode int) {
+func (h *HTTPResponseHandler) TokensResponse(rw http.ResponseWriter, access, refresh string, user *core_domain.User, statusCode int) {
 	http.SetCookie(rw, &http.Cookie{
 		Name:     "refresh",
 		Value:    refresh,
@@ -80,8 +81,16 @@ func (h *HTTPResponseHandler) TokensResponse(rw http.ResponseWriter, access, ref
 		SameSite: http.SameSiteStrictMode,
 	})
 
-	response := map[string]string{
+	response := map[string]any{
 		"access": access,
+	}
+
+	if user != nil {
+		response["user"] = map[string]any{
+			"id":        user.ID,
+			"full_name": user.FullName,
+			"email":     user.Email,
+		}
 	}
 
 	h.JSONResponse(response, statusCode)

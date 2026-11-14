@@ -29,14 +29,14 @@ func (h *UsersHTTPHandler) LoginUser(rw http.ResponseWriter, r *http.Request) {
 
 	user := domainFromLoginUserDTO(request)
 
-	access, refresh, err := h.usersService.LoginUser(ctx, user)
+	access, refresh, savedUser, err := h.usersService.LoginUser(ctx, user)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to login user")
 
 		return
 	}
 
-	responseHandler.TokensResponse(rw, access, refresh, http.StatusOK)
+	responseHandler.TokensResponse(rw, access, refresh, &savedUser, http.StatusOK)
 }
 
 func domainFromLoginUserDTO(dto LoginUserRequest) domain.User {

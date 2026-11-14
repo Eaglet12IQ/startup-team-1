@@ -25,5 +25,5 @@ func (u *UsersHTTPHandler) RefreshAccessToken(rw http.ResponseWriter, r *http.Re
 		return
 	}
 
-	responseHandler.TokensResponse(rw, access, refresh, http.StatusOK)
+	responseHandler.TokensResponse(rw, access, refresh, nil, http.StatusOK)
 }
