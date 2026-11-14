@@ -3,6 +3,7 @@ fastapi
 alembic
 uvicorn
 psycopg2-binary
+psycopg[binary]
 python-dotenv
 websockets
 redis[asyncio]
