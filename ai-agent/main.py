@@ -293,7 +293,7 @@ def create_agent_graph(redis_client, stream_key: str, langchain_tools: list):
 
 # ====================== REDIS WORKER ======================
 async def llm_worker():
-    redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+    redis_client = redis.from_url(REDIS_URL, decode_responses=True, socket_timeout=None)
     stream_name = "llm:generate_requests"
     group_name = "llm-workers"
     consumer_name = f"worker-{uuid.uuid4().hex[:8]}"
