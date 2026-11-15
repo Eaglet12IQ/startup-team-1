@@ -40,6 +40,33 @@ interface SavedState {
   blocks: BlockData[];
 }
 
+const parseAiBlocks = (raw: string): BlockData[] => {
+  let text = raw.trim();
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenceMatch) text = fenceMatch[1].trim();
+
+  const extract = (s: string): BlockData[] | null => {
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return parsed;
+      if (parsed && Array.isArray(parsed.blocks)) return parsed.blocks;
+    } catch {
+      return null;
+    }
+  };
+
+  const direct = extract(text);
+  if (direct) return direct;
+
+  const start = text.indexOf('[');
+  const end = text.lastIndexOf(']');
+  if (start !== -1 && end > start) {
+    const fromSubstring = extract(text.slice(start, end + 1));
+    if (fromSubstring) return fromSubstring;
+  }
+  return [];
+};
+
 export function Editor() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -556,20 +583,13 @@ export function Editor() {
               .map((msg) => {
                 // Парсим блоки из сообщений assistant
                 if (msg.role === 'assistant' && msg.content) {
-                  try {
-                    const aiResponse = JSON.parse(msg.content);
-                    const aiBlocks = Array.isArray(aiResponse)
-                      ? aiResponse
-                      : aiResponse?.blocks ?? [];
-                    if (aiBlocks.length > 0) {
-                      return {
-                        ...msg,
-                        content: '✅ Схема сгенерирована',
-                        aiBlocks,
-                      };
-                    }
-                  } catch {
-                    // не JSON — оставляем как есть
+                  const aiBlocks = parseAiBlocks(msg.content);
+                  if (aiBlocks.length > 0) {
+                    return {
+                      ...msg,
+                      content: '✅ Схема сгенерирована',
+                      aiBlocks,
+                    };
                   }
                 }
                 return msg;
@@ -636,18 +656,9 @@ export function Editor() {
           console.log('Chat stream completed', data.run_id);
           if (!generationComplete) {
             // Парсим блоки от AI
-            let aiBlocks: BlockData[] = [];
-            try {
-              const raw = accumulatedContentRef.current.trim();
-              if (raw) {
-                const aiResponse = JSON.parse(raw);
-                aiBlocks = Array.isArray(aiResponse)
-                  ? aiResponse
-                  : aiResponse?.blocks ?? [];
-              }
-            } catch {
-              // ignore parse errors
-            }
+            const aiBlocks: BlockData[] = accumulatedContentRef.current.trim()
+              ? parseAiBlocks(accumulatedContentRef.current)
+              : [];
 
             const finalMessage: Message = {
               role: 'assistant',
