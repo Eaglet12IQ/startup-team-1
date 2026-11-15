@@ -4,7 +4,7 @@
 # ВАЖНО: путь и имя аргумента зашиты в pi-image-builder/src/imageBuilder.js
 # (--build-arg VITE_PI_MODE=true -f /app/source/frontend/Dockerfile) — не переименовывать.
 
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
