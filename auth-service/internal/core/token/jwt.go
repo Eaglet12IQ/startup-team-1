@@ -196,7 +196,10 @@ func (t *JWT) ValidateAccessToken(access string) (*Claims, error) {
 	}
 
 	if claims.Type != accessType {
-		return nil, fmt.Errorf("invalid token type")
+		return nil, fmt.Errorf(
+			"invalid token type: %w",
+			core_errors.ErrUnauthorized,
+		)
 	}
 
 	return claims, nil
@@ -206,10 +209,21 @@ func (t *JWT) parseToken(token string) (*Claims, error) {
 	parsedToken, err := jwt.ParseWithClaims(
 		token, &Claims{},
 		func(token *jwt.Token) (interface{}, error) {
+			if token.Method != jwt.SigningMethodHS256 {
+				return nil, fmt.Errorf(
+					"invalid signing method: %w",
+					core_errors.ErrUnauthorized,
+				)
+			}
+
 			return []byte(t.config.JWTSecret), nil
 		})
 	if err != nil {
-		return nil, fmt.Errorf("parse token: %w", err)
+		return nil, fmt.Errorf(
+			"parse token: %w %w",
+			err,
+			core_errors.ErrUnauthorized,
+		)
 	}
 
 	if !parsedToken.Valid {

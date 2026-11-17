@@ -2,8 +2,12 @@ package users_postgres_repository
 
 import (
 	"auth-service/internal/core/domain"
+	core_errors "auth-service/internal/core/errors"
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (r *UsersRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
@@ -25,6 +29,14 @@ func (r *UsersRepository) CreateUser(ctx context.Context, user domain.User) (dom
 		&userModel.Email,
 	)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return domain.User{}, fmt.Errorf(
+				"user already exists: %w",
+				core_errors.ErrConflict,
+			)
+		}
+
 		return domain.User{}, fmt.Errorf("scan error: %w", err)
 	}
 

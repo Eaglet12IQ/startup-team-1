@@ -38,7 +38,7 @@ func (u *User) Validate() error {
 	}
 
 	if err := u.ValidatePasswordAndEmail(); err != nil {
-		return fmt.Errorf("validate login user:")
+		return fmt.Errorf("validate login user: %w", err)
 	}
 
 	return nil
