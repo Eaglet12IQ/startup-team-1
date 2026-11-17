@@ -2,8 +2,12 @@ package users_postgres_repository
 
 import (
 	"auth-service/internal/core/domain"
+	core_errors "auth-service/internal/core/errors"
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (r *UsersRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
@@ -26,6 +30,13 @@ func (r *UsersRepository) GetUserByEmail(ctx context.Context, email string) (dom
 		&userModel.Password,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf(
+				"user not found: %w",
+				core_errors.ErrNotFound,
+			)
+		}
+
 		return domain.User{}, fmt.Errorf("scan error: %w", err)
 	}
 

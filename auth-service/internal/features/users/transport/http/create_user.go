@@ -18,7 +18,6 @@ type CreateUserResponse struct {
 	ID       int    `json:"id"`
 	FullName string `json:"full_name"`
 	Email    string `json:"email"`
-	Password string `json:"password"`
 }
 
 func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
@@ -58,6 +57,5 @@ func dtoFromDomain(user domain.User) CreateUserResponse {
 		ID:       user.ID,
 		FullName: user.FullName,
 		Email:    user.Email,
-		Password: user.Password,
 	}
 }

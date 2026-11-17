@@ -1,8 +1,10 @@
 package users_transport_http
 
 import (
+	core_errors "auth-service/internal/core/errors"
 	core_logger "auth-service/internal/core/logger"
 	core_http_response "auth-service/internal/core/transport/http/response"
+	"fmt"
 	"net/http"
 )
 
@@ -13,7 +15,10 @@ func (u *UsersHTTPHandler) RefreshAccessToken(rw http.ResponseWriter, r *http.Re
 
 	cookie, err := r.Cookie("refresh")
 	if err != nil {
-		responseHandler.ErrorResponse(err, "no refresh cookie")
+		responseHandler.ErrorResponse(
+			fmt.Errorf("%w: %s", core_errors.ErrUnauthorized, err),
+			"no refresh cookie",
+		)
 
 		return
 	}
