@@ -27,8 +27,17 @@ function JwtCheckHandler:access(conf)
     local claims = jwt_obj["payload"]
     kong.log.inspect("Parsed claims:", claims)
 
+    if claims["type"] ~= "access" then
+        kong.response.exit(401, { message = "Invalid token type" })
+    end
+
+    local exp = claims["exp"]
+    if not exp or exp <= ngx.time() then
+        kong.response.exit(401, { message = "Token expired" })
+    end
+
     local user_id = claims.user_id or claims.sub or ""
-    
+
     kong.service.request.set_header("X-User-ID", user_id)
     kong.response.set_header("X-Debug-User-ID", user_id)
 end
