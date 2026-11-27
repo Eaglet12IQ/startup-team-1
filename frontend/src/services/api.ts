@@ -1,6 +1,62 @@
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const PI_MODE = import.meta.env.VITE_PI_MODE === 'true';
 
+let pendingRefresh: Promise<string | null> | null = null;
+let loggingOut = false;
+
+function requestRefresh(): Promise<string | null> {
+  if (pendingRefresh) return pendingRefresh;
+
+  const previousToken = localStorage.getItem('access-token');
+  pendingRefresh = (async () => {
+    const response = await fetch(`${API_BASE}/api/v1/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if ([400, 401, 403].includes(response.status)) return null;
+    if (!response.ok) throw new Error('Не удалось обновить сессию');
+
+    const { access } = await response.json();
+    if (typeof access !== 'string' || !access) throw new Error('Сервер не вернул токен');
+    if (localStorage.getItem('access-token') !== previousToken) return null;
+    localStorage.setItem('access-token', access);
+    return access;
+  })().finally(() => {
+    pendingRefresh = null;
+  });
+  return pendingRefresh;
+}
+
+export function refreshAccessToken(): Promise<string | null> {
+  return loggingOut ? Promise.resolve(null) : requestRefresh();
+}
+
+export async function endSession(): Promise<void> {
+  loggingOut = true;
+  try {
+    if (pendingRefresh) await pendingRefresh.catch(() => null);
+    const token = localStorage.getItem('access-token');
+    if (!token) return;
+
+    const requestLogout = (accessToken: string) => fetch(`${API_BASE}/api/v1/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    let response = await requestLogout(token);
+    if (response.status === 401) {
+      const refreshedToken = await requestRefresh();
+      if (!refreshedToken) return;
+      response = await requestLogout(refreshedToken);
+    }
+    // The server returns 400 when the browser no longer has a refresh cookie.
+    if (!response.ok && response.status !== 400) throw new Error('Не удалось завершить сессию на сервере');
+  } finally {
+    loggingOut = false;
+  }
+}
+
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('access-token');
   const userId = localStorage.getItem('user-id') || '1';
@@ -18,13 +74,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
   let res = await fetch(url, { ...options, headers: { ...getAuthHeaders(), ...(options.headers as Record<string, string> || {}) } });
 
   if (res.status === 401 && !PI_MODE) {
-    const refreshRes = await fetch(`${API_BASE}/api/v1/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (refreshRes.ok) {
-      const data = await refreshRes.json();
-      localStorage.setItem('access-token', data.access);
+    if (await refreshAccessToken()) {
       res = await fetch(url, {
         ...options,
         headers: { ...getAuthHeaders(), ...(options.headers as Record<string, string> || {}) },

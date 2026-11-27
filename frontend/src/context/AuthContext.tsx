@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import { endSession, refreshAccessToken } from '../services/api';
 
 interface AuthContextType {
   userId: number | null;
@@ -8,7 +7,7 @@ interface AuthContextType {
   userEmail: string | null;
   accessToken: string | null;
   login: (token: string, userId: number, name: string, email: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
   isAuthenticated: boolean;
 }
@@ -41,7 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('user-email', email);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await endSession();
     setAccessToken(null);
     setUserId(null);
     setUserName(null);
@@ -54,15 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      const newToken = data.access;
-      setAccessToken(newToken);
-      localStorage.setItem('access-token', newToken);
+      const newToken = await refreshAccessToken();
+      if (newToken) setAccessToken(newToken);
       return newToken;
     } catch {
       return null;
@@ -90,7 +83,7 @@ export function PiAuthProvider({ children }: { children: ReactNode }) {
       userEmail: null,
       accessToken: null,
       login: () => {},
-      logout: () => {},
+      logout: async () => {},
       refreshToken: async () => null,
       isAuthenticated: true,
     }}>

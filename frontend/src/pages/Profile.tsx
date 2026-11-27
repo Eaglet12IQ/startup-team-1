@@ -1,20 +1,26 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { PageTransition } from '../components/PageTransition';
 import { useAuth } from '../context/AuthContext';
 
 export function Profile() {
-  const { userName, userEmail, logout, isAuthenticated } = useAuth();
+  const { userName, userEmail, logout } = useAuth();
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLogoutError('');
+    try {
+      await logout();
+      navigate('/', { replace: true });
+    } catch {
+      setLogoutError('Не удалось завершить сессию. Повторите попытку.');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
-
-  if (!isAuthenticated) {
-    navigate('/login');
-    return null;
-  }
 
   return (
     <PageTransition>
@@ -46,11 +52,13 @@ export function Profile() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="w-full sm:w-auto text-center px-6 py-3 bg-[#ff3b30] text-white rounded-xl font-medium hover:bg-[#ff453a] transition-all duration-200"
+                disabled={isLoggingOut}
+                className="w-full sm:w-auto text-center px-6 py-3 bg-[#ff3b30] text-white rounded-xl font-medium hover:bg-[#ff453a] disabled:opacity-60 transition-all duration-200"
               >
-                Выйти
+                {isLoggingOut ? 'Завершение сессии…' : 'Выйти'}
               </button>
             </div>
+            {logoutError && <p role="alert" className="text-sm text-red-700">{logoutError}</p>}
           </div>
         </div>
       </main>

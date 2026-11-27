@@ -53,6 +53,7 @@ const parseAiBlocks = (raw: string): BlockData[] => {
     } catch {
       return null;
     }
+    return null;
   };
 
   const direct = extract(text);
@@ -71,7 +72,7 @@ export function Editor() {
   const navigate = useNavigate();
   const location = useLocation();
   const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
-  const { isAuthenticated, userId: authUserId } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -93,17 +94,14 @@ export function Editor() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [chatConnected, setChatConnected] = useState(false);
+  const [chatProjectId, setChatProjectId] = useState<string>();
   const [showChat, setShowChat] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<string | null>(null); // Текущий статус генерации
-  const [currentBlockId, setCurrentBlockId] = useState<string | null>(null); // Текущий блок который создается
-  const [generationComplete, setGenerationComplete] = useState(false); // Флаг завершения генерации
+  const generationComplete = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const accumulatedContentRef = useRef<string>(''); // Накопленный контент для парсинга
   const reasoningIndexRef = useRef<number | null>(null); // Индекс активного reasoning-сообщения
-  const wsAuthParam = PI_MODE
-    ? `X-User-ID=1`
-    : `X-User-ID=${authUserId || 1}`;
   const chatId = parseInt(projectId || '1', 10);
   
   blocksRef.current = blocks;
@@ -118,19 +116,23 @@ export function Editor() {
       return;
     }
 
+    let active = true;
     const loadProject = async () => {
       try {
         const numericId = parseInt(projectId || '', 10);
         if (!isNaN(numericId)) {
           try {
             const backendSchema = await getSchema(numericId);
+            if (!active) return;
             const payload = backendSchema.payload as { blocks?: BlockData[] } | BlockData[];
             const loadedBlocks = Array.isArray(payload) ? payload : (payload?.blocks ?? []);
             setBlocks(loadedBlocks);
             setSchemaName(backendSchema.schema_name);
             historyRef.current = [[...loadedBlocks]];
             historyIndexRef.current = 0;
+            setChatProjectId(projectId);
           } catch {
+            if (!active) return;
             const localKey = `${STORAGE_KEY}-${projectId}`;
             const localData = localStorage.getItem(localKey);
             if (localData) {
@@ -155,25 +157,13 @@ export function Editor() {
       } catch (err) {
         console.error('Error loading project:', err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     loadProject();
-  }, [projectId, isAuthenticated, navigate]);
-
-  // Reconnect WebSocket when chatId (projectId) changes
-  useEffect(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-    }
-    connectChatWebSocket();
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
-  }, [projectId, authUserId, location.key]);
+    return () => { active = false; };
+  }, [projectId, isAuthenticated, navigate, PI_MODE]);
 
   const loadHistory = useCallback(async () => {
     const numericId = parseInt(projectId || '', 10);
@@ -554,22 +544,29 @@ export function Editor() {
   const canUndo = historyIndexRef.current > 0;
   const canRedo = historyIndexRef.current < historyRef.current.length - 1;
 
-  // Chat WebSocket functions
-  const connectChatWebSocket = () => {
+  // Load the project first so an expired access token can be refreshed before connecting.
+  useEffect(() => {
+    if (PI_MODE || !isAuthenticated || !projectId || chatProjectId !== projectId) return;
+    const token = localStorage.getItem('access-token');
+    if (!token) return;
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/chat/ws/chat/${chatId}?${wsAuthParam}`;
-    const ws = new WebSocket(wsUrl);
+    const wsUrl = `${protocol}//${window.location.host}/chat/ws/chat/${chatId}`;
+    const ws = new WebSocket(wsUrl, ['piconstruct-chat', token]);
+    let currentBlockId: string | null = null;
 
     ws.onopen = () => {
+      if (wsRef.current !== ws) return;
       console.log(`Chat WebSocket connected for chatId=${chatId}`);
       setChatConnected(true);
       setChatLoading(false);
       accumulatedContentRef.current = '';
-      setCurrentBlockId(null);
-      setGenerationComplete(false);
+      currentBlockId = null;
+      generationComplete.current = false;
     };
 
     ws.onmessage = (event) => {
+      if (wsRef.current !== ws) return;
       const data: StreamEvent = JSON.parse(event.data);
       console.log('← Chat received:', data);
 
@@ -612,7 +609,7 @@ export function Editor() {
             }
             
             if (lastBlockId && currentBlockId !== lastBlockId) {
-              setCurrentBlockId(lastBlockId);
+              currentBlockId = lastBlockId;
               setCurrentStatus(`⏳ Создаётся блок ${lastBlockId}...`);
             }
           }
@@ -646,15 +643,15 @@ export function Editor() {
         case 'history_cleared':
           setChatMessages([]);
           setCurrentStatus(null);
-          setCurrentBlockId(null);
+          currentBlockId = null;
           accumulatedContentRef.current = '';
           reasoningIndexRef.current = null;
-          setGenerationComplete(false);
+          generationComplete.current = false;
           break;
 
         case 'done':
           console.log('Chat stream completed', data.run_id);
-          if (!generationComplete) {
+          if (!generationComplete.current) {
             // Парсим блоки от AI
             const aiBlocks: BlockData[] = accumulatedContentRef.current.trim()
               ? parseAiBlocks(accumulatedContentRef.current)
@@ -667,10 +664,10 @@ export function Editor() {
               aiBlocks: aiBlocks.length > 0 ? aiBlocks : undefined,
             };
             setChatMessages((prev) => [...prev, finalMessage]);
-            setGenerationComplete(true);
+            generationComplete.current = true;
           }
           
-          setCurrentBlockId(null);
+          currentBlockId = null;
           setCurrentStatus(null);
           accumulatedContentRef.current = '';
           reasoningIndexRef.current = null;
@@ -678,31 +675,43 @@ export function Editor() {
           break;
 
         case 'error':
-          console.error('Chat WebSocket error:', data.detail);
+          setChatMessages((previous) => [...previous, {
+            role: 'assistant',
+            content: data.detail || 'Не удалось получить ответ AI-помощника.',
+            timestamp: new Date().toISOString(),
+          }]);
           setCurrentStatus(null);
-          setCurrentBlockId(null);
+          currentBlockId = null;
           accumulatedContentRef.current = '';
+          reasoningIndexRef.current = null;
           setChatLoading(false);
           break;
       }
     };
 
     ws.onerror = (error) => {
+      if (wsRef.current !== ws) return;
       console.error('Chat WebSocket error:', error);
       setChatConnected(false);
       setChatLoading(false);
     };
 
     ws.onclose = () => {
+      if (wsRef.current !== ws) return;
       console.log('Chat WebSocket disconnected');
       setChatConnected(false);
+      setChatLoading(false);
     };
 
     wsRef.current = ws;
-  };
+    return () => {
+      wsRef.current = null;
+      ws.close();
+    };
+  }, [projectId, chatId, chatProjectId, isAuthenticated, location.key, PI_MODE]);
 
   const sendChatMessage = () => {
-    if (!chatInput.trim() || !wsRef.current || chatLoading) return;
+    if (!chatInput.trim() || wsRef.current?.readyState !== WebSocket.OPEN || chatLoading) return;
 
     const message: Message = {
       role: 'user',
@@ -714,6 +723,7 @@ export function Editor() {
     setChatInput('');
     setChatLoading(true);
     reasoningIndexRef.current = null;
+    generationComplete.current = false;
 
     wsRef.current.send(
       JSON.stringify({

@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
-import { AuthProvider, PiAuthProvider } from './context/AuthContext'
+import { AuthProvider, PiAuthProvider, useAuth } from './context/AuthContext'
 import { Header } from './components/Header'
 import './index.css'
 import { Home } from './pages/Home'
@@ -17,6 +17,7 @@ const PI_MODE = import.meta.env.VITE_PI_MODE === 'true'
 
 function AnimatedRoutes() {
   const location = useLocation()
+  const { isAuthenticated } = useAuth()
 
   if (PI_MODE) {
     return (
@@ -37,8 +38,10 @@ function AnimatedRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/pricing" element={<Pricing />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/projects" element={<ProjectsList />} />
+        <Route element={isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />}>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/projects" element={<ProjectsList />} />
+        </Route>
         <Route path="/editor/:projectId" element={<Editor />} />
       </Routes>
     </AnimatePresence>

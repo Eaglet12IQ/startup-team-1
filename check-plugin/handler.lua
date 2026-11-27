@@ -12,7 +12,6 @@ function JwtCheckHandler:access(conf)
     end
 
     local token = string.gsub(auth_header, "^Bearer%s+", "")
-    kong.log.inspect("Raw access token:", token)
 
     local jwt_secret = os.getenv("JWT_SECRET")
     if not jwt_secret or jwt_secret == "" then
@@ -25,7 +24,6 @@ function JwtCheckHandler:access(conf)
     end
 
     local claims = jwt_obj["payload"]
-    kong.log.inspect("Parsed claims:", claims)
 
     if claims["type"] ~= "access" then
         kong.response.exit(401, { message = "Invalid token type" })

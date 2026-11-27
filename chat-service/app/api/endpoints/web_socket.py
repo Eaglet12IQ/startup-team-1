@@ -1,12 +1,15 @@
 import logging
 import asyncio
+import os
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
+import httpx
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from starlette.websockets import WebSocketState
-from typing import Annotated, List, Dict, Any
+from typing import List, Dict, Any
 
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -18,32 +21,62 @@ import json
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+CHAT_PROTOCOL = "piconstruct-chat"
+KONG_PROXY_URL = os.getenv("KONG_PROXY_URL", "http://kong:8000").rstrip("/")
+GENERATION_IDLE_TIMEOUT = 90
+GENERATION_ERROR = "AI-помощник временно недоступен. Повторите попытку."
+
+
+async def get_chat_owner(websocket: WebSocket, chat_id: int) -> int | None:
+    protocols = websocket.scope["subprotocols"]
+    if len(protocols) != 2 or protocols[0] != CHAT_PROTOCOL:
+        return None
+
+    # Kong authenticates the token, and constructor-service checks schema ownership.
+    try:
+        async with httpx.AsyncClient(timeout=5, trust_env=False) as client:
+            response = await client.get(
+                f"{KONG_PROXY_URL}/api/{chat_id}",
+                headers={"Authorization": f"Bearer {protocols[1]}"},
+            )
+        if response.status_code != 200:
+            return None
+        owner = response.json()["data"]["user_id"]
+        return owner if type(owner) is int else None
+    except (httpx.HTTPError, ValueError, KeyError, TypeError):
+        logger.warning("Could not verify access to chat %s", chat_id)
+        return None
 
 
 @router.websocket("/ws/chat/{chat_id}")
 async def chat_websocket(
     websocket: WebSocket,
     chat_id: int,
-    x_user_id: Annotated[int | None, Query(alias="X-User-ID")] = None,
     db: Session = Depends(get_db),
 ):
-    if not x_user_id:
-        await websocket.close(code=4001, reason="Missing X-User-ID")
+    user_id = await get_chat_owner(websocket, chat_id)
+    if user_id is None:
+        await websocket.close(code=1008, reason="Chat access denied")
         return
 
     chat = db.get(Chats, chat_id)
-    if chat is not None and chat.user_id != x_user_id:
-        await websocket.close(code=4003, reason="Not chat owner")
+    if chat is not None and chat.user_id != user_id:
+        await websocket.close(code=1008, reason="Chat access denied")
         return
 
-    await websocket.accept()
-
     if chat is None:
-        chat = Chats(chat_id=chat_id, user_id=x_user_id, messages=[])
-        db.add(chat)
+        db.execute(
+            insert(Chats).values(chat_id=chat_id, user_id=user_id, messages=[])
+            .on_conflict_do_nothing(index_elements=[Chats.chat_id])
+        )
         db.commit()
+        chat = db.get(Chats, chat_id)
+        if chat is None or chat.user_id != user_id:
+            await websocket.close(code=1008, reason="Chat access denied")
+            return
 
-    logger.info(f"WebSocket connected → user={x_user_id}, chat={chat_id}")
+    await websocket.accept(subprotocol=CHAT_PROTOCOL)
+    logger.info("WebSocket connected: user=%s chat=%s", user_id, chat_id)
 
     try:
         await send_full_chat_history(websocket, chat_id, db)
@@ -59,7 +92,7 @@ async def chat_websocket(
                 await websocket.send_json({"type": "error", "detail": "Unknown message type"})
 
     except WebSocketDisconnect:
-        logger.info(f"Client disconnected: user={x_user_id}")
+        logger.info("Client disconnected: user=%s", user_id)
     except Exception as e:
         logger.error(f"WebSocket error: {e}", exc_info=True)
 
@@ -107,7 +140,12 @@ async def start_llm_generation(
     await add_message_to_db(db, chat_id, role="assistant", content="", run_id=run_id)
 
     # Отправляем задачу
-    await publish_llm_task(chat_id, run_id, history)
+    try:
+        await publish_llm_task(chat_id, run_id, history)
+    except Exception:
+        logger.exception("Could not enqueue generation %s", run_id)
+        await safe_send(websocket, {"type": "error", "detail": GENERATION_ERROR})
+        return
 
     # Запускаем стриминг, передавая run_messages для накопления
     output_stream_key = f"chat:{chat_id}:run:{run_id}"
@@ -160,7 +198,7 @@ async def stream_from_redis_to_websocket(
     run_messages: List[Dict[str, Any]]
 ):
     redis = get_redis()
-    last_id = "$"
+    last_id = "0-0"
     accumulated_content = ""
     sequence = 0  # глобальный счётчик порядка событий
 
@@ -171,16 +209,24 @@ async def stream_from_redis_to_websocket(
     tool_call_timestamps: Dict[int, str] = {}
     content_sequence = -1
 
+    clock = asyncio.get_running_loop().time
+    deadline = clock() + GENERATION_IDLE_TIMEOUT
     while True:
+        if websocket.client_state != WebSocketState.CONNECTED:
+            return
+        remaining = deadline - clock()
+        if remaining <= 0:
+            await safe_send(websocket, {"type": "error", "detail": GENERATION_ERROR, "run_id": run_id})
+            return
         try:
-            messages = await redis.xread(
-                streams={stream_key: last_id},
-                count=50,
-                block=3000
+            messages = await asyncio.wait_for(
+                redis.xread(streams={stream_key: last_id}, count=50, block=3000),
+                timeout=remaining,
             )
 
             if not messages:
                 continue
+            deadline = clock() + GENERATION_IDLE_TIMEOUT
 
             for _, entries in messages:
                 for entry_id, fields in entries:
@@ -189,6 +235,10 @@ async def stream_from_redis_to_websocket(
                     tool_name = fields.get("tool_name")
                     tool_args = fields.get("tool_args")
                     is_done = fields.get("is_done") == "true"
+
+                    if event_type == "error":
+                        await safe_send(websocket, {"type": "error", "detail": GENERATION_ERROR, "run_id": run_id})
+                        return
 
                     # --- Обработка вызова инструмента (начало) ---
                     if event_type == "tool_call_start":

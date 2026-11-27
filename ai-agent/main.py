@@ -328,6 +328,7 @@ async def llm_worker():
 
             for _, entries in messages:
                 for entry_id, fields in entries:
+                    output_stream_key = None
                     try:
                         chat_id = int(fields["chat_id"])
                         run_id = fields["run_id"]
@@ -401,6 +402,11 @@ async def llm_worker():
 
                     except Exception as e:
                         print(f"Ошибка обработки задачи {run_id}: {e}")
+                        if output_stream_key:
+                            await redis_client.xadd(output_stream_key, {
+                                "type": "error",
+                                "is_done": "true",
+                            })
                         await redis_client.xack(stream_name, group_name, entry_id)
 
         except Exception as e:
